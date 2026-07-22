@@ -66,8 +66,15 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Контролер</label>
-                        <input type="text" id="inspectorName" placeholder="Введіть ваше ім'я / ПІБ" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Контролер (Фабрика)</label>
+                        <select id="inspectorName" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">-- Оберіть фабрику --</option>
+                            <option value="Фабрика 1">Фабрика 1</option>
+                            <option value="Фабрика 2">Фабрика 2</option>
+                            <option value="Фабрика 3">Фабрика 3</option>
+                            <option value="Фабрика 4">Фабрика 4</option>
+                            <option value="Фабрика 5">Фабрика 5</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оберіть методику</label>
@@ -130,7 +137,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Пошук за оператором / текстом</label>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Пошук за фабрикою / текстом</label>
                         <input type="text" id="filterSearch" oninput="renderHistoryTable()" placeholder="Введіть для пошуку..." class="w-full border border-slate-300 rounded p-1.5 text-xs">
                     </div>
                     <div>
@@ -149,7 +156,7 @@
                             <tr>
                                 <th class="p-3">Дата / Час</th>
                                 <th class="p-3">Методика</th>
-                                <th class="p-3">Оператор</th>
+                                <th class="p-3">Фабрика</th>
                                 <th class="p-3">Результати замірів</th>
                                 <th class="p-3 text-right">Дії</th>
                             </tr>
@@ -406,9 +413,9 @@
 
         function saveMeasurement(e) {
             e.preventDefault();
-            const inspector = document.getElementById('inspectorName').value.trim();
+            const inspector = document.getElementById('inspectorName').value;
             if (!inspector) {
-                alert("Будь ласка, вкажіть ім'я оператора/контролера!");
+                alert("Будь ласка, оберіть фабрику зі списку!");
                 return;
             }
 
@@ -455,6 +462,7 @@
 
         function resetForm() {
             document.getElementById('measurementForm').reset();
+            document.getElementById('inspectorName').value = "";
         }
 
         // --- HISTORY TABLE & EXCEL EXPORT ---
@@ -502,7 +510,7 @@
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
                         <td class="p-3 font-semibold text-slate-800">${rec.methodologyTitle}</td>
-                        <td class="p-3 text-xs">${rec.inspector}</td>
+                        <td class="p-3 text-xs font-semibold text-blue-700">${rec.inspector}</td>
                         <td class="p-3">${valuesBadges}</td>
                         <td class="p-3 text-right">
                             <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">
@@ -535,7 +543,7 @@
                 const row = {
                     "Дата та Час (Київ)": rec.timestamp,
                     "Методика": rec.methodologyTitle,
-                    "Оператор / Контролер": rec.inspector
+                    "Фабрика": rec.inspector
                 };
 
                 // Merge parameter values into flat columns
