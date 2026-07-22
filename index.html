@@ -60,14 +60,19 @@
         <!-- TAB 1: NEW MEASUREMENT -->
         <section id="sec-new-measure" class="space-y-6">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">
-                    <i class="fa-solid fa-clipboard-check text-blue-600 mr-2"></i> Проведення заміру
-                </h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold flex items-center text-slate-800">
+                        <i class="fa-solid fa-clipboard-check text-blue-600 mr-2"></i> Проведення заміру
+                    </h2>
+                    <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Черновик збережено
+                    </span>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Контролер (Фабрика)</label>
-                        <select id="inspectorName" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                             <option value="">-- Оберіть фабрику --</option>
                             <option value="Фабрика 1">Фабрика 1</option>
                             <option value="Фабрика 2">Фабрика 2</option>
@@ -87,7 +92,7 @@
                 <!-- Dynamic Form Area -->
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
                     <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
-                    <form id="measurementForm" onsubmit="saveMeasurement(event)" class="space-y-4">
+                    <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-4">
                         <div id="dynamicFields" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
                         
                         <div class="pt-4 flex justify-end space-x-3">
@@ -328,6 +333,7 @@
             renderMethodologyCards();
             renderHistoryTable();
             loadSettingsInputs();
+            checkAndRestoreDraft();
             if (state.config.binId && state.config.apiKey) {
                 syncData();
             }
@@ -414,11 +420,81 @@
 
             placeholder.classList.add('hidden');
             container.classList.remove('hidden');
+
+            // Автоматично заповнюємо черновиком після побудови форми
+            restoreDraftValues();
+        }
+
+        // --- ЛОГІКА АВТОЗБЕРЕЖЕННЯ ЧЕРНОВИКА (AUTO-DRAFT) ---
+        function saveDraft() {
+            const methodId = document.getElementById('methodologySelect').value;
+            const inspector = document.getElementById('inspectorName').value;
+
+            const draftData = {
+                methodologyId: methodId,
+                inspector: inspector,
+                fields: {}
+            };
+
+            if (methodId) {
+                const form = document.getElementById('measurementForm');
+                if (form) {
+                    const formData = new FormData(form);
+                    for (let [key, val] of formData.entries()) {
+                        draftData.fields[key] = val;
+                    }
+                }
+            }
+
+            localStorage.setItem('qm_form_draft', JSON.stringify(draftData));
+            
+            // Показуємо індикатор черновика
+            const ind = document.getElementById('draftIndicator');
+            if (ind) ind.classList.remove('hidden');
+        }
+
+        function checkAndRestoreDraft() {
+            const draftRaw = localStorage.getItem('qm_form_draft');
+            if (!draftRaw) return;
+
+            try {
+                const draft = JSON.parse(draftRaw);
+                if (draft.inspector) {
+                    document.getElementById('inspectorName').value = draft.inspector;
+                }
+                if (draft.methodologyId) {
+                    document.getElementById('methodologySelect').value = draft.methodologyId;
+                    renderMeasurementForm();
+                }
+            } catch(e) {}
+        }
+
+        function restoreDraftValues() {
+            const draftRaw = localStorage.getItem('qm_form_draft');
+            if (!draftRaw) return;
+
+            try {
+                const draft = JSON.parse(draftRaw);
+                if (draft.fields) {
+                    Object.entries(draft.fields).forEach(([id, val]) => {
+                        const input = document.getElementById(id);
+                        if (input && val) {
+                            input.value = val;
+                        }
+                    });
+                    calculateLiveFields();
+                }
+            } catch(e) {}
+        }
+
+        function clearDraft() {
+            localStorage.removeItem('qm_form_draft');
+            const ind = document.getElementById('draftIndicator');
+            if (ind) ind.classList.add('hidden');
         }
 
         // Автоматичні обчислення в реальному часі на формі
         function calculateLiveFields() {
-            // 1. Середня вага тушки = WOG / Кількість
             const wogInput = document.getElementById('p_total_weight_wog');
             const countInput = document.getElementById('p_carcass_count');
             const avgInput = document.getElementById('p_avg_carcass_weight');
@@ -433,7 +509,6 @@
                 }
             }
 
-            // 2. Крило ціле = Кисть + Плече + Лікоть
             const elbowInput = document.getElementById('p_wing_elbow');
             const shoulderInput = document.getElementById('p_wing_shoulder');
             const tipInput = document.getElementById('p_sub_wing_tip');
@@ -502,6 +577,7 @@
             saveStateToLocal();
             renderHistoryTable();
             resetForm();
+            clearDraft(); // Очищаємо черновик після успішного збереження!
             alert("Замір успішно збережено!");
             
             if (state.config.binId && state.config.apiKey) {
@@ -512,6 +588,7 @@
         function resetForm() {
             document.getElementById('measurementForm').reset();
             document.getElementById('inspectorName').value = "";
+            clearDraft();
         }
 
         function renderHistoryTable() {
@@ -582,7 +659,6 @@
             }
         }
 
-        // Експорт ОДНОГО конкретного заміру в Excel
         function exportToExcelSingle(id) {
             const rec = state.measurements.find(x => x.id === id);
             if (!rec) return;
@@ -590,7 +666,6 @@
             generateExcelFile([rec], `Замір_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
         }
 
-        // Експорт ВСІХ замірів у один файл Excel
         function exportToExcelAll() {
             if (state.measurements.length === 0) {
                 alert("Немає даних для експорту!");
@@ -599,7 +674,6 @@
             generateExcelFile(state.measurements, `Всі_Заміри_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // Загальна функція побудови таблиці Excel із частками %
         function generateExcelFile(recordsArray, filename) {
             const excelRows = recordsArray.map(rec => {
                 const row = {
