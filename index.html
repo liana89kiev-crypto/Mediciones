@@ -92,10 +92,10 @@
                 <!-- Dynamic Form Area -->
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
                     <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
-                    <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-4">
-                        <div id="dynamicFields" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-6">
+                        <div id="dynamicFields" class="space-y-6"></div>
                         
-                        <div class="pt-4 flex justify-end space-x-3">
+                        <div class="pt-4 flex justify-end space-x-3 border-t border-slate-200">
                             <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
                                 Очистити
                             </button>
@@ -280,39 +280,53 @@
                 id: 'm_poultry_deboning',
                 title: 'Замір розробки тушки (Аналіз анатомічних частин)',
                 description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
-                params: [
-                    { id: 'p_date_time', label: 'Дата та Час заміру', type: 'date', required: true },
-                    { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт)', type: 'decimal', required: true },
-                    { id: 'p_total_weight_wog', label: 'Загальна вага вибірки перед розрізанням (Маса WOG, кг)', type: 'decimal', required: true },
-                    { id: 'p_avg_carcass_weight', label: 'Середня вага тушки (кг) [Маса WOG / Кількість]', type: 'decimal', required: false, calculated: true },
-                    
-                    { id: 'p_filet_large', label: 'Велике філе (кг)', type: 'decimal', required: false },
-                    { id: 'p_filet_small', label: 'Мале філе (кг)', type: 'decimal', required: false },
-                    { id: 'p_wing_whole', label: 'Крило ціле (сума кисть+плече+лікоть) (кг)', type: 'decimal', required: false, calculated: true },
-                    { id: 'p_wing_elbow', label: 'Крило лікоть (кг)', type: 'decimal', required: false },
-                    { id: 'p_wing_shoulder', label: 'Крило плече (кг)', type: 'decimal', required: false },
-                    { id: 'p_sub_wing_tip', label: 'Субпродукти: Кисть крила (кг)', type: 'decimal', required: false },
-                    
-                    { id: 'p_drumstick', label: 'Гомілка (кг)', type: 'decimal', required: false },
-                    { id: 'p_thigh_bone_in', label: 'Стегно необвалене (кг)', type: 'decimal', required: false },
-                    
-                    { id: 'p_sub_saddle', label: 'Субпродукти: Спинка (Saddle) (кг)', type: 'decimal', required: false },
-                    { id: 'p_sub_breast_frame', label: 'Субпродукти: Грудний каркас (кг)', type: 'decimal', required: false },
-                    { id: 'p_sub_breast_skin', label: 'Субпродукти: Шкіра грудки (кг)', type: 'decimal', required: false },
-                    { id: 'p_sub_tail', label: 'Субпродукти: Гузка (кг)', type: 'decimal', required: false },
-                    
-                    { id: 'p_tech_losses', label: 'Технічні втрати / Втрати (кг)', type: 'decimal', required: false },
-                    { id: 'p_notes', label: 'Примітки / Зауваження', type: 'text', required: false }
-                ]
-            },
-            {
-                id: 'p_tech_temp',
-                title: 'Технологічний замір температури',
-                description: 'Контроль температурних режимів у холодильних та охолоджувальних камерах.',
-                params: [
-                    { id: 'p_chamber', label: 'Номер камери / Зони', type: 'text', required: true },
-                    { id: 'p_temp', label: 'Температура (°C)', type: 'decimal', required: true },
-                    { id: 'p_status', label: 'Статус норми', type: 'select', options: ['В нормі (0..+2°C)', 'Відхилення (Вище норми)', 'Критично'], required: true }
+                groups: [
+                    {
+                        title: '1. Загальна інформація',
+                        params: [
+                            { id: 'p_date_time', label: 'Дата та Час заміру', type: 'date', required: true },
+                            { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт)', type: 'decimal', required: true },
+                            { id: 'p_total_weight_wog', label: 'Загальна вага вибірки перед розрізанням (Маса WOG, кг)', type: 'decimal', required: true },
+                            { id: 'p_avg_carcass_weight', label: 'Середня вага тушки (кг) [Маса WOG / Кількість]', type: 'decimal', required: false, calculated: true }
+                        ]
+                    },
+                    {
+                        title: '2. Крило',
+                        params: [
+                            { id: 'p_sub_wing_tip', label: 'Кисть крила (кг)', type: 'decimal', required: false },
+                            { id: 'p_wing_elbow', label: 'Лікоть (кг)', type: 'decimal', required: false },
+                            { id: 'p_wing_shoulder', label: 'Плече (кг)', type: 'decimal', required: false },
+                            { id: 'p_wing_whole', label: 'Трифалангове крило (сума) (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                        ]
+                    },
+                    {
+                        title: '3. Передня частина тушки',
+                        params: [
+                            { id: 'p_filet_large', label: 'Філе велике (кг)', type: 'decimal', required: false },
+                            { id: 'p_filet_small', label: 'Філе мале (кг)', type: 'decimal', required: false },
+                            { id: 'p_sub_breast_frame', label: 'Грудний каркас (кг)', type: 'decimal', required: false },
+                            { id: 'p_sub_breast_skin', label: 'Шкіра грудки (кг)', type: 'decimal', required: false },
+                            { id: 'p_front_total', label: 'Сума передньої частини (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                        ]
+                    },
+                    {
+                        title: '4. Задня частина тушки',
+                        params: [
+                            { id: 'p_thigh_bone_in', label: 'Стегно (кг)', type: 'decimal', required: false },
+                            { id: 'p_drumstick', label: 'Гомілка (кг)', type: 'decimal', required: false },
+                            { id: 'p_sub_saddle', label: 'Нижня частина спинки (Saddle) (кг)', type: 'decimal', required: false },
+                            { id: 'p_sub_tail', label: 'Гузка (кг)', type: 'decimal', required: false },
+                            { id: 'p_back_total', label: 'Сума задньої частини тушки (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                        ]
+                    },
+                    {
+                        title: '5. Технічні відходи та Втрати',
+                        params: [
+                            { id: 'p_tech_losses', label: 'Технічні втрати / Втрати (кг)', type: 'decimal', required: false },
+                            { id: 'p_tech_waste_total', label: 'Технічні відходи (сума) (кг) [Авто]', type: 'decimal', required: false, calculated: true },
+                            { id: 'p_notes', label: 'Примітки / Зауваження', type: 'text', required: false }
+                        ]
+                    }
                 ]
             }
         ];
@@ -388,44 +402,119 @@
             descDiv.innerText = m.description || 'Опис відсутній.';
             fieldsDiv.innerHTML = '';
 
-            m.params.forEach(p => {
-                const fieldWrapper = document.createElement('div');
-                const reqAttr = p.required ? 'required' : '';
-                const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
+            const groups = m.groups || [{ title: 'Параметри', params: m.params || [] }];
 
-                let inputHtml = '';
-                const isReadOnly = p.calculated ? 'readonly bg-slate-100 font-semibold text-blue-700 cursor-not-allowed' : '';
+            groups.forEach(group => {
+                const groupBlock = document.createElement('div');
+                groupBlock.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3';
+                
+                groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${group.title}</h3>`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 pt-1';
 
-                if (p.type === 'text') {
-                    inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${isReadOnly} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Введіть текст...">`;
-                } else if (p.type === 'decimal') {
-                    inputHtml = `<input type="number" step="0.01" name="${p.id}" id="${p.id}" ${reqAttr} ${isReadOnly} oninput="calculateLiveFields()" onblur="formatDecimalInput(this)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">`;
-                } else if (p.type === 'date') {
-                    const today = new Date().toISOString().split('T')[0];
-                    inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">`;
-                } else if (p.type === 'select') {
-                    const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
-                    inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                        <option value="">-- Оберіть варіант --</option>
-                        ${opts}
-                    </select>`;
-                }
+                group.params.forEach(p => {
+                    const fieldWrapper = document.createElement('div');
+                    const reqAttr = p.required ? 'required' : '';
+                    const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
 
-                fieldWrapper.innerHTML = `
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${p.label} ${reqStar}</label>
-                    ${inputHtml}
-                `;
-                fieldsDiv.appendChild(fieldWrapper);
+                    const isReadOnly = p.calculated 
+                        ? 'readonly bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' 
+                        : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
+
+                    let inputHtml = '';
+                    if (p.type === 'text') {
+                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="Введіть текст...">`;
+                    } else if (p.type === 'decimal') {
+                        inputHtml = `<input type="number" step="0.01" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} oninput="calculateLiveFields()" onblur="formatDecimalInput(this)" class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="0.00">`;
+                    } else if (p.type === 'date') {
+                        const today = new Date().toISOString().split('T')[0];
+                        inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}">`;
+                    } else if (p.type === 'select') {
+                        const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+                        inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white ${isReadOnly}">
+                            <option value="">-- Оберіть варіант --</option>
+                            ${opts}
+                        </select>`;
+                    }
+
+                    fieldWrapper.innerHTML = `
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
+                            ${p.label} ${reqStar} ${p.calculated ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 авто)</span>' : ''}
+                        </label>
+                        ${inputHtml}
+                    `;
+                    grid.appendChild(fieldWrapper);
+                });
+
+                groupBlock.appendChild(grid);
+                fieldsDiv.appendChild(groupBlock);
             });
 
             placeholder.classList.add('hidden');
             container.classList.remove('hidden');
 
-            // Автоматично заповнюємо черновиком після побудови форми
             restoreDraftValues();
         }
 
-        // --- ЛОГІКА АВТОЗБЕРЕЖЕННЯ ЧЕРНОВИКА (AUTO-DRAFT) ---
+        // Автоматичні обчислення в реальному часі для всіх авто-полів
+        function calculateLiveFields() {
+            // 1. Середня вага тушки = WOG / Кількість
+            const wogInput = document.getElementById('p_total_weight_wog');
+            const countInput = document.getElementById('p_carcass_count');
+            const avgInput = document.getElementById('p_avg_carcass_weight');
+
+            if (wogInput && countInput && avgInput) {
+                const wog = parseFloat(wogInput.value) || 0;
+                const count = parseFloat(countInput.value) || 0;
+                avgInput.value = (wog > 0 && count > 0) ? (wog / count).toFixed(2) : "";
+            }
+
+            // 2. Трифалангове крило (сума) = Кисть + Лікоть + Плече
+            const tip = parseFloat(document.getElementById('p_sub_wing_tip')?.value) || 0;
+            const elbow = parseFloat(document.getElementById('p_wing_elbow')?.value) || 0;
+            const shoulder = parseFloat(document.getElementById('p_wing_shoulder')?.value) || 0;
+            const wingWholeInput = document.getElementById('p_wing_whole');
+
+            if (wingWholeInput) {
+                const sumWing = tip + elbow + shoulder;
+                wingWholeInput.value = sumWing > 0 ? sumWing.toFixed(2) : "";
+            }
+
+            // 3. Сума передньої частини тушки = Філе велике + Філе мале + Грудний каркас + Шкіра грудки
+            const filetLarge = parseFloat(document.getElementById('p_filet_large')?.value) || 0;
+            const filetSmall = parseFloat(document.getElementById('p_filet_small')?.value) || 0;
+            const breastFrame = parseFloat(document.getElementById('p_sub_breast_frame')?.value) || 0;
+            const breastSkin = parseFloat(document.getElementById('p_sub_breast_skin')?.value) || 0;
+            const frontTotalInput = document.getElementById('p_front_total');
+
+            if (frontTotalInput) {
+                const sumFront = filetLarge + filetSmall + breastFrame + breastSkin;
+                frontTotalInput.value = sumFront > 0 ? sumFront.toFixed(2) : "";
+            }
+
+            // 4. Сума задньої частини тушки = Стегно + Гомілка + Нижня частина спинки + Гузка
+            const thigh = parseFloat(document.getElementById('p_thigh_bone_in')?.value) || 0;
+            const drumstick = parseFloat(document.getElementById('p_drumstick')?.value) || 0;
+            const saddle = parseFloat(document.getElementById('p_sub_saddle')?.value) || 0;
+            const tail = parseFloat(document.getElementById('p_sub_tail')?.value) || 0;
+            const backTotalInput = document.getElementById('p_back_total');
+
+            if (backTotalInput) {
+                const sumBack = thigh + drumstick + saddle + tail;
+                backTotalInput.value = sumBack > 0 ? sumBack.toFixed(2) : "";
+            }
+
+            // 5. Технічні відходи (сума) = Кисть + Спинка + Грудний каркас + Шкіра грудки + Гузка + Втрати
+            const techLosses = parseFloat(document.getElementById('p_tech_losses')?.value) || 0;
+            const wasteTotalInput = document.getElementById('p_tech_waste_total');
+
+            if (wasteTotalInput) {
+                const sumWaste = tip + saddle + breastFrame + breastSkin + tail + techLosses;
+                wasteTotalInput.value = sumWaste > 0 ? sumWaste.toFixed(2) : "";
+            }
+        }
+
         function saveDraft() {
             const methodId = document.getElementById('methodologySelect').value;
             const inspector = document.getElementById('inspectorName').value;
@@ -448,7 +537,6 @@
 
             localStorage.setItem('qm_form_draft', JSON.stringify(draftData));
             
-            // Показуємо індикатор черновика
             const ind = document.getElementById('draftIndicator');
             if (ind) ind.classList.remove('hidden');
         }
@@ -493,41 +581,6 @@
             if (ind) ind.classList.add('hidden');
         }
 
-        // Автоматичні обчислення в реальному часі на формі
-        function calculateLiveFields() {
-            const wogInput = document.getElementById('p_total_weight_wog');
-            const countInput = document.getElementById('p_carcass_count');
-            const avgInput = document.getElementById('p_avg_carcass_weight');
-
-            if (wogInput && countInput && avgInput) {
-                const wog = parseFloat(wogInput.value) || 0;
-                const count = parseFloat(countInput.value) || 0;
-                if (wog > 0 && count > 0) {
-                    avgInput.value = (wog / count).toFixed(2);
-                } else {
-                    avgInput.value = "";
-                }
-            }
-
-            const elbowInput = document.getElementById('p_wing_elbow');
-            const shoulderInput = document.getElementById('p_wing_shoulder');
-            const tipInput = document.getElementById('p_sub_wing_tip');
-            const wingWholeInput = document.getElementById('p_wing_whole');
-
-            if (wingWholeInput) {
-                const elbow = parseFloat(elbowInput?.value) || 0;
-                const shoulder = parseFloat(shoulderInput?.value) || 0;
-                const tip = parseFloat(tipInput?.value) || 0;
-                
-                const sum = elbow + shoulder + tip;
-                if (sum > 0) {
-                    wingWholeInput.value = sum.toFixed(2);
-                } else {
-                    wingWholeInput.value = "";
-                }
-            }
-        }
-
         function formatDecimalInput(input) {
             if (input.value !== '' && !input.readOnly) {
                 const val = parseFloat(input.value);
@@ -552,7 +605,9 @@
             const formData = new FormData(document.getElementById('measurementForm'));
             const values = {};
 
-            m.params.forEach(p => {
+            const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
+
+            allParams.forEach(p => {
                 let val = formData.get(p.id);
                 if (p.type === 'decimal' && val !== null && val !== '') {
                     val = parseFloat(val).toFixed(2);
@@ -577,7 +632,7 @@
             saveStateToLocal();
             renderHistoryTable();
             resetForm();
-            clearDraft(); // Очищаємо черновик після успішного збереження!
+            clearDraft();
             alert("Замір успішно збережено!");
             
             if (state.config.binId && state.config.apiKey) {
@@ -715,29 +770,23 @@
 
         function renderMethodologyCards() {
             const container = document.getElementById('methodologyList');
-            container.innerHTML = state.methodologies.map(m => `
+            container.innerHTML = state.methodologies.map(m => {
+                const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
+                return `
                 <div class="border border-slate-200 rounded-xl p-5 bg-slate-50 flex flex-col justify-between hover:shadow-md transition">
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-bold text-slate-800 text-base">${m.title}</h3>
-                            <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${m.params.length} парам.</span>
+                            <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${paramCount} парам.</span>
                         </div>
                         <p class="text-xs text-slate-500 mb-4">${m.description || 'Опис відсутній.'}</p>
-                        <div class="space-y-1 mb-4">
-                            ${m.params.map(p => `
-                                <div class="text-xs text-slate-600 flex justify-between bg-white px-2 py-1 rounded border border-slate-200">
-                                    <span>${p.label} ${p.calculated ? '🧮 (Авто)' : ''}</span>
-                                    <span class="font-mono text-slate-400 text-[10px] uppercase">${p.type}</span>
-                                </div>
-                            `).join('')}
-                        </div>
                     </div>
                     <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
                         <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition">Редагувати</button>
                         <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition">Видалити</button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         let tempParams = [];
@@ -752,7 +801,8 @@
                 document.getElementById('editMethodologyId').value = m.id;
                 document.getElementById('methodTitle').value = m.title;
                 document.getElementById('methodDesc').value = m.description;
-                tempParams = JSON.parse(JSON.stringify(m.params));
+                const allP = m.groups ? m.groups.flatMap(g => g.params) : m.params;
+                tempParams = JSON.parse(JSON.stringify(allP));
             } else {
                 document.getElementById('modalTitle').innerText = "Створити нову методику";
                 document.getElementById('editMethodologyId').value = "";
@@ -787,11 +837,6 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
-                    ${p.type === 'select' ? `
-                        <div>
-                            <input type="text" value="${(p.options || []).join(', ')}" onchange="updateParamSelectOptions(${idx}, this.value)" placeholder="Варіанти через кому (напр: Сорт 1, Сорт 2, Брак)" class="w-full border border-slate-300 rounded p-1 text-xs">
-                        </div>
-                    ` : ''}
                 </div>
             `).join('');
         }
@@ -816,10 +861,6 @@
             if (field === 'type') renderParamRows();
         }
 
-        function updateParamSelectOptions(idx, valString) {
-            tempParams[idx].options = valString.split(',').map(s => s.trim()).filter(Boolean);
-        }
-
         function saveMethodology() {
             const title = document.getElementById('methodTitle').value.trim();
             const desc = document.getElementById('methodDesc').value.trim();
@@ -827,11 +868,6 @@
 
             if (!title) {
                 alert("Будь ласка, введіть назву методики!");
-                return;
-            }
-
-            if (tempParams.length === 0) {
-                alert("Методика повинна містити хоча б один параметр!");
                 return;
             }
 
