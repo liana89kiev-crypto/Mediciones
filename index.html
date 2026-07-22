@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система проведення замірів та контролю якості</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (XLSX) CDN -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">📐</span>
+                <div>
+                    <h1 class="text-lg font-bold leading-tight">QualityMeasure SPA</h1>
+                    <p class="text-xs text-slate-400">Система занесення та аналізу замірів</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 text-sm">
+                <div id="syncStatus" class="flex items-center space-x-1 text-slate-400 text-xs bg-slate-800 px-3 py-1.5 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                    <span>Локально</span>
+                </div>
+                <button onclick="switchTab('settings')" class="p-2 hover:bg-slate-800 rounded-lg transition" title="Налаштування">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="bg-slate-800 text-slate-300 text-sm flex justify-center space-x-8 border-t border-slate-700">
+            <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-2">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Новий замір</span>
+            </button>
+            <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 flex items-center space-x-2">
+                <i class="fa-solid fa-table-list"></i>
+                <span>Історія та Експорт</span>
+            </button>
+            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Конструктор методик</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6">
+
+        <!-- TAB 1: NEW MEASUREMENT -->
+        <section id="sec-new-measure" class="space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">
+                    <i class="fa-solid fa-clipboard-check text-blue-600 mr-2"></i> Проведення заміру
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Контролер</label>
+                        <input type="text" id="inspectorName" placeholder="Введіть ваше ім'я / ПІБ" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оберіть методику</label>
+                        <select id="methodologySelect" onchange="renderMeasurementForm()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="">-- Оберіть методику заміру --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Dynamic Form Area -->
+                <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
+                    <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
+                    <form id="measurementForm" onsubmit="saveMeasurement(event)" class="space-y-4">
+                        <div id="dynamicFields" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                        
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                                Очистити
+                            </button>
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center space-x-2">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                <span>Зберегти результати</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="noMethodologySelected" class="text-center py-12 text-slate-400">
+                    <i class="fa-solid fa-hand-pointer text-4xl mb-3 block"></i>
+                    Будь ласка, оберіть методику зі списку вище для початку внесення даних.
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: HISTORY & EXCEL EXPORT -->
+        <section id="sec-history" class="hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Історія занесених замірів</h2>
+                        <p class="text-xs text-slate-500">Всього записів у базі: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
+                    </div>
+                    <div class="flex items-center space-x-2 w-full md:w-auto">
+                        <button onclick="exportToExcel()" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Експорт в Excel (.xlsx)</span>
+                        </button>
+                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Фільтр за методикою</label>
+                        <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
+                            <option value="ALL">Всі методики</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Пошук за оператором / текстом</label>
+                        <input type="text" id="filterSearch" oninput="renderHistoryTable()" placeholder="Введіть для пошуку..." class="w-full border border-slate-300 rounded p-1.5 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Сортування</label>
+                        <select id="filterSort" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
+                            <option value="DESC">Спочатку нові</option>
+                            <option value="ASC">Спочатку старі</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-left text-sm text-slate-600">
+                        <thead class="bg-slate-100 text-xs uppercase text-slate-700 font-semibold border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">Дата / Час</th>
+                                <th class="p-3">Методика</th>
+                                <th class="p-3">Оператор</th>
+                                <th class="p-3">Результати замірів</th>
+                                <th class="p-3 text-right">Дії</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-200 bg-white">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: METHODOLOGIES CONSTRUCTOR -->
+        <section id="sec-methodologies" class="hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-800">Управління методиками</h2>
+                        <p class="text-xs text-slate-500">Створюйте та редагуйте методики замірів із різними типами параметрів</p>
+                    </div>
+                    <button onclick="openMethodologyModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center space-x-2">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Нова методика</span>
+                    </button>
+                </div>
+
+                <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Cards will be dynamically inserted here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: SETTINGS (JSONBIN.IO) -->
+        <section id="sec-settings" class="hidden space-y-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center">
+                    <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io & Синхронізації
+                </h2>
+                <p class="text-xs text-slate-500 mb-6">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження та синхронізації між пристроями.</p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin BIN ID</label>
+                        <input type="text" id="cfgBinId" placeholder="наприклад: 64a8b...123" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin Master Key (X-Master-Key)</label>
+                        <input type="password" id="cfgApiKey" placeholder="наприклад: $2a$10$..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="pt-2 flex justify-between items-center">
+                        <button onclick="testJsonBinConnection()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">
+                            Тест з'єднання
+                        </button>
+                        <button onclick="saveSettings()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow">
+                            Зберегти налаштування
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-sm font-bold text-red-600 mb-2">Небезпечна зона</h3>
+                    <button onclick="clearAllData()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold transition">
+                        Очистити всі локальні дані замірів
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Creating/Editing Methodology -->
+    <div id="methodologyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="font-bold text-slate-800">Створити методику</h3>
+                <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-4 flex-grow">
+                <input type="hidden" id="editMethodologyId">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Назва методики</label>
+                    <input type="text" id="methodTitle" placeholder="наприклад: Замір параметрів тушки (Лінія A)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Опис / Інструкція</label>
+                    <textarea id="methodDesc" rows="2" placeholder="Короткі вказівки для оператора..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-xs font-semibold text-slate-600 uppercase">Параметри методики</label>
+                        <button type="button" onclick="addParamRow()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded">
+                            + Додати параметр
+                        </button>
+                    </div>
+                    <div id="paramRowsContainer" class="space-y-3">
+                        <!-- Dynamic parameter rows -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
+                <button onclick="closeMethodologyModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-100">Скасувати</button>
+                <button onclick="saveMethodology()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow">Зберегти методику</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application JavaScript Code -->
+    <script>
+        // Default initial methodologies
+        const DEFAULT_METHODOLOGIES = [
+            {
+                id: 'm_poultry_quality',
+                title: 'Замір якісних показників (Птиця)',
+                description: 'Визначення маси, категорії та виявлення можливих дефектів на лінії.',
+                params: [
+                    { id: 'p_date', label: 'Дата та час заборки', type: 'date', required: true },
+                    { id: 'p_weight', label: 'Вага тушки (кг)', type: 'decimal', required: true },
+                    { id: 'p_category', label: 'Категорія якості', type: 'select', options: ['1 Сорт', '2 Сорт', 'Брак / Доопрацювання'], required: true },
+                    { id: 'p_defect_type', label: 'Вид дефекту (за наявності)', type: 'select', options: ['Немає', 'Синці / Гематоми', 'Пошкодження шкіри', 'Недопилювання'], required: false },
+                    { id: 'p_notes', label: 'Примітка контролера', type: 'text', required: false }
+                ]
+            },
+            {
+                id: 'p_tech_temp',
+                title: 'Технологічний замір температури',
+                description: 'Контроль температурних режимів у холодильних та охолоджувальних камерах.',
+                params: [
+                    { id: 'p_chamber', label: 'Номер камери / Зони', type: 'text', required: true },
+                    { id: 'p_temp', label: 'Температура (°C)', type: 'decimal', required: true },
+                    { id: 'p_status', label: 'Статус норми', type: 'select', options: ['В нормі (0..+2°C)', 'Відхилення (Вище норми)', 'Критично'], required: true }
+                ]
+            }
+        ];
+
+        // Global State
+        let state = {
+            methodologies: JSON.parse(localStorage.getItem('qm_methodologies')) || DEFAULT_METHODOLOGIES,
+            measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
+            config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+        });
+
+        function initApp() {
+            saveStateToLocal();
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+            renderHistoryTable();
+            loadSettingsInputs();
+            if (state.config.binId && state.config.apiKey) {
+                syncData();
+            }
+        }
+
+        function saveStateToLocal() {
+            localStorage.setItem('qm_methodologies', JSON.stringify(state.methodologies));
+            localStorage.setItem('qm_measurements', JSON.stringify(state.measurements));
+            localStorage.setItem('qm_config', JSON.stringify(state.config));
+        }
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            const targetSec = document.getElementById(`sec-${tabId}`);
+            if (targetSec) targetSec.classList.remove('hidden');
+
+            const targetBtn = document.getElementById(`tab-${tabId}`);
+            if (targetBtn) targetBtn.classList.add('active');
+        }
+
+        // --- METHODOLOGY DROPDOWN & DYNAMIC FORM ---
+        function populateMethodologyDropdown() {
+            const select = document.getElementById('methodologySelect');
+            const filterSelect = document.getElementById('filterMethodology');
+            
+            select.innerHTML = '<option value="">-- Оберіть методику заміру --</option>';
+            filterSelect.innerHTML = '<option value="ALL">Всі методики</option>';
+
+            state.methodologies.forEach(m => {
+                select.innerHTML += `<option value="${m.id}">${m.title}</option>`;
+                filterSelect.innerHTML += `<option value="${m.id}">${m.title}</option>`;
+            });
+        }
+
+        function renderMeasurementForm() {
+            const methodId = document.getElementById('methodologySelect').value;
+            const container = document.getElementById('dynamicFormContainer');
+            const placeholder = document.getElementById('noMethodologySelected');
+            const fieldsDiv = document.getElementById('dynamicFields');
+            const descDiv = document.getElementById('methodologyDescription');
+
+            if (!methodId) {
+                container.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            const m = state.methodologies.find(x => x.id === methodId);
+            if (!m) return;
+
+            descDiv.innerText = m.description || 'Опис відсутній.';
+            fieldsDiv.innerHTML = '';
+
+            m.params.forEach(p => {
+                const fieldWrapper = document.createElement('div');
+                const reqAttr = p.required ? 'required' : '';
+                const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
+
+                let inputHtml = '';
+                if (p.type === 'text') {
+                    inputHtml = `<input type="text" name="${p.id}" ${reqAttr} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Введіть текст...">`;
+                } else if (p.type === 'decimal') {
+                    inputHtml = `<input type="number" step="0.01" name="${p.id}" ${reqAttr} onblur="formatDecimalInput(this)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0.00">`;
+                } else if (p.type === 'date') {
+                    const today = new Date().toISOString().split('T')[0];
+                    inputHtml = `<input type="date" name="${p.id}" value="${today}" ${reqAttr} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">`;
+                } else if (p.type === 'select') {
+                    const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+                    inputHtml = `<select name="${p.id}" ${reqAttr} class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <option value="">-- Оберіть варіант --</option>
+                        ${opts}
+                    </select>`;
+                }
+
+                fieldWrapper.innerHTML = `
+                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">${p.label} ${reqStar}</label>
+                    ${inputHtml}
+                `;
+                fieldsDiv.appendChild(fieldWrapper);
+            });
+
+            placeholder.classList.add('hidden');
+            container.classList.remove('hidden');
+        }
+
+        function formatDecimalInput(input) {
+            if (input.value !== '') {
+                const val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    input.value = val.toFixed(2);
+                }
+            }
+        }
+
+        function saveMeasurement(e) {
+            e.preventDefault();
+            const inspector = document.getElementById('inspectorName').value.trim();
+            if (!inspector) {
+                alert("Будь ласка, вкажіть ім'я оператора/контролера!");
+                return;
+            }
+
+            const methodId = document.getElementById('methodologySelect').value;
+            const m = state.methodologies.find(x => x.id === methodId);
+            if (!m) return;
+
+            const formData = new FormData(document.getElementById('measurementForm'));
+            const values = {};
+
+            m.params.forEach(p => {
+                let val = formData.get(p.id);
+                if (p.type === 'decimal' && val !== null && val !== '') {
+                    val = parseFloat(val).toFixed(2);
+                }
+                values[p.label] = val || '-';
+            });
+
+            // Kyiv Timezone timestamp
+            const now = new Date();
+            const timestamp = now.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' });
+
+            const newRecord = {
+                id: 'rec_' + Date.now(),
+                timestamp: timestamp,
+                rawDate: now.toISOString(),
+                methodologyId: m.id,
+                methodologyTitle: m.title,
+                inspector: inspector,
+                values: values
+            };
+
+            state.measurements.unshift(newRecord);
+            saveStateToLocal();
+            renderHistoryTable();
+            resetForm();
+            alert("Замір успішно збережено!");
+            
+            // Sync with JSONBin if configured
+            if (state.config.binId && state.config.apiKey) {
+                pushToJsonBin();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('measurementForm').reset();
+        }
+
+        // --- HISTORY TABLE & EXCEL EXPORT ---
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const filterM = document.getElementById('filterMethodology').value;
+            const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
+            const sortOrder = document.getElementById('filterSort').value;
+
+            let filtered = [...state.measurements];
+
+            if (filterM !== 'ALL') {
+                filtered = filtered.filter(x => x.methodologyId === filterM);
+            }
+
+            if (filterSearch) {
+                filtered = filtered.filter(x => 
+                    x.inspector.toLowerCase().includes(filterSearch) ||
+                    x.methodologyTitle.toLowerCase().includes(filterSearch) ||
+                    JSON.stringify(x.values).toLowerCase().includes(filterSearch)
+                );
+            }
+
+            if (sortOrder === 'ASC') {
+                filtered.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+            } else {
+                filtered.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+            }
+
+            document.getElementById('recordCount').innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(rec => {
+                const valuesBadges = Object.entries(rec.values).map(([k, v]) => `
+                    <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded mr-1 mb-1">
+                        <strong class="text-slate-500">${k}:</strong> ${v}
+                    </span>
+                `).join('');
+
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
+                        <td class="p-3 font-semibold text-slate-800">${rec.methodologyTitle}</td>
+                        <td class="p-3 text-xs">${rec.inspector}</td>
+                        <td class="p-3">${valuesBadges}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function deleteMeasurement(id) {
+            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
+                state.measurements = state.measurements.filter(x => x.id !== id);
+                saveStateToLocal();
+                renderHistoryTable();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        // Export to XLSX
+        function exportToExcel() {
+            if (state.measurements.length === 0) {
+                alert("Немає даних для експорту!");
+                return;
+            }
+
+            // Flatten data for Excel
+            const excelRows = state.measurements.map(rec => {
+                const row = {
+                    "Дата та Час (Київ)": rec.timestamp,
+                    "Методика": rec.methodologyTitle,
+                    "Оператор / Контролер": rec.inspector
+                };
+
+                // Merge parameter values into flat columns
+                Object.assign(row, rec.values);
+                return row;
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Заміри");
+
+            // Auto-fit column widths
+            const max_width = excelRows.reduce((w, r) => Math.max(w, Object.keys(r).length), 10);
+            worksheet['!cols'] = Array(max_width).fill({ wch: 22 });
+
+            const filename = `Заміри_Якості_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, filename);
+        }
+
+        // --- METHODOLOGIES CONSTRUCTOR ---
+        function renderMethodologyCards() {
+            const container = document.getElementById('methodologyList');
+            container.innerHTML = state.methodologies.map(m => `
+                <div class="border border-slate-200 rounded-xl p-5 bg-slate-50 flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-slate-800 text-base">${m.title}</h3>
+                            <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${m.params.length} парам.</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mb-4">${m.description || 'Опис відсутній.'}</p>
+                        <div class="space-y-1 mb-4">
+                            ${m.params.map(p => `
+                                <div class="text-xs text-slate-600 flex justify-between bg-white px-2 py-1 rounded border border-slate-200">
+                                    <span>${p.label}</span>
+                                    <span class="font-mono text-slate-400 text-[10px] uppercase">${p.type}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
+                        <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition">Редагувати</button>
+                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition">Видалити</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        let tempParams = [];
+
+        function openMethodologyModal(methodId = null) {
+            const modal = document.getElementById('methodologyModal');
+            tempParams = [];
+
+            if (methodId) {
+                const m = state.methodologies.find(x => x.id === methodId);
+                document.getElementById('modalTitle').innerText = "Редагувати методику";
+                document.getElementById('editMethodologyId').value = m.id;
+                document.getElementById('methodTitle').value = m.title;
+                document.getElementById('methodDesc').value = m.description;
+                tempParams = JSON.parse(JSON.stringify(m.params));
+            } else {
+                document.getElementById('modalTitle').innerText = "Створити нову методику";
+                document.getElementById('editMethodologyId').value = "";
+                document.getElementById('methodTitle').value = "";
+                document.getElementById('methodDesc').value = "";
+                tempParams = [
+                    { id: 'p_' + Date.now(), label: 'Параметр 1', type: 'decimal', required: true }
+                ];
+            }
+
+            renderParamRows();
+            modal.classList.remove('hidden');
+        }
+
+        function closeMethodologyModal() {
+            document.getElementById('methodologyModal').classList.add('hidden');
+        }
+
+        function renderParamRows() {
+            const container = document.getElementById('paramRowsContainer');
+            container.innerHTML = tempParams.map((p, idx) => `
+                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <input type="text" value="${p.label}" onchange="updateParam(${idx}, 'label', this.value)" placeholder="Назва параметра" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
+                        <select onchange="updateParam(${idx}, 'type', this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white">
+                            <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>Число (дріб 0.00)</option>
+                            <option value="text" ${p.type === 'text' ? 'selected' : ''}>Текст</option>
+                            <option value="date" ${p.type === 'date' ? 'selected' : ''}>Дата</option>
+                            <option value="select" ${p.type === 'select' ? 'selected' : ''}>Список варіантів</option>
+                        </select>
+                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    ${p.type === 'select' ? `
+                        <div>
+                            <input type="text" value="${(p.options || []).join(', ')}" onchange="updateParamSelectOptions(${idx}, this.value)" placeholder="Варіанти через кому (напр: Сорт 1, Сорт 2, Брак)" class="w-full border border-slate-300 rounded p-1 text-xs">
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addParamRow() {
+            tempParams.push({
+                id: 'p_' + Date.now(),
+                label: 'Новий параметр',
+                type: 'text',
+                required: false
+            });
+            renderParamRows();
+        }
+
+        function removeParamRow(idx) {
+            tempParams.splice(idx, 1);
+            renderParamRows();
+        }
+
+        function updateParam(idx, field, val) {
+            tempParams[idx][field] = val;
+            if (field === 'type') renderParamRows();
+        }
+
+        function updateParamSelectOptions(idx, valString) {
+            tempParams[idx].options = valString.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        function saveMethodology() {
+            const title = document.getElementById('methodTitle').value.trim();
+            const desc = document.getElementById('methodDesc').value.trim();
+            const editId = document.getElementById('editMethodologyId').value;
+
+            if (!title) {
+                alert("Будь ласка, введіть назву методики!");
+                return;
+            }
+
+            if (tempParams.length === 0) {
+                alert("Методика повинна містити хоча б один параметр!");
+                return;
+            }
+
+            if (editId) {
+                const idx = state.methodologies.findIndex(m => m.id === editId);
+                if (idx !== -1) {
+                    state.methodologies[idx] = { id: editId, title, description: desc, params: tempParams };
+                }
+            } else {
+                state.methodologies.push({
+                    id: 'm_' + Date.now(),
+                    title,
+                    description: desc,
+                    params: tempParams
+                });
+            }
+
+            saveStateToLocal();
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+            closeMethodologyModal();
+            if (state.config.binId && state.config.apiKey) pushToJsonBin();
+        }
+
+        function deleteMethodology(id) {
+            if (confirm("Ви дійсно бажаєте видалити цю методику?")) {
+                state.methodologies = state.methodologies.filter(x => x.id !== id);
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function editMethodology(id) {
+            openMethodologyModal(id);
+        }
+
+        // --- JSONBIN.IO INTEGRATION ---
+        function loadSettingsInputs() {
+            document.getElementById('cfgBinId').value = state.config.binId || '';
+            document.getElementById('cfgApiKey').value = state.config.apiKey || '';
+            updateSyncStatusUI();
+        }
+
+        function saveSettings() {
+            state.config.binId = document.getElementById('cfgBinId').value.trim();
+            state.config.apiKey = document.getElementById('cfgApiKey').value.trim();
+            saveStateToLocal();
+            alert("Налаштування збережено!");
+            if (state.config.binId && state.config.apiKey) syncData();
+        }
+
+        function updateSyncStatusUI(status = 'local') {
+            const el = document.getElementById('syncStatus');
+            if (status === 'synced') {
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span><span>Синхронізовано</span>`;
+            } else if (status === 'syncing') {
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span><span>Синхронізація...</span>`;
+            } else {
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span><span>Локально</span>`;
+            }
+        }
+
+        async function syncData() {
+            if (!state.config.binId || !state.config.apiKey) return;
+            updateSyncStatusUI('syncing');
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
+                    headers: { 'X-Master-Key': state.config.apiKey }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.record) {
+                        if (data.record.measurements) state.measurements = data.record.measurements;
+                        if (data.record.methodologies) state.methodologies = data.record.methodologies;
+                        saveStateToLocal();
+                        populateMethodologyDropdown();
+                        renderMethodologyCards();
+                        renderHistoryTable();
+                        updateSyncStatusUI('synced');
+                    }
+                }
+            } catch (e) {
+                console.error("JSONBin sync error:", e);
+                updateSyncStatusUI('local');
+            }
+        }
+
+        async function pushToJsonBin() {
+            if (!state.config.binId || !state.config.apiKey) return;
+            updateSyncStatusUI('syncing');
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': state.config.apiKey
+                    },
+                    body: JSON.stringify({
+                        methodologies: state.methodologies,
+                        measurements: state.measurements
+                    })
+                });
+                if (res.ok) {
+                    updateSyncStatusUI('synced');
+                }
+            } catch (e) {
+                console.error("JSONBin push error:", e);
+                updateSyncStatusUI('local');
+            }
+        }
+
+        async function testJsonBinConnection() {
+            const binId = document.getElementById('cfgBinId').value.trim();
+            const apiKey = document.getElementById('cfgApiKey').value.trim();
+
+            if (!binId || !apiKey) {
+                alert("Будь ласка, заповніть BIN ID та Master Key");
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { 'X-Master-Key': apiKey }
+                });
+                if (res.ok) {
+                    alert("Успішне з'єднання з JSONBin.io!");
+                } else {
+                    alert("Помилка підключення. Перевірте правильність BIN ID та Ключа.");
+                }
+            } catch (e) {
+                alert("Помилка мережі при підключенні до JSONBin.io");
+            }
+        }
+
+        function clearAllData() {
+            if (confirm("Ви дійсно бажаєте видалити всі збережені заміри? Цю дію неможливо скасувати.")) {
+                state.measurements = [];
+                saveStateToLocal();
+                renderHistoryTable();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+    </script>
+</body>
+</html>
