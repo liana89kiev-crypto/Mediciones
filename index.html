@@ -23,7 +23,7 @@
             <div class="flex items-center space-x-3">
                 <span class="text-2xl">📐</span>
                 <div>
-                    <h1 class="text-lg font-bold leading-tight">QualityMeasure SPA</h1>
+                    <h1 class="text-lg font-bold leading-tight">Mediciones SPA</h1>
                     <p class="text-xs text-slate-400">Система занесення та аналізу замірів</p>
                 </div>
             </div>
@@ -270,18 +270,35 @@
 
     <!-- Application JavaScript Code -->
     <script>
-        // Default initial methodologies
+        // Default initial methodologies (включаючи повну методику розробки тушки)
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_quality',
-                title: 'Замір якісних показників (Птиця)',
-                description: 'Визначення маси, категорії та виявлення можливих дефектів на лінії.',
+                id: 'm_poultry_deboning',
+                title: 'Замір розробки тушки (Аналіз анатомічних частин)',
+                description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
                 params: [
-                    { id: 'p_date', label: 'Дата та час заборки', type: 'date', required: true },
-                    { id: 'p_weight', label: 'Вага тушки (кг)', type: 'decimal', required: true },
-                    { id: 'p_category', label: 'Категорія якості', type: 'select', options: ['1 Сорт', '2 Сорт', 'Брак / Доопрацювання'], required: true },
-                    { id: 'p_defect_type', label: 'Вид дефекту (за наявності)', type: 'select', options: ['Немає', 'Синці / Гематоми', 'Пошкодження шкіри', 'Недопилювання'], required: false },
-                    { id: 'p_notes', label: 'Примітка контролера', type: 'text', required: false }
+                    { id: 'p_date_time', label: 'Дата та Час заміру', type: 'date', required: true },
+                    { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт)', type: 'decimal', required: true },
+                    { id: 'p_total_weight_wog', label: 'Загальна вага вибірки перед розрізанням (Маса WOG, кг)', type: 'decimal', required: true },
+                    { id: 'p_avg_carcass_weight', label: 'Середня вага тушки (кг) [Маса WOG / Кількість]', type: 'decimal', required: false },
+                    
+                    { id: 'p_filet_large', label: 'Велике філе (кг)', type: 'decimal', required: false },
+                    { id: 'p_filet_small', label: 'Мале філе (кг)', type: 'decimal', required: false },
+                    { id: 'p_wing_whole', label: 'Крило ціле (сума кисть+плече+лікоть) (кг)', type: 'decimal', required: false },
+                    { id: 'p_wing_elbow', label: 'Крило лікоть (кг)', type: 'decimal', required: false },
+                    { id: 'p_wing_shoulder', label: 'Крило плече (кг)', type: 'decimal', required: false },
+                    
+                    { id: 'p_drumstick', label: 'Гомілка (кг)', type: 'decimal', required: false },
+                    { id: 'p_thigh_bone_in', label: 'Стегно необвалене (кг)', type: 'decimal', required: false },
+                    
+                    { id: 'p_sub_saddle', label: 'Субпродукти: Спинка (Saddle) (кг)', type: 'decimal', required: false },
+                    { id: 'p_sub_breast_frame', label: 'Субпродукти: Грудний каркас (кг)', type: 'decimal', required: false },
+                    { id: 'p_sub_breast_skin', label: 'Субпродукти: Шкіра грудки (кг)', type: 'decimal', required: false },
+                    { id: 'p_sub_tail', label: 'Субпродукти: Гузка (кг)', type: 'decimal', required: false },
+                    { id: 'p_sub_wing_tip', label: 'Субпродукти: Кисть крила (кг)', type: 'decimal', required: false },
+                    
+                    { id: 'p_tech_losses', label: 'Технічні втрати / Втрати (кг)', type: 'decimal', required: false },
+                    { id: 'p_notes', label: 'Примітки / Зауваження', type: 'text', required: false }
                 ]
             },
             {
@@ -531,14 +548,13 @@
             }
         }
 
-        // Export to XLSX
+        // Export to XLSX з автоматичним розрахунком часток % від Маси WOG
         function exportToExcel() {
             if (state.measurements.length === 0) {
                 alert("Немає даних для експорту!");
                 return;
             }
 
-            // Flatten data for Excel
             const excelRows = state.measurements.map(rec => {
                 const row = {
                     "Дата та Час (Київ)": rec.timestamp,
@@ -546,18 +562,35 @@
                     "Фабрика": rec.inspector
                 };
 
-                // Merge parameter values into flat columns
-                Object.assign(row, rec.values);
+                const totalWogKey = "Загальна вага вибірки перед розрізанням (Маса WOG, кг)";
+                const countKey = "Кількість тушок у вибірці (шт)";
+                const avgKey = "Середня вага тушки (кг) [Маса WOG / Кількість]";
+
+                const totalWog = parseFloat(rec.values[totalWogKey]) || 0;
+                const count = parseFloat(rec.values[countKey]) || 0;
+
+                // Автоматичний розрахунок середньої ваги
+                if (totalWog > 0 && count > 0) {
+                    rec.values[avgKey] = (totalWog / count).toFixed(2);
+                }
+
+                // Перенесення значень та створення колонок з частками %
+                Object.entries(rec.values).forEach(([paramName, val]) => {
+                    row[paramName] = val;
+                    
+                    const numVal = parseFloat(val);
+                    if (!isNaN(numVal) && totalWog > 0 && paramName !== totalWogKey && paramName !== countKey && paramName !== avgKey) {
+                        const sharePercent = ((numVal / totalWog) * 100).toFixed(2) + " %";
+                        row[`Частка % (${paramName})`] = sharePercent;
+                    }
+                });
+
                 return row;
             });
 
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Заміри");
-
-            // Auto-fit column widths
-            const max_width = excelRows.reduce((w, r) => Math.max(w, Object.keys(r).length), 10);
-            worksheet['!cols'] = Array(max_width).fill({ wch: 22 });
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Заміри розробки");
 
             const filename = `Заміри_Якості_${new Date().toISOString().split('T')[0]}.xlsx`;
             XLSX.writeFile(workbook, filename);
