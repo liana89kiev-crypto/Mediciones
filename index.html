@@ -127,7 +127,7 @@
                             <i class="fa-solid fa-file-excel"></i>
                             <span>Експорт усіх замірів (.xlsx)</span>
                         </button>
-                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
+                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати з хмарою">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
@@ -277,7 +277,7 @@
     <script>
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning',
+                id: 'm_poultry_deboning_v2',
                 title: 'Замір розробки тушки (Аналіз анатомічних частин)',
                 description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
                 groups: [
@@ -457,9 +457,7 @@
             restoreDraftValues();
         }
 
-        // Автоматичні обчислення в реальному часі для всіх авто-полів
         function calculateLiveFields() {
-            // 1. Середня вага тушки = WOG / Кількість
             const wogInput = document.getElementById('p_total_weight_wog');
             const countInput = document.getElementById('p_carcass_count');
             const avgInput = document.getElementById('p_avg_carcass_weight');
@@ -470,7 +468,6 @@
                 avgInput.value = (wog > 0 && count > 0) ? (wog / count).toFixed(2) : "";
             }
 
-            // 2. Трифалангове крило (сума) = Кисть + Лікоть + Плече
             const tip = parseFloat(document.getElementById('p_sub_wing_tip')?.value) || 0;
             const elbow = parseFloat(document.getElementById('p_wing_elbow')?.value) || 0;
             const shoulder = parseFloat(document.getElementById('p_wing_shoulder')?.value) || 0;
@@ -481,7 +478,6 @@
                 wingWholeInput.value = sumWing > 0 ? sumWing.toFixed(2) : "";
             }
 
-            // 3. Сума передньої частини тушки = Філе велике + Філе мале + Грудний каркас + Шкіра грудки
             const filetLarge = parseFloat(document.getElementById('p_filet_large')?.value) || 0;
             const filetSmall = parseFloat(document.getElementById('p_filet_small')?.value) || 0;
             const breastFrame = parseFloat(document.getElementById('p_sub_breast_frame')?.value) || 0;
@@ -493,7 +489,6 @@
                 frontTotalInput.value = sumFront > 0 ? sumFront.toFixed(2) : "";
             }
 
-            // 4. Сума задньої частини тушки = Стегно + Гомілка + Нижня частина спинки + Гузка
             const thigh = parseFloat(document.getElementById('p_thigh_bone_in')?.value) || 0;
             const drumstick = parseFloat(document.getElementById('p_drumstick')?.value) || 0;
             const saddle = parseFloat(document.getElementById('p_sub_saddle')?.value) || 0;
@@ -505,7 +500,6 @@
                 backTotalInput.value = sumBack > 0 ? sumBack.toFixed(2) : "";
             }
 
-            // 5. Технічні відходи (сума) = Кисть + Спинка + Грудний каркас + Шкіра грудки + Гузка + Втрати
             const techLosses = parseFloat(document.getElementById('p_tech_losses')?.value) || 0;
             const wasteTotalInput = document.getElementById('p_tech_waste_total');
 
@@ -931,6 +925,7 @@
             }
         }
 
+        // Безпечна синхронізація із розумним об'єднанням записів
         async function syncData() {
             if (!state.config.binId || !state.config.apiKey) return;
             updateSyncStatusUI('syncing');
@@ -942,8 +937,16 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.record) {
-                        if (data.record.measurements) state.measurements = data.record.measurements;
-                        if (data.record.methodologies) state.methodologies = data.record.methodologies;
+                        if (data.record.measurements && Array.isArray(data.record.measurements)) {
+                            // Об'єднуємо хмарні заміри з локальними, щоб уникнути втрати даних
+                            const combined = [...state.measurements];
+                            data.record.measurements.forEach(remoteRec => {
+                                if (!combined.some(localRec => localRec.id === remoteRec.id)) {
+                                    combined.push(remoteRec);
+                                }
+                            });
+                            state.measurements = combined;
+                        }
                         saveStateToLocal();
                         populateMethodologyDropdown();
                         renderMethodologyCards();
