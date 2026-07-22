@@ -277,12 +277,13 @@
     <script>
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning_v2',
+                id: 'm_poultry_deboning_v3',
                 title: 'Замір розробки тушки (Аналіз анатомічних частин)',
                 description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
                 groups: [
                     {
                         title: '1. Загальна інформація',
+                        isGeneral: true,
                         params: [
                             { id: 'p_date_time', label: 'Дата та Час заміру', type: 'date', required: true },
                             { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт)', type: 'decimal', required: true },
@@ -332,10 +333,12 @@
         ];
 
         let state = {
-            methodologies: JSON.parse(localStorage.getItem('qm_methodologies')) || DEFAULT_METHODOLOGIES,
+            methodologies: DEFAULT_METHODOLOGIES,
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
+
+        localStorage.setItem('qm_methodologies', JSON.stringify(DEFAULT_METHODOLOGIES));
 
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -383,6 +386,39 @@
             });
         }
 
+        function evaluateExpression(str) {
+            if (!str) return 0;
+            const cleaned = String(str).replace(/,/g, '.').replace(/[^0-9.+-]/g, '');
+            if (!cleaned) return 0;
+
+            const parts = cleaned.split('+').map(p => p.trim()).filter(Boolean);
+            if (parts.length === 0) return 0;
+
+            let sum = 0;
+            for (let i = 0; i < Math.min(parts.length, 50); i++) {
+                const val = parseFloat(parts[i]);
+                if (!isNaN(val)) sum += val;
+            }
+            return sum;
+        }
+
+        function handleFieldBlur(input) {
+            if (input.readOnly || !input.value.trim()) return;
+
+            const expr = input.value.trim();
+            if (expr.includes('+') || expr.includes(',')) {
+                const sum = evaluateExpression(expr);
+                input.value = sum > 0 ? sum.toFixed(2) : "";
+            } else {
+                const val = parseFloat(expr.replace(',', '.'));
+                if (!isNaN(val)) {
+                    input.value = val.toFixed(2);
+                }
+            }
+            calculateLiveFields();
+            saveDraft();
+        }
+
         function renderMeasurementForm() {
             const methodId = document.getElementById('methodologySelect').value;
             const container = document.getElementById('dynamicFormContainer');
@@ -423,10 +459,25 @@
                         : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
+                    const showPercentBadge = !group.isGeneral && p.type === 'decimal';
+
                     if (p.type === 'text') {
                         inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="Введіть текст...">`;
                     } else if (p.type === 'decimal') {
-                        inputHtml = `<input type="number" step="0.01" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} oninput="calculateLiveFields()" onblur="formatDecimalInput(this)" class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="0.00">`;
+                        inputHtml = `
+                            <div class="relative flex items-center">
+                                <input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
+                                    oninput="calculateLiveFields()" 
+                                    onblur="handleFieldBlur(this)" 
+                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
+                                    placeholder="${p.calculated ? '0.00' : 'напр. 4.75+2.12 або 5.10'}">
+                                ${showPercentBadge ? `
+                                    <span id="badge_pct_${p.id}" class="absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all">
+                                        0.00 %
+                                    </span>
+                                ` : ''}
+                            </div>
+                        `;
                     } else if (p.type === 'date') {
                         const today = new Date().toISOString().split('T')[0];
                         inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}">`;
@@ -458,55 +509,81 @@
         }
 
         function calculateLiveFields() {
-            const wogInput = document.getElementById('p_total_weight_wog');
-            const countInput = document.getElementById('p_carcass_count');
-            const avgInput = document.getElementById('p_avg_carcass_weight');
+            const wogValRaw = document.getElementById('p_total_weight_wog')?.value || "";
+            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
 
-            if (wogInput && countInput && avgInput) {
-                const wog = parseFloat(wogInput.value) || 0;
-                const count = parseFloat(countInput.value) || 0;
-                avgInput.value = (wog > 0 && count > 0) ? (wog / count).toFixed(2) : "";
+            const totalWog = evaluateExpression(wogValRaw);
+            const carcassCount = evaluateExpression(countValRaw);
+
+            const avgInput = document.getElementById('p_avg_carcass_weight');
+            if (avgInput) {
+                avgInput.value = (totalWog > 0 && carcassCount > 0) ? (totalWog / carcassCount).toFixed(2) : "";
             }
 
-            const tip = parseFloat(document.getElementById('p_sub_wing_tip')?.value) || 0;
-            const elbow = parseFloat(document.getElementById('p_wing_elbow')?.value) || 0;
-            const shoulder = parseFloat(document.getElementById('p_wing_shoulder')?.value) || 0;
+            const tip = evaluateExpression(document.getElementById('p_sub_wing_tip')?.value);
+            const elbow = evaluateExpression(document.getElementById('p_wing_elbow')?.value);
+            const shoulder = evaluateExpression(document.getElementById('p_wing_shoulder')?.value);
             const wingWholeInput = document.getElementById('p_wing_whole');
-
             if (wingWholeInput) {
                 const sumWing = tip + elbow + shoulder;
                 wingWholeInput.value = sumWing > 0 ? sumWing.toFixed(2) : "";
             }
 
-            const filetLarge = parseFloat(document.getElementById('p_filet_large')?.value) || 0;
-            const filetSmall = parseFloat(document.getElementById('p_filet_small')?.value) || 0;
-            const breastFrame = parseFloat(document.getElementById('p_sub_breast_frame')?.value) || 0;
-            const breastSkin = parseFloat(document.getElementById('p_sub_breast_skin')?.value) || 0;
+            const filetLarge = evaluateExpression(document.getElementById('p_filet_large')?.value);
+            const filetSmall = evaluateExpression(document.getElementById('p_filet_small')?.value);
+            const breastFrame = evaluateExpression(document.getElementById('p_sub_breast_frame')?.value);
+            const breastSkin = evaluateExpression(document.getElementById('p_sub_breast_skin')?.value);
             const frontTotalInput = document.getElementById('p_front_total');
-
             if (frontTotalInput) {
                 const sumFront = filetLarge + filetSmall + breastFrame + breastSkin;
                 frontTotalInput.value = sumFront > 0 ? sumFront.toFixed(2) : "";
             }
 
-            const thigh = parseFloat(document.getElementById('p_thigh_bone_in')?.value) || 0;
-            const drumstick = parseFloat(document.getElementById('p_drumstick')?.value) || 0;
-            const saddle = parseFloat(document.getElementById('p_sub_saddle')?.value) || 0;
-            const tail = parseFloat(document.getElementById('p_sub_tail')?.value) || 0;
+            const thigh = evaluateExpression(document.getElementById('p_thigh_bone_in')?.value);
+            const drumstick = evaluateExpression(document.getElementById('p_drumstick')?.value);
+            const saddle = evaluateExpression(document.getElementById('p_sub_saddle')?.value);
+            const tail = evaluateExpression(document.getElementById('p_sub_tail')?.value);
             const backTotalInput = document.getElementById('p_back_total');
-
             if (backTotalInput) {
                 const sumBack = thigh + drumstick + saddle + tail;
                 backTotalInput.value = sumBack > 0 ? sumBack.toFixed(2) : "";
             }
 
-            const techLosses = parseFloat(document.getElementById('p_tech_losses')?.value) || 0;
+            const techLosses = evaluateExpression(document.getElementById('p_tech_losses')?.value);
             const wasteTotalInput = document.getElementById('p_tech_waste_total');
-
             if (wasteTotalInput) {
                 const sumWaste = tip + saddle + breastFrame + breastSkin + tail + techLosses;
                 wasteTotalInput.value = sumWaste > 0 ? sumWaste.toFixed(2) : "";
             }
+
+            const methodId = document.getElementById('methodologySelect')?.value;
+            if (!methodId) return;
+
+            const m = state.methodologies.find(x => x.id === methodId);
+            if (!m || !m.groups) return;
+
+            m.groups.forEach(group => {
+                if (!group.isGeneral) {
+                    group.params.forEach(p => {
+                        if (p.type === 'decimal') {
+                            const badge = document.getElementById(`badge_pct_${p.id}`);
+                            if (badge) {
+                                const inputEl = document.getElementById(p.id);
+                                const val = evaluateExpression(inputEl?.value);
+                                
+                                if (totalWog > 0 && val > 0) {
+                                    const pct = ((val / totalWog) * 100).toFixed(2);
+                                    badge.innerText = `${pct} %`;
+                                    badge.className = "absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all opacity-100";
+                                } else {
+                                    badge.innerText = "0.00 %";
+                                    badge.className = "absolute right-2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
+                                }
+                            }
+                        }
+                    });
+                }
+            });
         }
 
         function saveDraft() {
@@ -575,15 +652,6 @@
             if (ind) ind.classList.add('hidden');
         }
 
-        function formatDecimalInput(input) {
-            if (input.value !== '' && !input.readOnly) {
-                const val = parseFloat(input.value);
-                if (!isNaN(val)) {
-                    input.value = val.toFixed(2);
-                }
-            }
-        }
-
         function saveMeasurement(e) {
             e.preventDefault();
             const inspector = document.getElementById('inspectorName').value;
@@ -596,7 +664,18 @@
             const m = state.methodologies.find(x => x.id === methodId);
             if (!m) return;
 
-            const formData = new FormData(document.getElementById('measurementForm'));
+            const form = document.getElementById('measurementForm');
+            const inputs = form.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                if (input.value.includes('+') || input.value.includes(',')) {
+                    const sum = evaluateExpression(input.value);
+                    input.value = sum > 0 ? sum.toFixed(2) : "";
+                }
+            });
+
+            calculateLiveFields();
+
+            const formData = new FormData(form);
             const values = {};
 
             const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
@@ -638,6 +717,7 @@
             document.getElementById('measurementForm').reset();
             document.getElementById('inspectorName').value = "";
             clearDraft();
+            calculateLiveFields();
         }
 
         function renderHistoryTable() {
@@ -925,7 +1005,6 @@
             }
         }
 
-        // Безпечна синхронізація із розумним об'єднанням записів
         async function syncData() {
             if (!state.config.binId || !state.config.apiKey) return;
             updateSyncStatusUI('syncing');
@@ -938,7 +1017,6 @@
                     const data = await res.json();
                     if (data.record) {
                         if (data.record.measurements && Array.isArray(data.record.measurements)) {
-                            // Об'єднуємо хмарні заміри з локальними, щоб уникнути втрати даних
                             const combined = [...state.measurements];
                             data.record.measurements.forEach(remoteRec => {
                                 if (!combined.some(localRec => localRec.id === remoteRec.id)) {
