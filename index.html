@@ -545,12 +545,10 @@
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
 
         let state = {
-            methodologies: DEFAULT_METHODOLOGIES,
+            methodologies: JSON.parse(localStorage.getItem('qm_methodologies')) || DEFAULT_METHODOLOGIES,
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
-
-        localStorage.setItem('qm_methodologies', JSON.stringify(DEFAULT_METHODOLOGIES));
 
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -989,9 +987,7 @@
                 if (p.type === 'decimal' && val !== null && val !== '') {
                     val = parseFloat(val).toFixed(2);
                 }
-                const pLabelStr = typeof p.label === 'object' 
-                    ? `${p.label.uk} / ${p.label.es} / ${p.label.en}`
-                    : p.label;
+                const pLabelStr = getI18nText(p.label);
                 values[pLabelStr] = val || '-';
             });
 
@@ -1068,7 +1064,7 @@
             document.getElementById('recordCount').innerText = filtered.length;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено / No hay registros</td></tr>`;
                 return;
             }
 
@@ -1099,7 +1095,7 @@
         }
 
         function deleteMeasurement(id) {
-            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
+            if (confirm("Ви дійсно бажаєте видалити цей замір? / ¿Desea eliminar esta medición?")) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
                 saveStateToLocal();
                 renderHistoryTable();
@@ -1320,7 +1316,7 @@
                 document.getElementById('methodTitle').value = "";
                 document.getElementById('methodDesc').value = "";
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: 'Param 1', type: 'decimal', required: true }
+                    { id: 'p_' + Date.now(), label: { uk: 'Параметр 1', es: 'Parámetro 1', en: 'Parameter 1' }, type: 'decimal', required: true }
                 ];
             }
 
@@ -1339,8 +1335,8 @@
             container.innerHTML = tempParams.map((p, idx) => `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
                     <div class="flex items-center gap-2">
-                        <input type="text" value="${getI18nText(p.label)}" onchange="updateParam(${idx}, 'label', this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
-                        <select onchange="updateParam(${idx}, 'type', this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white">
+                        <input type="text" value="${getI18nText(p.label)}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
+                        <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white">
                             <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
                             <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
                             <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
@@ -1357,7 +1353,7 @@
         function addParamRow() {
             tempParams.push({
                 id: 'p_' + Date.now(),
-                label: 'New Parameter',
+                label: { uk: 'Новий параметр', es: 'Nuevo parámetro', en: 'New Parameter' },
                 type: 'text',
                 required: false
             });
@@ -1369,32 +1365,57 @@
             renderParamRows();
         }
 
-        function updateParam(idx, field, val) {
-            tempParams[idx][field] = val;
-            if (field === 'type') renderParamRows();
+        function updateParamLabel(idx, val) {
+            if (typeof tempParams[idx].label === 'object') {
+                tempParams[idx].label[currentLang] = val;
+            } else {
+                tempParams[idx].label = { uk: val, es: val, en: val };
+            }
+        }
+
+        function updateParamType(idx, val) {
+            tempParams[idx].type = val;
         }
 
         function saveMethodology() {
-            const title = document.getElementById('methodTitle').value.trim();
-            const desc = document.getElementById('methodDesc').value.trim();
+            const titleInput = document.getElementById('methodTitle').value.trim();
+            const descInput = document.getElementById('methodDesc').value.trim();
             const editId = document.getElementById('editMethodologyId').value;
 
-            if (!title) {
-                alert("Please enter title!");
+            if (!titleInput) {
+                alert("Please enter title! / Введіть назву!");
                 return;
             }
+
+            // Зберігаємо як мультиваріантний об'єкт
+            const newTitle = { uk: titleInput, es: titleInput, en: titleInput };
+            const newDesc = { uk: descInput, es: descInput, en: descInput };
+
+            // Оформлюємо параметри у вигляді груп за замовчуванням
+            const groups = [
+                {
+                    title: { uk: 'Параметри методики', es: 'Parámetros', en: 'Parameters' },
+                    isGeneral: false,
+                    params: tempParams
+                }
+            ];
 
             if (editId) {
                 const idx = state.methodologies.findIndex(m => m.id === editId);
                 if (idx !== -1) {
-                    state.methodologies[idx] = { id: editId, title, description: desc, params: tempParams };
+                    state.methodologies[idx] = { 
+                        id: editId, 
+                        title: newTitle, 
+                        description: newDesc, 
+                        groups: groups 
+                    };
                 }
             } else {
                 state.methodologies.push({
-                    id: 'm_' + Date.now(),
-                    title,
-                    description: desc,
-                    params: tempParams
+                    id: 'm_custom_' + Date.now(),
+                    title: newTitle,
+                    description: newDesc,
+                    groups: groups
                 });
             }
 
@@ -1403,10 +1424,11 @@
             renderMethodologyCards();
             closeMethodologyModal();
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            alert("Methodology saved successfully! / Методику збережено!");
         }
 
         function deleteMethodology(id) {
-            if (confirm("Delete methodology?")) {
+            if (confirm("Delete methodology? / Видалити методику?")) {
                 state.methodologies = state.methodologies.filter(x => x.id !== id);
                 saveStateToLocal();
                 populateMethodologyDropdown();
@@ -1465,6 +1487,9 @@
                                 }
                             });
                             state.measurements = combined;
+                        }
+                        if (data.record.methodologies && Array.isArray(data.record.methodologies)) {
+                            state.methodologies = data.record.methodologies;
                         }
                         saveStateToLocal();
                         populateMethodologyDropdown();
