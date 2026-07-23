@@ -88,7 +88,7 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6">
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6">
 
         <!-- TAB 1: NEW MEASUREMENT -->
         <section id="sec-new-measure" class="space-y-6">
@@ -803,13 +803,14 @@
 
             groups.forEach(group => {
                 const groupBlock = document.createElement('div');
-                groupBlock.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3';
+                groupBlock.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4';
                 
                 const groupTitle = getI18nText(group.title);
                 groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
                 
+                // Змінено на 1 стовпчик (grid-cols-1) для зручного введення значень та уникнення перекриття відсотків
                 const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 pt-1';
+                grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
                 group.params.forEach(p => {
                     const fieldWrapper = document.createElement('div');
@@ -832,10 +833,10 @@
                                 <input type="text" name="${p.id}" id="${p.id}" data-base-weight="${p.isBaseWeight ? 'true' : 'false'}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
-                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" 
+                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-20' : ''}" 
                                     placeholder="${p.calculated ? '0.00' : '4.75+2.12'}">
                                 ${showPercentBadge ? `
-                                    <span id="badge_pct_${p.id}" class="absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
+                                    <span id="badge_pct_${p.id}" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
                                         0.00 %
                                     </span>
                                 ` : ''}
@@ -904,10 +905,10 @@
                             if (baseWeight > 0 && val > 0) {
                                 const pct = ((val / baseWeight) * 100).toFixed(2);
                                 badge.innerText = `${pct} %`;
-                                badge.className = "absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
+                                badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
                             } else {
                                 badge.innerText = "0.00 %";
-                                badge.className = "absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
+                                badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
                             }
                         }
                     }
@@ -1396,7 +1397,6 @@
             `).join('');
         }
 
-        // Функція переміщення параметра вгору/вниз у конструкторі
         function moveParam(idx, direction) {
             const newIdx = idx + direction;
             if (newIdx < 0 || newIdx >= tempParams.length) return;
