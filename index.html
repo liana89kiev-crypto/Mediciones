@@ -35,7 +35,7 @@
                     <span id="syncText">Локально</span>
                 </div>
                 
-                <!-- Перемикач мови замість налаштувань -->
+                <!-- Перемикач мови -->
                 <div class="relative">
                     <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold" title="Мова / Language / Idioma">
                         <i class="fa-solid fa-globe text-blue-400 text-base"></i>
@@ -142,12 +142,12 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800" id="lblHistoryTitle">Історія занесених замірів</h2>
-                        <p class="text-xs text-slate-500"><span id="lblTotalRecords">Всього записів у базі</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
+                        <p class="text-xs text-slate-500"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
                     <div class="flex items-center space-x-2 w-full md:w-auto">
-                        <button onclick="exportToExcelAll()" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                        <button onclick="exportToExcelFiltered()" id="btnExportAll" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
-                            <span id="btnExportAll">Експорт усіх (.xlsx)</span>
+                            <span>Експорт заповнених / відфільтрованих (.xlsx)</span>
                         </button>
                         <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
@@ -297,7 +297,6 @@
 
     <!-- Application JavaScript Code -->
     <script>
-        // ТРИМОВНІ СЛОВНИКИ ТА ТЕРМІНОЛОГІЯ
         const I18N = {
             uk: {
                 appSub: "Система замірів та зважування тушки",
@@ -316,8 +315,8 @@
                 btnSave: "Зберегти результати",
                 lblSelectPrompt: "Будь ласка, оберіть методику зі списку вище для початку внесення даних.",
                 lblHistoryTitle: "Історія занесених замірів",
-                lblTotalRecords: "Всього записів у базі",
-                btnExportAll: "Експорт усіх (.xlsx)",
+                lblTotalRecords: "Знайдено записів",
+                btnExportAll: "Експорт обраних (.xlsx)",
                 lblFilterMethod: "Фільтр за методикою",
                 lblFilterSearch: "Пошук",
                 lblFilterSort: "Сортування",
@@ -335,12 +334,7 @@
                 msgSaved: "Замір успішно збережено!",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
-                excel: {
-                    dateTime: "Дата та Час",
-                    methodology: "Методика",
-                    factory: "Фабрика",
-                    sharePct: "Частка %"
-                }
+                allMethodsOpt: "Всі методики"
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
@@ -359,8 +353,8 @@
                 btnSave: "Guardar resultados",
                 lblSelectPrompt: "Por favor, seleccione una metodología arriba para comenzar a ingresar datos.",
                 lblHistoryTitle: "Historial de mediciones",
-                lblTotalRecords: "Total de registros en la base",
-                btnExportAll: "Exportar todo (.xlsx)",
+                lblTotalRecords: "Registros encontrados",
+                btnExportAll: "Exportar filtrados (.xlsx)",
                 lblFilterMethod: "Filtrar por metodología",
                 lblFilterSearch: "Buscar",
                 lblFilterSort: "Ordenar",
@@ -378,12 +372,7 @@
                 msgSaved: "¡Medición guardada con éxito!",
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
-                excel: {
-                    dateTime: "Fecha y Hora",
-                    methodology: "Metodología",
-                    factory: "Planta",
-                    sharePct: "% Participación"
-                }
+                allMethodsOpt: "Todas las metodologías"
             },
             en: {
                 appSub: "Carcass measurement & weighing system",
@@ -402,8 +391,8 @@
                 btnSave: "Save results",
                 lblSelectPrompt: "Please select a methodology from the list above to start data entry.",
                 lblHistoryTitle: "Measurement history",
-                lblTotalRecords: "Total records in database",
-                btnExportAll: "Export all (.xlsx)",
+                lblTotalRecords: "Records found",
+                btnExportAll: "Export filtered (.xlsx)",
                 lblFilterMethod: "Filter by methodology",
                 lblFilterSearch: "Search",
                 lblFilterSort: "Sort",
@@ -421,16 +410,10 @@
                 msgSaved: "Measurement saved successfully!",
                 msgSelectFactory: "Please select a plant from the list!",
                 factories: ["Plant 1", "Plant 2", "Plant 3", "Plant 4", "Plant 5"],
-                excel: {
-                    dateTime: "Date & Time",
-                    methodology: "Methodology",
-                    factory: "Plant",
-                    sharePct: "Share %"
-                }
+                allMethodsOpt: "All methodologies"
             }
         };
 
-        // ТРИМОВНІ ПАРАМЕТРИ МЕТОДИКИ
         const DEFAULT_METHODOLOGIES = [
             {
                 id: 'm_poultry_deboning_v8',
@@ -496,7 +479,6 @@
             }
         ];
 
-        // Поточна мова додатку (за замовчуванням 'uk')
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
 
         let state = {
@@ -524,7 +506,6 @@
             }
         }
 
-        // Перемикач мови
         function toggleLangMenu() {
             const menu = document.getElementById('langMenu');
             menu.classList.toggle('hidden');
@@ -565,7 +546,7 @@
             document.getElementById('lblSelectPrompt').innerText = dict.lblSelectPrompt;
             document.getElementById('lblHistoryTitle').innerText = dict.lblHistoryTitle;
             document.getElementById('lblTotalRecords').innerText = dict.lblTotalRecords;
-            document.getElementById('btnExportAll').innerHTML = `<i class="fa-solid fa-file-excel"></i><span>${dict.btnExportAll}</span>`;
+            document.getElementById('btnExportAll').innerHTML = `<i class="fa-solid fa-file-excel mr-1.5"></i><span>${dict.btnExportAll}</span>`;
             document.getElementById('lblFilterMethod').innerText = dict.lblFilterMethod;
             document.getElementById('lblFilterSearch').innerText = dict.lblFilterSearch;
             document.getElementById('lblFilterSort').innerText = dict.lblFilterSort;
@@ -580,7 +561,6 @@
             document.getElementById('lblConstructorSub').innerText = dict.lblConstructorSub;
             document.getElementById('btnNewMethod').innerHTML = `<i class="fa-solid fa-plus"></i><span>${dict.btnNewMethod}</span>`;
 
-            // Фабрики
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
             inspectorSelect.innerHTML = `<option value="">-- ${dict.lblFactory} --</option>` +
@@ -611,8 +591,10 @@
             const dict = I18N[currentLang] || I18N.uk;
 
             const selectedM = select.value;
+            const selectedFilterM = filterSelect.value;
+
             select.innerHTML = `<option value="">${dict.optSelectMethod}</option>`;
-            filterSelect.innerHTML = `<option value="ALL">${dict.lblFilterMethod}: ALL</option>`;
+            filterSelect.innerHTML = `<option value="ALL">${dict.allMethodsOpt}</option>`;
 
             state.methodologies.forEach(m => {
                 const title = getI18nText(m.title);
@@ -621,6 +603,7 @@
             });
 
             if (selectedM) select.value = selectedM;
+            if (selectedFilterM) filterSelect.value = selectedFilterM;
         }
 
         function evaluateExpression(str) {
@@ -926,7 +909,6 @@
                 if (p.type === 'decimal' && val !== null && val !== '') {
                     val = parseFloat(val).toFixed(2);
                 }
-                // Зберігаємо мультиязичні мітки полів
                 const pLabelStr = typeof p.label === 'object' 
                     ? `${p.label.uk} / ${p.label.es} / ${p.label.en}`
                     : p.label;
@@ -965,8 +947,8 @@
             calculateLiveFields();
         }
 
-        function renderHistoryTable() {
-            const tbody = document.getElementById('historyTableBody');
+        // Отримання списку відфільтрованих замірів
+        function getFilteredMeasurements() {
             const filterM = document.getElementById('filterMethodology').value;
             const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
             const sortOrder = document.getElementById('filterSort').value;
@@ -974,7 +956,13 @@
             let filtered = [...state.measurements];
 
             if (filterM !== 'ALL') {
-                filtered = filtered.filter(x => x.methodologyId === filterM);
+                filtered = filtered.filter(x => 
+                    x.methodologyId === filterM || 
+                    x.methodologyId.startsWith('m_poultry_deboning') || 
+                    x.methodologyTitle.toLowerCase().includes('депо') ||
+                    x.methodologyTitle.toLowerCase().includes('despiece') ||
+                    x.methodologyTitle.toLowerCase().includes('deboning')
+                );
             }
 
             if (filterSearch) {
@@ -991,10 +979,17 @@
                 filtered.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
             }
 
+            return filtered;
+        }
+
+        function renderHistoryTable() {
+            const tbody = document.getElementById('historyTableBody');
+            const filtered = getFilteredMeasurements();
+
             document.getElementById('recordCount').innerText = filtered.length;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено / No hay registros</td></tr>`;
                 return;
             }
 
@@ -1025,7 +1020,7 @@
         }
 
         function deleteMeasurement(id) {
-            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
+            if (confirm("Ви дійсно бажаєте видалити цей замір? / ¿Desea eliminar esta medición?")) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
                 saveStateToLocal();
                 renderHistoryTable();
@@ -1040,15 +1035,16 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
         }
 
-        function exportToExcelAll() {
-            if (state.measurements.length === 0) {
+        // Експортує ТІЛЬКИ відфільтровані дані
+        function exportToExcelFiltered() {
+            const filtered = getFilteredMeasurements();
+            if (filtered.length === 0) {
                 alert("Немає даних для експорту!");
                 return;
             }
-            generateExcelFile(state.measurements, `Mediciones_All_${new Date().toISOString().split('T')[0]}.xlsx`);
+            generateExcelFile(filtered, `Mediciones_Filtered_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // ТРИМОВНИЙ ГАРНИЙ EXCEL-ГЕНЕРАТОР (UA / ES / EN)
         function generateExcelFile(recordsArray, filename) {
             const headers = [
                 "Дата та Час\nFecha y Hora\nDate & Time",
@@ -1070,13 +1066,13 @@
 
             paramKeys.forEach(pName => {
                 fullHeaders.push(pName);
-                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio");
+                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio") || pName.includes("Average carcass");
                 isCalcCol.push(isAuto);
 
-                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
-                    !pName.includes("Кількість") && !pName.includes("Cantidad") && 
-                    !pName.includes("Середня вага") && !pName.includes("Peso medio") &&
-                    !pName.includes("Примітки") && !pName.includes("Notas")) {
+                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                    !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
+                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
+                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
                     
                     fullHeaders.push(`Частка % / % Participación / Share %\n(${pName})`);
                     isCalcCol.push(true);
@@ -1088,7 +1084,7 @@
             recordsArray.forEach(rec => {
                 let totalWog = 0;
                 Object.entries(rec.values).forEach(([k, v]) => {
-                    if (k.includes("Загальна вага") || k.includes("Peso total")) {
+                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight")) {
                         totalWog = parseFloat(v) || 0;
                     }
                 });
@@ -1103,16 +1099,16 @@
                     const rawVal = rec.values[pName];
                     const numVal = parseFloat(rawVal);
 
-                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas")) {
+                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
                         row.push(numVal);
                     } else {
                         row.push(rawVal || '-');
                     }
 
-                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
-                        !pName.includes("Кількість") && !pName.includes("Cantidad") && 
-                        !pName.includes("Середня вага") && !pName.includes("Peso medio") &&
-                        !pName.includes("Примітки") && !pName.includes("Notas")) {
+                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                        !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
+                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
+                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
                         
                         if (!isNaN(numVal) && totalWog > 0) {
                             row.push(parseFloat(((numVal / totalWog) * 100).toFixed(2)) / 100);
@@ -1192,7 +1188,7 @@
             }
 
             worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
-            worksheet['!rows'] = [{ hpt: 48 }]; // Висота під тримовну шапку
+            worksheet['!rows'] = [{ hpt: 48 }];
 
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Mediciones");
