@@ -80,7 +80,6 @@
                 <i class="fa-solid fa-table-list"></i>
                 <span id="navHistory">Історія та Експорт</span>
             </button>
-            <!-- Конструктор видимий тільки в режимі адміна -->
             <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2 hidden">
                 <i class="fa-solid fa-sliders"></i>
                 <span id="navConstructor">Конструктор</span>
@@ -605,44 +604,6 @@
             renderHistoryTable();
         }
 
-        // Керування адмінським доступом
-        function toggleAdminMode() {
-            const dict = I18N[currentLang] || I18N.uk;
-            if (isAdmin) {
-                isAdmin = false;
-                localStorage.setItem('qm_is_admin', 'false');
-                updateAdminUI();
-                switchTab('new-measure');
-            } else {
-                const pwd = prompt(dict.adminPrompt);
-                if (pwd === "admin2026") { // Пароль адміністратора за замовчуванням
-                    isAdmin = true;
-                    localStorage.setItem('qm_is_admin', 'true');
-                    updateAdminUI();
-                    alert("Режим адміністратора активовано!");
-                } else if (pwd !== null) {
-                    alert("Невірний пароль! / Contraseña incorrecta!");
-                }
-            }
-        }
-
-        function updateAdminUI() {
-            const dict = I18N[currentLang] || I18N.uk;
-            const lockIcon = document.getElementById('adminLockIcon');
-            const adminText = document.getElementById('adminModeText');
-            const constructorTab = document.getElementById('tab-methodologies');
-
-            if (isAdmin) {
-                lockIcon.className = "fa-solid fa-lock-open text-emerald-400";
-                adminText.innerText = dict.adminAd;
-                constructorTab.classList.remove('hidden');
-            } else {
-                lockIcon.className = "fa-solid fa-lock text-amber-400";
-                adminText.innerText = dict.adminOp;
-                constructorTab.classList.add('hidden');
-            }
-        }
-
         function getI18nText(obj) {
             if (typeof obj === 'string') return obj;
             if (typeof obj === 'object' && obj !== null) {
@@ -725,6 +686,43 @@
 
             const targetBtn = document.getElementById(`tab-${tabId}`);
             if (targetBtn) targetBtn.classList.add('active');
+        }
+
+        function toggleAdminMode() {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (isAdmin) {
+                isAdmin = false;
+                localStorage.setItem('qm_is_admin', 'false');
+                updateAdminUI();
+                switchTab('new-measure');
+            } else {
+                const pwd = prompt(dict.adminPrompt);
+                if (pwd === "admin2026") {
+                    isAdmin = true;
+                    localStorage.setItem('qm_is_admin', 'true');
+                    updateAdminUI();
+                    alert("Режим адміністратора активовано!");
+                } else if (pwd !== null) {
+                    alert("Невірний пароль!");
+                }
+            }
+        }
+
+        function updateAdminUI() {
+            const dict = I18N[currentLang] || I18N.uk;
+            const lockIcon = document.getElementById('adminLockIcon');
+            const adminText = document.getElementById('adminModeText');
+            const constructorTab = document.getElementById('tab-methodologies');
+
+            if (isAdmin) {
+                lockIcon.className = "fa-solid fa-lock-open text-emerald-400";
+                adminText.innerText = dict.adminAd;
+                constructorTab.classList.remove('hidden');
+            } else {
+                lockIcon.className = "fa-solid fa-lock text-amber-400";
+                adminText.innerText = dict.adminOp;
+                constructorTab.classList.add('hidden');
+            }
         }
 
         function populateMethodologyDropdown() {
@@ -834,10 +832,10 @@
                                 <input type="text" name="${p.id}" id="${p.id}" data-base-weight="${p.isBaseWeight ? 'true' : 'false'}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
-                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
+                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" 
                                     placeholder="${p.calculated ? '0.00' : '4.75+2.12'}">
                                 ${showPercentBadge ? `
-                                    <span id="badge_pct_${p.id}" class="absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all">
+                                    <span id="badge_pct_${p.id}" class="absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
                                         0.00 %
                                     </span>
                                 ` : ''}
@@ -906,10 +904,10 @@
                             if (baseWeight > 0 && val > 0) {
                                 const pct = ((val / baseWeight) * 100).toFixed(2);
                                 badge.innerText = `${pct} %`;
-                                badge.className = "absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all opacity-100";
+                                badge.className = "absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
                             } else {
                                 badge.innerText = "0.00 %";
-                                badge.className = "absolute right-2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
+                                badge.className = "absolute -right-16 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
                             }
                         }
                     }
@@ -1102,7 +1100,6 @@
                     </span>
                 `).join('');
 
-                // Кнопка видалення доступна лише адміну
                 const deleteBtnHtml = isAdmin ? `
                     <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1" title="Delete">
                         <i class="fa-solid fa-trash"></i>
@@ -1128,7 +1125,7 @@
 
         function deleteMeasurement(id) {
             if (!isAdmin) {
-                alert("Дія доступна лише адміністратору!");
+                alert("Доступ обмежено!");
                 return;
             }
             if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
@@ -1375,6 +1372,11 @@
             container.innerHTML = tempParams.map((p, idx) => `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
                     <div class="flex items-center gap-2">
+                        <!-- Кнопки керування порядком (Вгору / Вниз) -->
+                        <div class="flex flex-col space-y-0.5">
+                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вгору"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вниз"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
                         <input type="text" value="${getI18nText(p.label)}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
                         <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white">
                             <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
@@ -1386,12 +1388,21 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
-                    <div class="flex items-center space-x-2 pt-1">
+                    <div class="flex items-center space-x-2 pt-1 pl-6">
                         <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
                         <label for="base_${idx}" class="text-[11px] text-slate-600 font-medium">${dict.lblIsBaseWeight}</label>
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Функція переміщення параметра вгору/вниз у конструкторі
+        function moveParam(idx, direction) {
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= tempParams.length) return;
+            const item = tempParams.splice(idx, 1)[0];
+            tempParams.splice(newIdx, 0, item);
+            renderParamRows();
         }
 
         function addParamRow() {
