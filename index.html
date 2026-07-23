@@ -280,7 +280,7 @@
     <script>
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning_v5',
+                id: 'm_poultry_deboning_v7',
                 title: 'Замір розробки тушки / Control de despiece (Аналіз анатомічних частин)',
                 description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат. / Determinación del peso de la canal, despiece y cálculo de rendimiento.',
                 groups: [
@@ -298,8 +298,8 @@
                         title: '2. Крило / Ala',
                         params: [
                             { id: 'p_sub_wing_tip', label: 'Кисть крила (кг) / Punta de ala (kg)', type: 'decimal', required: false },
-                            { id: 'p_wing_elbow', label: 'Лікоть (кг) / Solomillo / Centro de ala (kg)', type: 'decimal', required: false },
-                            { id: 'p_wing_shoulder', label: 'Плече (кг) / Muslito de ala (kg)', type: 'decimal', required: false },
+                            { id: 'p_wing_elbow', label: 'Лікоть (кг) / Alon (kg)', type: 'decimal', required: false },
+                            { id: 'p_wing_shoulder', label: 'Плече (кг) / Blanqueta (kg)', type: 'decimal', required: false },
                             { id: 'p_wing_whole', label: 'Трифалангове крило (сума) (кг) / Ala 3 falanges total (kg) [Авто]', type: 'decimal', required: false, calculated: true }
                         ]
                     },
@@ -317,9 +317,9 @@
                         title: '4. Задня частина тушки / Parte trasera (Cuarto trasero)',
                         params: [
                             { id: 'p_thigh_bone_in', label: 'Стегно (кг) / Contramuslo (kg)', type: 'decimal', required: false },
-                            { id: 'p_drumstick', label: 'Гомілка (кг) / Jamoncito / Muslo (kg)', type: 'decimal', required: false },
-                            { id: 'p_sub_saddle', label: 'Нижня частина спинки (Saddle) (кг) / Espalda / Saddle (kg)', type: 'decimal', required: false },
-                            { id: 'p_sub_tail', label: 'Гузка (кг) / Obispillo / Culo (kg)', type: 'decimal', required: false },
+                            { id: 'p_drumstick', label: 'Гомілка (кг) / Jamoncito (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_saddle', label: 'Нижня частина спинки (кг) / Espalda (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_tail', label: 'Гузка (кг) / Obispillo (kg)', type: 'decimal', required: false },
                             { id: 'p_back_total', label: 'Сума задньої частини тушки (кг) / Total parte trasera (kg) [Авто]', type: 'decimal', required: false, calculated: true }
                         ]
                     },
