@@ -8,7 +8,7 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS with Styles CDN (xlsx-js-style for full Excel formatting: colors, fonts, widths) -->
+    <!-- SheetJS with Styles CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -35,6 +35,12 @@
                     <span id="syncText">Локально</span>
                 </div>
                 
+                <!-- Кнопка Адмін-режиму -->
+                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5" title="Адмін-доступ">
+                    <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
+                    <span id="adminModeText">Оператор</span>
+                </button>
+
                 <!-- Перемикач мови -->
                 <div class="relative">
                     <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold" title="Мова / Language / Idioma">
@@ -74,7 +80,8 @@
                 <i class="fa-solid fa-table-list"></i>
                 <span id="navHistory">Історія та Експорт</span>
             </button>
-            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2">
+            <!-- Конструктор видимий тільки в режимі адміна -->
+            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2 hidden">
                 <i class="fa-solid fa-sliders"></i>
                 <span id="navConstructor">Конструктор</span>
             </button>
@@ -345,6 +352,7 @@
                 optTypeText: "Текст",
                 optTypeDate: "Дата",
                 optTypeSelect: "Список варіантів",
+                lblIsBaseWeight: "Базова вага для розрахунку % (100%)",
                 lblSettingsTitle: "Налаштування JSONBin.io & Синхронізації",
                 lblSettingsSub: "Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.",
                 btnTestConn: "Тест з'єднання",
@@ -355,7 +363,10 @@
                 msgSaved: "Замір успішно збережено!",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
-                allMethodsOpt: "Всі методики"
+                allMethodsOpt: "Всі методики",
+                adminOp: "Оператор",
+                adminAd: "Адміністратор",
+                adminPrompt: "Введіть пароль адміністратора:"
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
@@ -404,6 +415,7 @@
                 optTypeText: "Texto",
                 optTypeDate: "Fecha",
                 optTypeSelect: "Lista desplegable",
+                lblIsBaseWeight: "Peso base para % (100%)",
                 lblSettingsTitle: "Configuración de JSONBin.io y Sincronización",
                 lblSettingsSub: "Ingrese sus claves de JSONBin.io para el guardado automático en la nube.",
                 btnTestConn: "Probar conexión",
@@ -414,7 +426,10 @@
                 msgSaved: "¡Medición guardada con éxito!",
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
-                allMethodsOpt: "Todas las metodologías"
+                allMethodsOpt: "Todas las metodologías",
+                adminOp: "Operador",
+                adminAd: "Administrador",
+                adminPrompt: "Ingrese la contraseña de administrador:"
             },
             en: {
                 appSub: "Carcass measurement & weighing system",
@@ -463,6 +478,7 @@
                 optTypeText: "Text",
                 optTypeDate: "Date",
                 optTypeSelect: "Dropdown",
+                lblIsBaseWeight: "Base weight for % (100%)",
                 lblSettingsTitle: "JSONBin.io Settings & Synchronization",
                 lblSettingsSub: "Provide your JSONBin.io keys for automatic cloud storage.",
                 btnTestConn: "Test connection",
@@ -473,7 +489,10 @@
                 msgSaved: "Measurement saved successfully!",
                 msgSelectFactory: "Please select a plant from the list!",
                 factories: ["Plant 1", "Plant 2", "Plant 3", "Plant 4", "Plant 5"],
-                allMethodsOpt: "All methodologies"
+                allMethodsOpt: "All methodologies",
+                adminOp: "Operator",
+                adminAd: "Administrator",
+                adminPrompt: "Enter administrator password:"
             }
         };
 
@@ -497,7 +516,7 @@
                         params: [
                             { id: 'p_date_time', label: { uk: 'Дата та Час заміру', es: 'Fecha y Hora', en: 'Date & Time' }, type: 'date', required: true },
                             { id: 'p_carcass_count', label: { uk: 'Кількість тушок у вибірці (шт)', es: 'Cantidad de canales (uds)', en: 'Sample carcass count (pcs)' }, type: 'decimal', required: true },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага тушок перед розрізанням (кг)', es: 'Peso total de canales (kg)', en: 'Total weight before cutting (kg)' }, type: 'decimal', required: true },
+                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага тушок перед розрізанням (кг)', es: 'Peso total de canales (kg)', en: 'Total weight before cutting (kg)' }, type: 'decimal', required: true, isBaseWeight: true },
                             { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)', en: 'Average carcass weight (kg)' }, type: 'decimal', required: false, calculated: true }
                         ]
                     },
@@ -543,6 +562,7 @@
         ];
 
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
+        let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
 
         let state = {
             methodologies: JSON.parse(localStorage.getItem('qm_methodologies')) || DEFAULT_METHODOLOGIES,
@@ -556,6 +576,7 @@
 
         function initApp() {
             applyLanguageUI();
+            updateAdminUI();
             saveStateToLocal();
             populateMethodologyDropdown();
             renderMethodologyCards();
@@ -577,10 +598,49 @@
             localStorage.setItem('qm_lang', lang);
             document.getElementById('langMenu').classList.add('hidden');
             applyLanguageUI();
+            updateAdminUI();
             populateMethodologyDropdown();
             renderMeasurementForm();
             renderMethodologyCards();
             renderHistoryTable();
+        }
+
+        // Керування адмінським доступом
+        function toggleAdminMode() {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (isAdmin) {
+                isAdmin = false;
+                localStorage.setItem('qm_is_admin', 'false');
+                updateAdminUI();
+                switchTab('new-measure');
+            } else {
+                const pwd = prompt(dict.adminPrompt);
+                if (pwd === "admin2026") { // Пароль адміністратора за замовчуванням
+                    isAdmin = true;
+                    localStorage.setItem('qm_is_admin', 'true');
+                    updateAdminUI();
+                    alert("Режим адміністратора активовано!");
+                } else if (pwd !== null) {
+                    alert("Невірний пароль! / Contraseña incorrecta!");
+                }
+            }
+        }
+
+        function updateAdminUI() {
+            const dict = I18N[currentLang] || I18N.uk;
+            const lockIcon = document.getElementById('adminLockIcon');
+            const adminText = document.getElementById('adminModeText');
+            const constructorTab = document.getElementById('tab-methodologies');
+
+            if (isAdmin) {
+                lockIcon.className = "fa-solid fa-lock-open text-emerald-400";
+                adminText.innerText = dict.adminAd;
+                constructorTab.classList.remove('hidden');
+            } else {
+                lockIcon.className = "fa-solid fa-lock text-amber-400";
+                adminText.innerText = dict.adminOp;
+                constructorTab.classList.add('hidden');
+            }
         }
 
         function getI18nText(obj) {
@@ -653,6 +713,10 @@
         }
 
         function switchTab(tabId) {
+            if (tabId === 'methodologies' && !isAdmin) {
+                alert("Доступ обмежено. Увійдіть як адміністратор!");
+                return;
+            }
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
@@ -760,14 +824,14 @@
                         : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
-                    const showPercentBadge = !group.isGeneral && p.type === 'decimal';
+                    const showPercentBadge = p.type === 'decimal' && !p.calculated && !p.isBaseWeight;
 
                     if (p.type === 'text') {
                         inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="${dict.placeholderText}">`;
                     } else if (p.type === 'decimal') {
                         inputHtml = `
                             <div class="relative flex items-center">
-                                <input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
+                                <input type="text" name="${p.id}" id="${p.id}" data-base-weight="${p.isBaseWeight ? 'true' : 'false'}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
                                     class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
@@ -810,51 +874,19 @@
         }
 
         function calculateLiveFields() {
-            const wogValRaw = document.getElementById('p_total_weight_wog')?.value || "";
-            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
+            let baseWeight = 0;
+            const baseInput = document.querySelector('input[data-base-weight="true"]') || document.querySelector('input[type="text"][oninput*="calculateLiveFields"]');
+            
+            if (baseInput) {
+                baseWeight = evaluateExpression(baseInput.value);
+            }
 
-            const totalWog = evaluateExpression(wogValRaw);
+            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
             const carcassCount = evaluateExpression(countValRaw);
 
             const avgInput = document.getElementById('p_avg_carcass_weight');
-            if (avgInput) {
-                avgInput.value = (totalWog > 0 && carcassCount > 0) ? (totalWog / carcassCount).toFixed(2) : "";
-            }
-
-            const tip = evaluateExpression(document.getElementById('p_sub_wing_tip')?.value);
-            const elbow = evaluateExpression(document.getElementById('p_wing_elbow')?.value);
-            const shoulder = evaluateExpression(document.getElementById('p_wing_shoulder')?.value);
-            const wingWholeInput = document.getElementById('p_wing_whole');
-            if (wingWholeInput) {
-                const sumWing = tip + elbow + shoulder;
-                wingWholeInput.value = sumWing > 0 ? sumWing.toFixed(2) : "";
-            }
-
-            const filetLarge = evaluateExpression(document.getElementById('p_filet_large')?.value);
-            const filetSmall = evaluateExpression(document.getElementById('p_filet_small')?.value);
-            const breastFrame = evaluateExpression(document.getElementById('p_sub_breast_frame')?.value);
-            const breastSkin = evaluateExpression(document.getElementById('p_sub_breast_skin')?.value);
-            const frontTotalInput = document.getElementById('p_front_total');
-            if (frontTotalInput) {
-                const sumFront = filetLarge + filetSmall + breastFrame + breastSkin;
-                frontTotalInput.value = sumFront > 0 ? sumFront.toFixed(2) : "";
-            }
-
-            const thigh = evaluateExpression(document.getElementById('p_thigh_bone_in')?.value);
-            const drumstick = evaluateExpression(document.getElementById('p_drumstick')?.value);
-            const saddle = evaluateExpression(document.getElementById('p_sub_saddle')?.value);
-            const tail = evaluateExpression(document.getElementById('p_sub_tail')?.value);
-            const backTotalInput = document.getElementById('p_back_total');
-            if (backTotalInput) {
-                const sumBack = thigh + drumstick + saddle + tail;
-                backTotalInput.value = sumBack > 0 ? sumBack.toFixed(2) : "";
-            }
-
-            const techLosses = evaluateExpression(document.getElementById('p_tech_losses')?.value);
-            const wasteTotalInput = document.getElementById('p_tech_waste_total');
-            if (wasteTotalInput) {
-                const sumWaste = tip + saddle + breastFrame + breastSkin + tail + techLosses;
-                wasteTotalInput.value = sumWaste > 0 ? sumWaste.toFixed(2) : "";
+            if (avgInput && baseWeight > 0 && carcassCount > 0) {
+                avgInput.value = (baseWeight / carcassCount).toFixed(2);
             }
 
             const methodId = document.getElementById('methodologySelect')?.value;
@@ -864,26 +896,24 @@
             if (!m || !m.groups) return;
 
             m.groups.forEach(group => {
-                if (!group.isGeneral) {
-                    group.params.forEach(p => {
-                        if (p.type === 'decimal') {
-                            const badge = document.getElementById(`badge_pct_${p.id}`);
-                            if (badge) {
-                                const inputEl = document.getElementById(p.id);
-                                const val = evaluateExpression(inputEl?.value);
-                                
-                                if (totalWog > 0 && val > 0) {
-                                    const pct = ((val / totalWog) * 100).toFixed(2);
-                                    badge.innerText = `${pct} %`;
-                                    badge.className = "absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all opacity-100";
-                                } else {
-                                    badge.innerText = "0.00 %";
-                                    badge.className = "absolute right-2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
-                                }
+                group.params.forEach(p => {
+                    if (p.type === 'decimal' && !p.calculated && !p.isBaseWeight) {
+                        const badge = document.getElementById(`badge_pct_${p.id}`);
+                        if (badge) {
+                            const inputEl = document.getElementById(p.id);
+                            const val = evaluateExpression(inputEl?.value);
+                            
+                            if (baseWeight > 0 && val > 0) {
+                                const pct = ((val / baseWeight) * 100).toFixed(2);
+                                badge.innerText = `${pct} %`;
+                                badge.className = "absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all opacity-100";
+                            } else {
+                                badge.innerText = "0.00 %";
+                                badge.className = "absolute right-2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
                             }
                         }
-                    });
-                }
+                    }
+                });
             });
         }
 
@@ -1033,10 +1063,7 @@
             if (filterM !== 'ALL') {
                 filtered = filtered.filter(x => 
                     x.methodologyId === filterM || 
-                    x.methodologyId.startsWith('m_poultry_deboning') || 
-                    x.methodologyTitle.toLowerCase().includes('депо') ||
-                    x.methodologyTitle.toLowerCase().includes('despiece') ||
-                    x.methodologyTitle.toLowerCase().includes('deboning')
+                    x.methodologyTitle.toLowerCase().includes(filterM.toLowerCase())
                 );
             }
 
@@ -1064,7 +1091,7 @@
             document.getElementById('recordCount').innerText = filtered.length;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено / No hay registros</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
                 return;
             }
 
@@ -1074,6 +1101,13 @@
                         <strong class="text-slate-500">${k}:</strong> ${v}
                     </span>
                 `).join('');
+
+                // Кнопка видалення доступна лише адміну
+                const deleteBtnHtml = isAdmin ? `
+                    <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1" title="Delete">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                ` : '';
 
                 return `
                     <tr class="hover:bg-slate-50 transition">
@@ -1085,9 +1119,7 @@
                             <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded mr-1 transition" title="XLSX">
                                 <i class="fa-solid fa-file-excel mr-1"></i>XLSX
                             </button>
-                            <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            ${deleteBtnHtml}
                         </td>
                     </tr>
                 `;
@@ -1095,7 +1127,11 @@
         }
 
         function deleteMeasurement(id) {
-            if (confirm("Ви дійсно бажаєте видалити цей замір? / ¿Desea eliminar esta medición?")) {
+            if (!isAdmin) {
+                alert("Дія доступна лише адміністратору!");
+                return;
+            }
+            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
                 saveStateToLocal();
                 renderHistoryTable();
@@ -1298,6 +1334,10 @@
         let tempParams = [];
 
         function openMethodologyModal(methodId = null) {
+            if (!isAdmin) {
+                alert("Доступ обмежено!");
+                return;
+            }
             const modal = document.getElementById('methodologyModal');
             const dict = I18N[currentLang] || I18N.uk;
             tempParams = [];
@@ -1316,7 +1356,7 @@
                 document.getElementById('methodTitle').value = "";
                 document.getElementById('methodDesc').value = "";
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Параметр 1', es: 'Parámetro 1', en: 'Parameter 1' }, type: 'decimal', required: true }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true }
                 ];
             }
 
@@ -1346,6 +1386,10 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
+                    <div class="flex items-center space-x-2 pt-1">
+                        <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
+                        <label for="base_${idx}" class="text-[11px] text-slate-600 font-medium">${dict.lblIsBaseWeight}</label>
+                    </div>
                 </div>
             `).join('');
         }
@@ -1354,8 +1398,9 @@
             tempParams.push({
                 id: 'p_' + Date.now(),
                 label: { uk: 'Новий параметр', es: 'Nuevo parámetro', en: 'New Parameter' },
-                type: 'text',
-                required: false
+                type: 'decimal',
+                required: false,
+                isBaseWeight: false
             });
             renderParamRows();
         }
@@ -1377,7 +1422,15 @@
             tempParams[idx].type = val;
         }
 
+        function updateBaseWeight(idx, isChecked) {
+            tempParams.forEach((p, i) => {
+                p.isBaseWeight = (i === idx && isChecked);
+            });
+            renderParamRows();
+        }
+
         function saveMethodology() {
+            if (!isAdmin) return;
             const titleInput = document.getElementById('methodTitle').value.trim();
             const descInput = document.getElementById('methodDesc').value.trim();
             const editId = document.getElementById('editMethodologyId').value;
@@ -1387,11 +1440,9 @@
                 return;
             }
 
-            // Зберігаємо як мультиваріантний об'єкт
             const newTitle = { uk: titleInput, es: titleInput, en: titleInput };
             const newDesc = { uk: descInput, es: descInput, en: descInput };
 
-            // Оформлюємо параметри у вигляді груп за замовчуванням
             const groups = [
                 {
                     title: { uk: 'Параметри методики', es: 'Parámetros', en: 'Parameters' },
@@ -1428,6 +1479,10 @@
         }
 
         function deleteMethodology(id) {
+            if (!isAdmin) {
+                alert("Доступ обмежено!");
+                return;
+            }
             if (confirm("Delete methodology? / Видалити методику?")) {
                 state.methodologies = state.methodologies.filter(x => x.id !== id);
                 saveStateToLocal();
@@ -1553,6 +1608,10 @@
         }
 
         function clearAllData() {
+            if (!isAdmin) {
+                alert("Доступ обмежено!");
+                return;
+            }
             if (confirm("Delete all local measurements?")) {
                 state.measurements = [];
                 saveStateToLocal();
