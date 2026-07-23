@@ -187,7 +187,7 @@
                     <table class="w-full text-left text-sm text-slate-600">
                         <thead class="bg-slate-100 text-xs uppercase text-slate-700 font-semibold border-b border-slate-200">
                             <tr>
-                                <th class="p-3" id="thDate">Дата / Час</th>
+                                <th class="p-3" id="thDate">Дата</th>
                                 <th class="p-3" id="thMethod">Методика</th>
                                 <th class="p-3" id="thFactory">Фабрика</th>
                                 <th class="p-3" id="thResults">Результати</th>
@@ -328,7 +328,7 @@
                 lblFilterSort: "Сортування",
                 optSortDesc: "Спочатку нові",
                 optSortAsc: "Спочатку старі",
-                thDate: "Дата / Час",
+                thDate: "Дата",
                 thMethod: "Методика",
                 thFactory: "Фабрика",
                 thResults: "Результати",
@@ -347,11 +347,13 @@
                 btnAddParamRow: "+ Додати параметр",
                 btnCancelModal: "Скасувати",
                 btnSaveModal: "Зберегти методику",
-                optTypeDecimal: "Число (0.00)",
+                optTypeDecimal: "Число (0.000)",
                 optTypeText: "Текст",
                 optTypeDate: "Дата",
                 optTypeSelect: "Список варіантів",
-                lblIsBaseWeight: "Базова вага для розрахунку % (100%)",
+                lblUseShare: "Розраховувати частку %",
+                lblBaseParam: "База для %:",
+                lblNoBase: "-- Без розрахунку % --",
                 lblSettingsTitle: "Налаштування JSONBin.io & Синхронізації",
                 lblSettingsSub: "Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.",
                 btnTestConn: "Тест з'єднання",
@@ -391,7 +393,7 @@
                 lblFilterSort: "Ordenar",
                 optSortDesc: "Más recientes primero",
                 optSortAsc: "Más antiguos primero",
-                thDate: "Fecha / Hora",
+                thDate: "Fecha",
                 thMethod: "Metodología",
                 thFactory: "Planta",
                 thResults: "Resultados",
@@ -410,11 +412,13 @@
                 btnAddParamRow: "+ Añadir parámetro",
                 btnCancelModal: "Cancelar",
                 btnSaveModal: "Guardar metodología",
-                optTypeDecimal: "Número (0.00)",
+                optTypeDecimal: "Número (0.000)",
                 optTypeText: "Texto",
                 optTypeDate: "Fecha",
                 optTypeSelect: "Lista desplegable",
-                lblIsBaseWeight: "Peso base para % (100%)",
+                lblUseShare: "Calcular porcentaje %",
+                lblBaseParam: "Base para %:",
+                lblNoBase: "-- Sin cálculo de % --",
                 lblSettingsTitle: "Configuración de JSONBin.io y Sincronización",
                 lblSettingsSub: "Ingrese sus claves de JSONBin.io para el guardado automático en la nube.",
                 btnTestConn: "Probar conexión",
@@ -454,7 +458,7 @@
                 lblFilterSort: "Sort",
                 optSortDesc: "Newest first",
                 optSortAsc: "Oldest first",
-                thDate: "Date / Time",
+                thDate: "Date",
                 thMethod: "Methodology",
                 thFactory: "Plant",
                 thResults: "Results",
@@ -473,11 +477,13 @@
                 btnAddParamRow: "+ Add parameter",
                 btnCancelModal: "Cancel",
                 btnSaveModal: "Save methodology",
-                optTypeDecimal: "Number (0.00)",
+                optTypeDecimal: "Number (0.000)",
                 optTypeText: "Text",
                 optTypeDate: "Date",
                 optTypeSelect: "Dropdown",
-                lblIsBaseWeight: "Base weight for % (100%)",
+                lblUseShare: "Calculate percentage %",
+                lblBaseParam: "Base for %:",
+                lblNoBase: "-- No % calculation --",
                 lblSettingsTitle: "JSONBin.io Settings & Synchronization",
                 lblSettingsSub: "Provide your JSONBin.io keys for automatic cloud storage.",
                 btnTestConn: "Test connection",
@@ -497,7 +503,7 @@
 
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning_v8',
+                id: 'm_poultry_deboning_v9',
                 title: {
                     uk: 'Замір розробки тушки (Аналіз анатомічних частин)',
                     es: 'Control de despiece (Análisis de rendimiento)',
@@ -513,45 +519,45 @@
                         title: { uk: '1. Загальна інформація', es: '1. Información general', en: '1. General information' },
                         isGeneral: true,
                         params: [
-                            { id: 'p_date_time', label: { uk: 'Дата та Час заміру', es: 'Fecha y Hora', en: 'Date & Time' }, type: 'date', required: true },
+                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición', en: 'Measurement date' }, type: 'date', required: true },
                             { id: 'p_carcass_count', label: { uk: 'Кількість тушок у вибірці (шт)', es: 'Cantidad de canales (uds)', en: 'Sample carcass count (pcs)' }, type: 'decimal', required: true },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага тушок перед розрізанням (кг)', es: 'Peso total de canales (kg)', en: 'Total weight before cutting (kg)' }, type: 'decimal', required: true, isBaseWeight: true },
+                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага тушок перед розрізанням (кг)', es: 'Peso total de canales (kg)', en: 'Total weight before cutting (kg)' }, type: 'decimal', required: true },
                             { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)', en: 'Average carcass weight (kg)' }, type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
                         title: { uk: '2. Крило', es: '2. Ala', en: '2. Wing' },
                         params: [
-                            { id: 'p_sub_wing_tip', label: { uk: 'Кисть крила (кг)', es: 'Punta de ala (kg)', en: 'Wing tip (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_wing_elbow', label: { uk: 'Лікоть (кг)', es: 'Alon (kg)', en: 'Wing flat / Mid-joint (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_wing_shoulder', label: { uk: 'Плече (кг)', es: 'Blanqueta (kg)', en: 'Drumette (kg)' }, type: 'decimal', required: false },
+                            { id: 'p_sub_wing_tip', label: { uk: 'Кисть крила (кг)', es: 'Punta de ala (kg)', en: 'Wing tip (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_wing_elbow', label: { uk: 'Лікоть (кг)', es: 'Alon (kg)', en: 'Wing flat / Mid-joint (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_wing_shoulder', label: { uk: 'Плече (кг)', es: 'Blanqueta (kg)', en: 'Drumette (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_wing_whole', label: { uk: 'Трифалангове крило (сума) (кг) [Авто]', es: 'Ala 3 falanges total (kg) [Auto]', en: 'Whole 3-joint wing (sum) (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
                         title: { uk: '3. Передня частина тушки', es: '3. Parte delantera (Pechuga)', en: '3. Front part (Breast)' },
                         params: [
-                            { id: 'p_filet_large', label: { uk: 'Філе велике (кг)', es: 'Pechuga grande / Fillet (kg)', en: 'Breast fillet / Large fillet (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_filet_small', label: { uk: 'Філе мале (кг)', es: 'Solomillo chico / Tenderloin (kg)', en: 'Tenderloin / Inner fillet (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_sub_breast_frame', label: { uk: 'Грудний каркас (кг)', es: 'Carcasa de pechuga (kg)', en: 'Breast frame (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_sub_breast_skin', label: { uk: 'Шкіра грудки (кг)', es: 'Piel de pechuga (kg)', en: 'Breast skin (kg)' }, type: 'decimal', required: false },
+                            { id: 'p_filet_large', label: { uk: 'Філе велике (кг)', es: 'Pechuga grande / Fillet (kg)', en: 'Breast fillet / Large fillet (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_filet_small', label: { uk: 'Філе мале (кг)', es: 'Solomillo chico / Tenderloin (kg)', en: 'Tenderloin / Inner fillet (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_sub_breast_frame', label: { uk: 'Грудний каркас (кг)', es: 'Carcasa de pechuga (kg)', en: 'Breast frame (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_sub_breast_skin', label: { uk: 'Шкіра грудки (кг)', es: 'Piel de pechuga (kg)', en: 'Breast skin (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_front_total', label: { uk: 'Сума передньої частини (кг) [Авто]', es: 'Total parte delantera (kg) [Auto]', en: 'Total front part (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
                         title: { uk: '4. Задня частина тушки', es: '4. Parte trasera (Cuarto trasero)', en: '4. Back part (Leg quarter)' },
                         params: [
-                            { id: 'p_thigh_bone_in', label: { uk: 'Стегно (кг)', es: 'Contramuslo (kg)', en: 'Thigh (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_drumstick', label: { uk: 'Гомілка (кг)', es: 'Jamoncito (kg)', en: 'Drumstick (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_sub_saddle', label: { uk: 'Нижня частина спинки (кг)', es: 'Espalda (kg)', en: 'Saddle / Lower back (kg)' }, type: 'decimal', required: false },
-                            { id: 'p_sub_tail', label: { uk: 'Гузка (кг)', es: 'Obispillo (kg)', en: 'Tail (kg)' }, type: 'decimal', required: false },
+                            { id: 'p_thigh_bone_in', label: { uk: 'Стегно (кг)', es: 'Contramuslo (kg)', en: 'Thigh (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_drumstick', label: { uk: 'Гомілка (кг)', es: 'Jamoncito (kg)', en: 'Drumstick (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_sub_saddle', label: { uk: 'Нижня частина спинки (кг)', es: 'Espalda (kg)', en: 'Saddle / Lower back (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
+                            { id: 'p_sub_tail', label: { uk: 'Гузка (кг)', es: 'Obispillo (kg)', en: 'Tail (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_back_total', label: { uk: 'Сума задньої частини тушки (кг) [Авто]', es: 'Total parte trasera (kg) [Auto]', en: 'Total back part (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
                         title: { uk: '5. Технічні відходи та Втрати', es: '5. Desperdicios y Pérdidas', en: '5. Waste and Losses' },
                         params: [
-                            { id: 'p_tech_losses', label: { uk: 'Технічні втрати / Втрати (кг)', es: 'Pérdida técnica (kg)', en: 'Technical losses (kg)' }, type: 'decimal', required: false },
+                            { id: 'p_tech_losses', label: { uk: 'Технічні втрати / Втрати (кг)', es: 'Pérdida técnica (kg)', en: 'Technical losses (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_tech_waste_total', label: { uk: 'Технічні відходи (сума) (кг) [Авто]', es: 'Total desperdicios (kg) [Auto]', en: 'Total waste (kg) [Auto]' }, type: 'decimal', required: false, calculated: true },
                             { id: 'p_notes', label: { uk: 'Примітки / Зауваження', es: 'Notas / Observaciones', en: 'Notes / Remarks' }, type: 'text', required: false }
                         ]
@@ -768,11 +774,11 @@
             const expr = input.value.trim();
             if (expr.includes('+') || expr.includes(',')) {
                 const sum = evaluateExpression(expr);
-                input.value = sum > 0 ? sum.toFixed(2) : "";
+                input.value = sum > 0 ? sum.toFixed(3) : "";
             } else {
                 const val = parseFloat(expr.replace(',', '.'));
                 if (!isNaN(val)) {
-                    input.value = val.toFixed(2);
+                    input.value = val.toFixed(3);
                 }
             }
             calculateLiveFields();
@@ -808,7 +814,7 @@
                 const groupTitle = getI18nText(group.title);
                 groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
                 
-                // Змінено на 1 стовпчик (grid-cols-1) для зручного введення значень та уникнення перекриття відсотків
+                // Рядки в один стовпчик для зручності введення розгорнутих формул
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
@@ -823,21 +829,21 @@
                         : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
-                    const showPercentBadge = p.type === 'decimal' && !p.calculated && !p.isBaseWeight;
+                    const showPercentBadge = p.type === 'decimal' && !p.calculated && p.useShare;
 
                     if (p.type === 'text') {
                         inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="${dict.placeholderText}">`;
                     } else if (p.type === 'decimal') {
                         inputHtml = `
                             <div class="relative flex items-center">
-                                <input type="text" name="${p.id}" id="${p.id}" data-base-weight="${p.isBaseWeight ? 'true' : 'false'}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
+                                <input type="text" name="${p.id}" id="${p.id}" data-param-id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
-                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-20' : ''}" 
-                                    placeholder="${p.calculated ? '0.00' : '4.75+2.12'}">
+                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
+                                    placeholder="${p.calculated ? '0.000' : '4.75+2.12'}">
                                 ${showPercentBadge ? `
                                     <span id="badge_pct_${p.id}" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
-                                        0.00 %
+                                        0.000 %
                                     </span>
                                 ` : ''}
                             </div>
@@ -873,46 +879,54 @@
         }
 
         function calculateLiveFields() {
-            let baseWeight = 0;
-            const baseInput = document.querySelector('input[data-base-weight="true"]') || document.querySelector('input[type="text"][oninput*="calculateLiveFields"]');
-            
-            if (baseInput) {
-                baseWeight = evaluateExpression(baseInput.value);
-            }
-
-            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
-            const carcassCount = evaluateExpression(countValRaw);
-
-            const avgInput = document.getElementById('p_avg_carcass_weight');
-            if (avgInput && baseWeight > 0 && carcassCount > 0) {
-                avgInput.value = (baseWeight / carcassCount).toFixed(2);
-            }
-
             const methodId = document.getElementById('methodologySelect')?.value;
             if (!methodId) return;
 
             const m = state.methodologies.find(x => x.id === methodId);
             if (!m || !m.groups) return;
 
-            m.groups.forEach(group => {
-                group.params.forEach(p => {
-                    if (p.type === 'decimal' && !p.calculated && !p.isBaseWeight) {
-                        const badge = document.getElementById(`badge_pct_${p.id}`);
-                        if (badge) {
-                            const inputEl = document.getElementById(p.id);
-                            const val = evaluateExpression(inputEl?.value);
-                            
-                            if (baseWeight > 0 && val > 0) {
-                                const pct = ((val / baseWeight) * 100).toFixed(2);
-                                badge.innerText = `${pct} %`;
-                                badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
-                            } else {
-                                badge.innerText = "0.00 %";
-                                badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
-                            }
+            const allParams = m.groups.flatMap(g => g.params);
+
+            // Спочатку рахуємо звичайні суми або середні, якщо це потрібно
+            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
+            const carcassCount = evaluateExpression(countValRaw);
+
+            // Вираховуємо значення для всіх полів
+            const paramValues = {};
+            allParams.forEach(p => {
+                const inputEl = document.getElementById(p.id);
+                if (inputEl) {
+                    paramValues[p.id] = evaluateExpression(inputEl.value);
+                }
+            });
+
+            // Автоматичний розрахунок середньої ваги тушки (якщо є такий параметр)
+            const baseWeightParam = allParams.find(p => p.isBaseWeight) || allParams.find(p => p.id === 'p_total_weight_wog');
+            const totalWog = baseWeightParam ? (paramValues[baseWeightParam.id] || 0) : 0;
+
+            const avgInput = document.getElementById('p_avg_carcass_weight');
+            if (avgInput && totalWog > 0 && carcassCount > 0) {
+                avgInput.value = (totalWog / carcassCount).toFixed(3);
+            }
+
+            // Розрахунок часток % для кожного параметра на основі його обраної бази
+            allParams.forEach(p => {
+                if (p.type === 'decimal' && !p.calculated && p.useShare && p.baseParamId) {
+                    const badge = document.getElementById(`badge_pct_${p.id}`);
+                    if (badge) {
+                        const val = paramValues[p.id] || 0;
+                        const baseVal = paramValues[p.baseParamId] || totalWog;
+
+                        if (baseVal > 0 && val > 0) {
+                            const pct = ((val / baseVal) * 100).toFixed(3);
+                            badge.innerText = `${pct} %`;
+                            badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
+                        } else {
+                            badge.innerText = "0.000 %";
+                            badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
                         }
                     }
-                });
+                }
             });
         }
 
@@ -1000,7 +1014,7 @@
             inputs.forEach(input => {
                 if (input.value.includes('+') || input.value.includes(',')) {
                     const sum = evaluateExpression(input.value);
-                    input.value = sum > 0 ? sum.toFixed(2) : "";
+                    input.value = sum > 0 ? sum.toFixed(3) : "";
                 }
             });
 
@@ -1014,18 +1028,19 @@
             allParams.forEach(p => {
                 let val = formData.get(p.id);
                 if (p.type === 'decimal' && val !== null && val !== '') {
-                    val = parseFloat(val).toFixed(2);
+                    val = parseFloat(val).toFixed(3);
                 }
                 const pLabelStr = getI18nText(p.label);
                 values[pLabelStr] = val || '-';
             });
 
             const now = new Date();
-            const timestamp = now.toLocaleString('uk-UA', { timeZone: 'Europe/Kyiv' });
+            // Формат дати без часу (РРРР-ММ-ДД)
+            const dateOnly = now.toISOString().split('T')[0];
 
             const newRecord = {
                 id: 'rec_' + Date.now(),
-                timestamp: timestamp,
+                timestamp: dateOnly,
                 rawDate: now.toISOString(),
                 methodologyId: m.id,
                 methodologyTitle: getI18nText(m.title),
@@ -1141,7 +1156,7 @@
             const rec = state.measurements.find(x => x.id === id);
             if (!rec) return;
 
-            generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
+            generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
         function exportToExcelFiltered() {
@@ -1155,7 +1170,7 @@
 
         function generateExcelFile(recordsArray, filename) {
             const headers = [
-                "Дата та Час\nFecha y Hora\nDate & Time",
+                "Дата\nFecha\nDate",
                 "Методика\nMetodología\nMethodology",
                 "Фабрика\nPlanta\nPlant"
             ];
@@ -1219,7 +1234,7 @@
                         !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
                         
                         if (!isNaN(numVal) && totalWog > 0) {
-                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(2)) / 100);
+                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(3)) / 100);
                         } else {
                             row.push("-");
                         }
@@ -1277,9 +1292,9 @@
 
                     if (typeof cell.v === 'number') {
                         if (isCalcCol[C] && String(fullHeaders[C]).includes("Частка %")) {
-                            cell.z = '0.00%';
+                            cell.z = '0.000%';
                         } else {
-                            cell.z = '0.00';
+                            cell.z = '0.000';
                         }
                     }
 
@@ -1354,7 +1369,7 @@
                 document.getElementById('methodTitle').value = "";
                 document.getElementById('methodDesc').value = "";
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false }
                 ];
             }
 
@@ -1370,10 +1385,17 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            container.innerHTML = tempParams.map((p, idx) => `
+            // Список усіх числових параметрів, які можна обрати як базу для відсотків
+            const decimalParams = tempParams.filter(p => p.type === 'decimal');
+
+            container.innerHTML = tempParams.map((p, idx) => {
+                const baseOptions = decimalParams.map(dp => 
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>${getI18nText(dp.label)}</option>`
+                ).join('');
+
+                return `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
                     <div class="flex items-center gap-2">
-                        <!-- Кнопки керування порядком (Вгору / Вниз) -->
                         <div class="flex flex-col space-y-0.5">
                             <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вгору"><i class="fa-solid fa-chevron-up"></i></button>
                             <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вниз"><i class="fa-solid fa-chevron-down"></i></button>
@@ -1389,12 +1411,29 @@
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
-                    <div class="flex items-center space-x-2 pt-1 pl-6">
-                        <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
-                        <label for="base_${idx}" class="text-[11px] text-slate-600 font-medium">${dict.lblIsBaseWeight}</label>
+                    <div class="flex flex-wrap items-center gap-4 pt-1 pl-6 text-xs text-slate-600">
+                        <div class="flex items-center space-x-1.5">
+                            <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
+                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
+                        </div>
+                        ${p.type === 'decimal' && !p.calculated ? `
+                        <div class="flex items-center space-x-1.5">
+                            <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)">
+                            <label for="share_${idx}" class="font-medium">${dict.lblUseShare}</label>
+                        </div>
+                        ${p.useShare ? `
+                        <div class="flex items-center space-x-1">
+                            <span>${dict.lblBaseParam}</span>
+                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded p-1 bg-white text-xs">
+                                <option value="">${dict.lblNoBase}</option>
+                                ${baseOptions}
+                            </select>
+                        </div>
+                        ` : ''}
+                        ` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;}).join('');
         }
 
         function moveParam(idx, direction) {
@@ -1411,7 +1450,9 @@
                 label: { uk: 'Новий параметр', es: 'Nuevo parámetro', en: 'New Parameter' },
                 type: 'decimal',
                 required: false,
-                isBaseWeight: false
+                isBaseWeight: false,
+                useShare: false,
+                baseParamId: ''
             });
             renderParamRows();
         }
@@ -1431,6 +1472,7 @@
 
         function updateParamType(idx, val) {
             tempParams[idx].type = val;
+            renderParamRows();
         }
 
         function updateBaseWeight(idx, isChecked) {
@@ -1438,6 +1480,20 @@
                 p.isBaseWeight = (i === idx && isChecked);
             });
             renderParamRows();
+        }
+
+        function updateUseShare(idx, isChecked) {
+            tempParams[idx].useShare = isChecked;
+            if (isChecked && !tempParams[idx].baseParamId) {
+                // Автоматично вибираємо першу базову вагу як дефолтну
+                const firstBase = tempParams.find(p => p.isBaseWeight) || tempParams.find(p => p.type === 'decimal');
+                if (firstBase) tempParams[idx].baseParamId = firstBase.id;
+            }
+            renderParamRows();
+        }
+
+        function updateBaseParamId(idx, val) {
+            tempParams[idx].baseParamId = val;
         }
 
         function saveMethodology() {
