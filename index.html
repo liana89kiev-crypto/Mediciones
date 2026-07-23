@@ -26,7 +26,7 @@
                 <span class="text-2xl text-blue-400"><i class="fa-solid fa-scale-balanced"></i></span>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Mediciones SPA</h1>
-                    <p class="text-xs text-slate-400">Система замірів та зважування тушки</p>
+                    <p class="text-xs text-slate-400">Система замірів та зважування тушки / Control de despiece</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3 text-sm">
@@ -34,7 +34,7 @@
                     <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
                     <span>Локально</span>
                 </div>
-                <button onclick="switchTab('settings')" class="p-2 hover:bg-slate-800 rounded-lg transition" title="Налаштування">
+                <button onclick="switchTab('settings')" class="p-2 hover:bg-slate-800 rounded-lg transition" title="Налаштування / Configuración">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
@@ -43,15 +43,15 @@
         <div class="bg-slate-800 text-slate-300 text-sm flex justify-center space-x-8 border-t border-slate-700">
             <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-2">
                 <i class="fa-solid fa-pen-to-square"></i>
-                <span>Новий замір</span>
+                <span>Новий замір / Nueva medición</span>
             </button>
             <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 flex items-center space-x-2">
                 <i class="fa-solid fa-table-list"></i>
-                <span>Історія та Експорт</span>
+                <span>Історія та Експорт / Historial</span>
             </button>
             <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2">
                 <i class="fa-solid fa-sliders"></i>
-                <span>Конструктор методик</span>
+                <span>Конструктор / Metodologías</span>
             </button>
         </div>
     </header>
@@ -64,29 +64,29 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold flex items-center text-slate-800">
-                        <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру
+                        <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру / Registro de medición
                     </h2>
                     <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> Черновик збережено
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Черновик збережено / Borrador guardado
                     </span>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Контролер (Фабрика)</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оператор / Фабрика / Planta</label>
                         <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="">-- Оберіть фабрику --</option>
-                            <option value="Фабрика 1">Фабрика 1</option>
-                            <option value="Фабрика 2">Фабрика 2</option>
-                            <option value="Фабрика 3">Фабрика 3</option>
-                            <option value="Фабрика 4">Фабрика 4</option>
-                            <option value="Фабрика 5">Фабрика 5</option>
+                            <option value="">-- Оберіть фабрику / Seleccione planta --</option>
+                            <option value="Фабрика 1">Фабрика 1 / Planta 1</option>
+                            <option value="Фабрика 2">Фабрика 2 / Planta 2</option>
+                            <option value="Фабрика 3">Фабрика 3 / Planta 3</option>
+                            <option value="Фабрика 4">Фабрика 4 / Planta 4</option>
+                            <option value="Фабрика 5">Фабрика 5 / Planta 5</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оберіть методику</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Оберіть методику / Metodología</label>
                         <select id="methodologySelect" onchange="renderMeasurementForm()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="">-- Оберіть методику заміру --</option>
+                            <option value="">-- Оберіть методику / Seleccione metodología --</option>
                         </select>
                     </div>
                 </div>
@@ -99,11 +99,11 @@
                         
                         <div class="pt-4 flex justify-end space-x-3 border-t border-slate-200">
                             <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
-                                Очистити
+                                Очистити / Limpiar
                             </button>
                             <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center space-x-2">
                                 <i class="fa-solid fa-floppy-disk"></i>
-                                <span>Зберегти результати</span>
+                                <span>Зберегти результати / Guardar</span>
                             </button>
                         </div>
                     </form>
@@ -111,7 +111,8 @@
 
                 <div id="noMethodologySelected" class="text-center py-12 text-slate-400">
                     <i class="fa-solid fa-hand-pointer text-4xl mb-3 block"></i>
-                    Будь ласка, оберіть методику зі списку вище для початку внесення даних.
+                    Будь ласка, оберіть методику зі списку вище для початку внесення даних. <br>
+                    <span class="text-xs italic">Por favor, seleccione una metodología arriba para comenzar.</span>
                 </div>
             </div>
         </section>
@@ -121,15 +122,15 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Історія занесених замірів</h2>
-                        <p class="text-xs text-slate-500">Всього записів у базі: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
+                        <h2 class="text-xl font-bold text-slate-800">Історія занесених замірів / Historial</h2>
+                        <p class="text-xs text-slate-500">Всього записів у базі / Total registros: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
                     <div class="flex items-center space-x-2 w-full md:w-auto">
                         <button onclick="exportToExcelAll()" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
-                            <span>Експорт усіх замірів (.xlsx)</span>
+                            <span>Експорт усіх (.xlsx) / Exportar todo</span>
                         </button>
-                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати з хмарою">
+                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати / Sincronizar">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
@@ -138,20 +139,20 @@
                 <!-- Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Фільтр за методикою</label>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Фільтр за методикою / Metodología</label>
                         <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
-                            <option value="ALL">Всі методики</option>
+                            <option value="ALL">Всі методики / Todas</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Пошук за фабрикою / текстом</label>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Пошук / Buscar</label>
                         <input type="text" id="filterSearch" oninput="renderHistoryTable()" placeholder="Введіть для пошуку..." class="w-full border border-slate-300 rounded p-1.5 text-xs">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Сортування</label>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Сортування / Ordenar</label>
                         <select id="filterSort" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
-                            <option value="DESC">Спочатку нові</option>
-                            <option value="ASC">Спочатку старі</option>
+                            <option value="DESC">Спочатку нові / Más recientes</option>
+                            <option value="ASC">Спочатку старі / Más antiguos</option>
                         </select>
                     </div>
                 </div>
@@ -161,11 +162,11 @@
                     <table class="w-full text-left text-sm text-slate-600">
                         <thead class="bg-slate-100 text-xs uppercase text-slate-700 font-semibold border-b border-slate-200">
                             <tr>
-                                <th class="p-3">Дата / Час</th>
-                                <th class="p-3">Методика</th>
-                                <th class="p-3">Фабрика</th>
-                                <th class="p-3">Результати замірів</th>
-                                <th class="p-3 text-right">Дії</th>
+                                <th class="p-3">Дата / Hora</th>
+                                <th class="p-3">Методика / Método</th>
+                                <th class="p-3">Фабрика / Planta</th>
+                                <th class="p-3">Результати / Resultados</th>
+                                <th class="p-3 text-right">Дії / Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody" class="divide-y divide-slate-200 bg-white">
@@ -181,12 +182,12 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Управління методиками</h2>
-                        <p class="text-xs text-slate-500">Створюйте та редагуйте методики замірів із різними типами параметрів</p>
+                        <h2 class="text-xl font-bold text-slate-800">Управління методиками / Gestión de metodologías</h2>
+                        <p class="text-xs text-slate-500">Створюйте та редагуйте методики замірів</p>
                     </div>
                     <button onclick="openMethodologyModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center space-x-2">
                         <i class="fa-solid fa-plus"></i>
-                        <span>Нова методика</span>
+                        <span>Нова методика / Nueva</span>
                     </button>
                 </div>
 
@@ -202,7 +203,7 @@
                 <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center">
                     <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io & Синхронізації
                 </h2>
-                <p class="text-xs text-slate-500 mb-6">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження та синхронізації між пристроями.</p>
+                <p class="text-xs text-slate-500 mb-6">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.</p>
 
                 <div class="space-y-4">
                     <div>
@@ -215,18 +216,18 @@
                     </div>
                     <div class="pt-2 flex justify-between items-center">
                         <button onclick="testJsonBinConnection()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50">
-                            Тест з'єднання
+                            Тест з'єднання / Probar
                         </button>
                         <button onclick="saveSettings()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow">
-                            Зберегти налаштування
+                            Зберегти / Guardar
                         </button>
                     </div>
                 </div>
 
                 <div class="mt-8 pt-6 border-t border-slate-200">
-                    <h3 class="text-sm font-bold text-red-600 mb-2">Небезпечна зона</h3>
+                    <h3 class="text-sm font-bold text-red-600 mb-2">Небезпечна зона / Zona de peligro</h3>
                     <button onclick="clearAllData()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold transition">
-                        Очистити всі локальні дані замірів
+                        Очистити всі локальні дані замірів / Limpiar datos locales
                     </button>
                 </div>
             </div>
@@ -248,7 +249,7 @@
                 <input type="hidden" id="editMethodologyId">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Назва методики</label>
-                    <input type="text" id="methodTitle" placeholder="наприклад: Замір параметрів тушки (Лінія A)" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="text" id="methodTitle" placeholder="наприклад: Замір параметрів тушки" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Опис / Інструкція</label>
@@ -279,55 +280,55 @@
     <script>
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning_v3',
-                title: 'Замір розробки тушки (Аналіз анатомічних частин)',
-                description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
+                id: 'm_poultry_deboning_v5',
+                title: 'Замір розробки тушки / Control de despiece (Аналіз анатомічних частин)',
+                description: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат. / Determinación del peso de la canal, despiece y cálculo de rendimiento.',
                 groups: [
                     {
-                        title: '1. Загальна інформація',
+                        title: '1. Загальна інформація / Información general',
                         isGeneral: true,
                         params: [
-                            { id: 'p_date_time', label: 'Дата та Час заміру', type: 'date', required: true },
-                            { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт)', type: 'decimal', required: true },
-                            { id: 'p_total_weight_wog', label: 'Загальна вага вибірки перед розрізанням (Маса WOG, кг)', type: 'decimal', required: true },
-                            { id: 'p_avg_carcass_weight', label: 'Середня вага тушки (кг) [Маса WOG / Кількість]', type: 'decimal', required: false, calculated: true }
+                            { id: 'p_date_time', label: 'Дата та Час заміру / Fecha y Hora', type: 'date', required: true },
+                            { id: 'p_carcass_count', label: 'Кількість тушок у вибірці (шт) / Cantidad de canales (uds)', type: 'decimal', required: true },
+                            { id: 'p_total_weight_wog', label: 'Загальна вага тушок перед розрізанням (кг) / Peso total de canales (kg)', type: 'decimal', required: true },
+                            { id: 'p_avg_carcass_weight', label: 'Середня вага тушки (кг) / Peso medio de canal (kg)', type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
-                        title: '2. Крило',
+                        title: '2. Крило / Ala',
                         params: [
-                            { id: 'p_sub_wing_tip', label: 'Кисть крила (кг)', type: 'decimal', required: false },
-                            { id: 'p_wing_elbow', label: 'Лікоть (кг)', type: 'decimal', required: false },
-                            { id: 'p_wing_shoulder', label: 'Плече (кг)', type: 'decimal', required: false },
-                            { id: 'p_wing_whole', label: 'Трифалангове крило (сума) (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                            { id: 'p_sub_wing_tip', label: 'Кисть крила (кг) / Punta de ala (kg)', type: 'decimal', required: false },
+                            { id: 'p_wing_elbow', label: 'Лікоть (кг) / Solomillo / Centro de ala (kg)', type: 'decimal', required: false },
+                            { id: 'p_wing_shoulder', label: 'Плече (кг) / Muslito de ala (kg)', type: 'decimal', required: false },
+                            { id: 'p_wing_whole', label: 'Трифалангове крило (сума) (кг) / Ala 3 falanges total (kg) [Авто]', type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
-                        title: '3. Передня частина тушки',
+                        title: '3. Передня частина тушки / Parte delantera (Pechuga)',
                         params: [
-                            { id: 'p_filet_large', label: 'Філе велике (кг)', type: 'decimal', required: false },
-                            { id: 'p_filet_small', label: 'Філе мале (кг)', type: 'decimal', required: false },
-                            { id: 'p_sub_breast_frame', label: 'Грудний каркас (кг)', type: 'decimal', required: false },
-                            { id: 'p_sub_breast_skin', label: 'Шкіра грудки (кг)', type: 'decimal', required: false },
-                            { id: 'p_front_total', label: 'Сума передньої частини (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                            { id: 'p_filet_large', label: 'Філе велике (кг) / Pechuga grande / Fillet (kg)', type: 'decimal', required: false },
+                            { id: 'p_filet_small', label: 'Філе мале (кг) / Solomillo chico / Tenderloin (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_breast_frame', label: 'Грудний каркас (кг) / Carcasa de pechuga (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_breast_skin', label: 'Шкіра грудки (кг) / Piel de pechuga (kg)', type: 'decimal', required: false },
+                            { id: 'p_front_total', label: 'Сума передньої частини (кг) / Total parte delantera (kg) [Авто]', type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
-                        title: '4. Задня частина тушки',
+                        title: '4. Задня частина тушки / Parte trasera (Cuarto trasero)',
                         params: [
-                            { id: 'p_thigh_bone_in', label: 'Стегно (кг)', type: 'decimal', required: false },
-                            { id: 'p_drumstick', label: 'Гомілка (кг)', type: 'decimal', required: false },
-                            { id: 'p_sub_saddle', label: 'Нижня частина спинки (Saddle) (кг)', type: 'decimal', required: false },
-                            { id: 'p_sub_tail', label: 'Гузка (кг)', type: 'decimal', required: false },
-                            { id: 'p_back_total', label: 'Сума задньої частини тушки (кг) [Авто]', type: 'decimal', required: false, calculated: true }
+                            { id: 'p_thigh_bone_in', label: 'Стегно (кг) / Contramuslo (kg)', type: 'decimal', required: false },
+                            { id: 'p_drumstick', label: 'Гомілка (кг) / Jamoncito / Muslo (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_saddle', label: 'Нижня частина спинки (Saddle) (кг) / Espalda / Saddle (kg)', type: 'decimal', required: false },
+                            { id: 'p_sub_tail', label: 'Гузка (кг) / Obispillo / Culo (kg)', type: 'decimal', required: false },
+                            { id: 'p_back_total', label: 'Сума задньої частини тушки (кг) / Total parte trasera (kg) [Авто]', type: 'decimal', required: false, calculated: true }
                         ]
                     },
                     {
-                        title: '5. Технічні відходи та Втрати',
+                        title: '5. Технічні відходи та Втрати / Desperdicios y Pérdidas',
                         params: [
-                            { id: 'p_tech_losses', label: 'Технічні втрати / Втрати (кг)', type: 'decimal', required: false },
-                            { id: 'p_tech_waste_total', label: 'Технічні відходи (сума) (кг) [Авто]', type: 'decimal', required: false, calculated: true },
-                            { id: 'p_notes', label: 'Примітки / Зауваження', type: 'text', required: false }
+                            { id: 'p_tech_losses', label: 'Технічні втрати / Втрати (кг) / Pérdida técnica (kg)', type: 'decimal', required: false },
+                            { id: 'p_tech_waste_total', label: 'Технічні відходи (сума) (кг) / Total desperdicios (kg) [Авто]', type: 'decimal', required: false, calculated: true },
+                            { id: 'p_notes', label: 'Примітки / Зауваження / Notas', type: 'text', required: false }
                         ]
                     }
                 ]
@@ -340,6 +341,7 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
+        // Оновлюємо структуру методик
         localStorage.setItem('qm_methodologies', JSON.stringify(DEFAULT_METHODOLOGIES));
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -379,8 +381,8 @@
             const select = document.getElementById('methodologySelect');
             const filterSelect = document.getElementById('filterMethodology');
             
-            select.innerHTML = '<option value="">-- Оберіть методику заміру --</option>';
-            filterSelect.innerHTML = '<option value="ALL">Всі методики</option>';
+            select.innerHTML = '<option value="">-- Оберіть методику / Seleccione metodología --</option>';
+            filterSelect.innerHTML = '<option value="ALL">Всі методики / Todas</option>';
 
             state.methodologies.forEach(m => {
                 select.innerHTML += `<option value="${m.id}">${m.title}</option>`;
@@ -437,10 +439,10 @@
             const m = state.methodologies.find(x => x.id === methodId);
             if (!m) return;
 
-            descDiv.innerText = m.description || 'Опис відсутній.';
+            descDiv.innerText = m.description || 'Опис відсутній / Sin descripción.';
             fieldsDiv.innerHTML = '';
 
-            const groups = m.groups || [{ title: 'Параметри', params: m.params || [] }];
+            const groups = m.groups || [{ title: 'Параметри / Parámetros', params: m.params || [] }];
 
             groups.forEach(group => {
                 const groupBlock = document.createElement('div');
@@ -464,7 +466,7 @@
                     const showPercentBadge = !group.isGeneral && p.type === 'decimal';
 
                     if (p.type === 'text') {
-                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="Введіть текст...">`;
+                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="Введіть текст / Texto...">`;
                     } else if (p.type === 'decimal') {
                         inputHtml = `
                             <div class="relative flex items-center">
@@ -472,7 +474,7 @@
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
                                     class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
-                                    placeholder="${p.calculated ? '0.00' : 'напр. 4.75+2.12 або 5.10'}">
+                                    placeholder="${p.calculated ? '0.00' : '4.75+2.12'}">
                                 ${showPercentBadge ? `
                                     <span id="badge_pct_${p.id}" class="absolute right-2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all">
                                         0.00 %
@@ -493,7 +495,7 @@
 
                     fieldWrapper.innerHTML = `
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
-                            ${p.label} ${reqStar} ${p.calculated ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 авто)</span>' : ''}
+                            ${p.label} ${reqStar} ${p.calculated ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}
                         </label>
                         ${inputHtml}
                     `;
@@ -658,7 +660,7 @@
             e.preventDefault();
             const inspector = document.getElementById('inspectorName').value;
             if (!inspector) {
-                alert("Будь ласка, оберіть фабрику зі списку!");
+                alert("Будь ласка, оберіть фабрику зі списку! / Por favor, seleccione una planta.");
                 return;
             }
 
@@ -708,7 +710,7 @@
             renderHistoryTable();
             resetForm();
             clearDraft();
-            alert("Замір успішно збережено!");
+            alert("Замір успішно збережено! / ¡Medición guardada con éxito!");
             
             if (state.config.binId && state.config.apiKey) {
                 pushToJsonBin();
@@ -751,7 +753,7 @@
             document.getElementById('recordCount').innerText = filtered.length;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено / No hay registros</td></tr>`;
                 return;
             }
 
@@ -782,7 +784,7 @@
         }
 
         function deleteMeasurement(id) {
-            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
+            if (confirm("Ви дійсно бажаєте видалити цей замір? / ¿Desea eliminar esta medición?")) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
                 saveStateToLocal();
                 renderHistoryTable();
@@ -794,43 +796,40 @@
             const rec = state.measurements.find(x => x.id === id);
             if (!rec) return;
 
-            generateExcelFile([rec], `Замір_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
+            generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
         }
 
         function exportToExcelAll() {
             if (state.measurements.length === 0) {
-                alert("Немає даних для експорту!");
+                alert("Немає даних для експорту! / No hay datos para exportar");
                 return;
             }
-            generateExcelFile(state.measurements, `Всі_Заміри_${new Date().toISOString().split('T')[0]}.xlsx`);
+            generateExcelFile(state.measurements, `Todas_Las_Mediciones_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
         function generateExcelFile(recordsArray, filename) {
             const excelRows = recordsArray.map(rec => {
                 const row = {
-                    "Дата та Час (Київ)": rec.timestamp,
-                    "Методика": rec.methodologyTitle,
-                    "Фабрика": rec.inspector
+                    "Дата та Час / Fecha y Hora": rec.timestamp,
+                    "Методика / Metodología": rec.methodologyTitle,
+                    "Фабрика / Planta": rec.inspector
                 };
 
-                const totalWogKey = "Загальна вага вибірки перед розрізанням (Маса WOG, кг)";
-                const countKey = "Кількість тушок у вибірці (шт)";
-                const avgKey = "Середня вага тушки (кг) [Маса WOG / Кількість]";
+                let totalWog = 0;
 
-                const totalWog = parseFloat(rec.values[totalWogKey]) || 0;
-                const count = parseFloat(rec.values[countKey]) || 0;
-
-                if (totalWog > 0 && count > 0) {
-                    rec.values[avgKey] = (totalWog / count).toFixed(2);
-                }
+                Object.entries(rec.values).forEach(([k, v]) => {
+                    if (k.includes("Загальна вага") || k.includes("Peso total")) {
+                        totalWog = parseFloat(v) || 0;
+                    }
+                });
 
                 Object.entries(rec.values).forEach(([paramName, val]) => {
                     row[paramName] = val;
                     
                     const numVal = parseFloat(val);
-                    if (!isNaN(numVal) && totalWog > 0 && paramName !== totalWogKey && paramName !== countKey && paramName !== avgKey) {
+                    if (!isNaN(numVal) && totalWog > 0 && !paramName.includes("Загальна вага") && !paramName.includes("Peso total") && !paramName.includes("Кількість") && !paramName.includes("Cantidad") && !paramName.includes("Середня вага") && !paramName.includes("Peso medio")) {
                         const sharePercent = ((numVal / totalWog) * 100).toFixed(2) + " %";
-                        row[`Частка % (${paramName})`] = sharePercent;
+                        row[`Частка % / % Participación (${paramName})`] = sharePercent;
                     }
                 });
 
@@ -839,7 +838,7 @@
 
             const worksheet = XLSX.utils.json_to_sheet(excelRows);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Результати");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Resultados");
 
             XLSX.writeFile(workbook, filename);
         }
@@ -992,7 +991,7 @@
             state.config.binId = document.getElementById('cfgBinId').value.trim();
             state.config.apiKey = document.getElementById('cfgApiKey').value.trim();
             saveStateToLocal();
-            alert("Налаштування збережено!");
+            alert("Налаштування збережено! / Configuración guardada");
             if (state.config.binId && state.config.apiKey) syncData();
         }
 
@@ -1079,7 +1078,7 @@
                     headers: { 'X-Master-Key': apiKey }
                 });
                 if (res.ok) {
-                    alert("Успішне з'єднання з JSONBin.io!");
+                    alert("Успішне з'єднання з JSONBin.io! / ¡Conexión exitosa!");
                 } else {
                     alert("Помилка підключення. Перевірте правильність BIN ID та Ключа.");
                 }
