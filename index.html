@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Система проведення замірів та контролю якості</title>
+    <title>Mediciones SPA — Система замірів та зважування</title>
+    <!-- Dynamic Favicon (Scales Emoji) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS (XLSX) CDN -->
@@ -21,10 +23,10 @@
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <span class="text-2xl">📐</span>
+                <span class="text-2xl text-blue-400"><i class="fa-solid fa-scale-balanced"></i></span>
                 <div>
                     <h1 class="text-lg font-bold leading-tight">Mediciones SPA</h1>
-                    <p class="text-xs text-slate-400">Система занесення та аналізу замірів</p>
+                    <p class="text-xs text-slate-400">Система замірів та зважування тушки</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3 text-sm">
@@ -62,7 +64,7 @@
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-bold flex items-center text-slate-800">
-                        <i class="fa-solid fa-clipboard-check text-blue-600 mr-2"></i> Проведення заміру
+                        <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру
                     </h2>
                     <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
                         <i class="fa-solid fa-floppy-disk mr-1"></i> Черновик збережено
