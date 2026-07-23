@@ -118,12 +118,12 @@
                         <div id="dynamicFields" class="space-y-6"></div>
                         
                         <div class="pt-4 flex justify-end space-x-3 border-t border-slate-200">
-                            <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition" id="btnReset">
-                                Очистити
+                            <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                                <span id="btnReset">Очистити</span>
                             </button>
-                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center space-x-2" id="btnSave">
+                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center space-x-2">
                                 <i class="fa-solid fa-floppy-disk"></i>
-                                <span>Зберегти результати</span>
+                                <span id="btnSave">Зберегти результати</span>
                             </button>
                         </div>
                     </form>
@@ -145,9 +145,9 @@
                         <p class="text-xs text-slate-500"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
                     <div class="flex items-center space-x-2 w-full md:w-auto">
-                        <button onclick="exportToExcelFiltered()" id="btnExportAll" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                        <button onclick="exportToExcelFiltered()" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
-                            <span>Експорт заповнених / відфільтрованих (.xlsx)</span>
+                            <span id="btnExportAll">Експорт заповнених / відфільтрованих (.xlsx)</span>
                         </button>
                         <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
@@ -316,7 +316,7 @@
                 lblSelectPrompt: "Будь ласка, оберіть методику зі списку вище для початку внесення даних.",
                 lblHistoryTitle: "Історія занесених замірів",
                 lblTotalRecords: "Знайдено записів",
-                btnExportAll: "Експорт обраних (.xlsx)",
+                btnExportAll: "Експорт усіх (.xlsx)",
                 lblFilterMethod: "Фільтр за методикою",
                 lblFilterSearch: "Пошук",
                 lblFilterSort: "Сортування",
@@ -541,12 +541,16 @@
             document.getElementById('lblDraftSaved').innerText = dict.lblDraftSaved;
             document.getElementById('lblFactory').innerText = dict.lblFactory;
             document.getElementById('lblMethodology').innerText = dict.lblMethodology;
+            
+            // Оновлюємо тільки чистий текст у кнопках без дублювання іконок
             document.getElementById('btnReset').innerText = dict.btnReset;
-            document.getElementById('btnSave').innerHTML = `<i class="fa-solid fa-floppy-disk"></i><span>${dict.btnSave}</span>`;
+            document.getElementById('btnSave').innerText = dict.btnSave;
+            document.getElementById('btnExportAll').innerText = dict.btnExportAll;
+            document.getElementById('btnNewMethod').innerText = dict.btnNewMethod;
+
             document.getElementById('lblSelectPrompt').innerText = dict.lblSelectPrompt;
             document.getElementById('lblHistoryTitle').innerText = dict.lblHistoryTitle;
             document.getElementById('lblTotalRecords').innerText = dict.lblTotalRecords;
-            document.getElementById('btnExportAll').innerHTML = `<i class="fa-solid fa-file-excel mr-1.5"></i><span>${dict.btnExportAll}</span>`;
             document.getElementById('lblFilterMethod').innerText = dict.lblFilterMethod;
             document.getElementById('lblFilterSearch').innerText = dict.lblFilterSearch;
             document.getElementById('lblFilterSort').innerText = dict.lblFilterSort;
@@ -559,7 +563,6 @@
 
             document.getElementById('lblConstructorTitle').innerText = dict.lblConstructorTitle;
             document.getElementById('lblConstructorSub').innerText = dict.lblConstructorSub;
-            document.getElementById('btnNewMethod').innerHTML = `<i class="fa-solid fa-plus"></i><span>${dict.btnNewMethod}</span>`;
 
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
@@ -947,7 +950,6 @@
             calculateLiveFields();
         }
 
-        // Отримання списку відфільтрованих замірів
         function getFilteredMeasurements() {
             const filterM = document.getElementById('filterMethodology').value;
             const filterSearch = document.getElementById('filterSearch').value.toLowerCase();
@@ -1035,7 +1037,6 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp.replace(/[:.,\s]/g, '_')}.xlsx`);
         }
 
-        // Експортує ТІЛЬКИ відфільтровані дані
         function exportToExcelFiltered() {
             const filtered = getFilteredMeasurements();
             if (filtered.length === 0) {
