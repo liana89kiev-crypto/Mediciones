@@ -807,7 +807,7 @@
             generateExcelFile(state.measurements, `Todas_Las_Mediciones_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
-        // КРАСИВЕ СТИЛІЗОВАНЕ ФОРМАТУВАННЯ EXCEL (.xlsx)
+        // КРАСИВЕ СТИЛІЗОВАНЕ ФОРМАТУВАННЯ EXCEL (.xlsx) З ПЕРЕНОСОМ СЛІВ ТА ЧИСЛОВИМИ ЗНАЧЕННЯМИ
         function generateExcelFile(recordsArray, filename) {
             const headers = [
                 "Дата та Час / Fecha y Hora",
@@ -859,17 +859,23 @@
                 ];
 
                 paramKeys.forEach(pName => {
-                    const val = rec.values[pName] || '-';
-                    row.push(val);
+                    const rawVal = rec.values[pName];
+                    const numVal = parseFloat(rawVal);
+
+                    // Зберігаємо числовий тип для редагування в Excel
+                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas")) {
+                        row.push(numVal);
+                    } else {
+                        row.push(rawVal || '-');
+                    }
 
                     if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
                         !pName.includes("Кількість") && !pName.includes("Cantidad") && 
                         !pName.includes("Середня вага") && !pName.includes("Peso medio") &&
                         !pName.includes("Примітки") && !pName.includes("Notas")) {
                         
-                        const numVal = parseFloat(val);
                         if (!isNaN(numVal) && totalWog > 0) {
-                            row.push(((numVal / totalWog) * 100).toFixed(2) + " %");
+                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(2)) / 100);
                         } else {
                             row.push("-");
                         }
@@ -896,7 +902,7 @@
             const autoCalcStyle = {
                 font: { bold: true, color: { rgb: "1E3A8A" }, sz: 10, name: "Segoe UI" },
                 fill: { fgColor: { rgb: "E0F2FE" } },
-                alignment: { vertical: "center", horizontal: "center" },
+                alignment: { wrapText: true, vertical: "center", horizontal: "center" },
                 border: {
                     top: { style: "thin", color: { rgb: "CBD5E1" } },
                     bottom: { style: "thin", color: { rgb: "CBD5E1" } },
@@ -907,7 +913,7 @@
 
             const normalStyle = {
                 font: { sz: 10, name: "Segoe UI", color: { rgb: "1E293B" } },
-                alignment: { vertical: "center", horizontal: "center" },
+                alignment: { wrapText: true, vertical: "center", horizontal: "center" },
                 border: {
                     top: { style: "thin", color: { rgb: "E2E8F0" } },
                     bottom: { style: "thin", color: { rgb: "E2E8F0" } },
@@ -923,22 +929,31 @@
                     const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
                     if (!worksheet[cellAddress]) continue;
 
-                    const cellVal = String(dataRows[R][C] || '');
-                    const valLength = cellVal.length;
-                    colWidths[C] = Math.max(colWidths[C] || 15, Math.min(valLength + 5, 45));
+                    const cell = worksheet[cellAddress];
+
+                    // Установлюємо числовий формат
+                    if (typeof cell.v === 'number') {
+                        if (isCalcCol[C] && String(fullHeaders[C]).includes("Частка %")) {
+                            cell.z = '0.00%';
+                        } else {
+                            cell.z = '0.00';
+                        }
+                    }
+
+                    colWidths[C] = Math.max(colWidths[C] || 16, 22);
 
                     if (R === 0) {
-                        worksheet[cellAddress].s = headerStyle;
+                        cell.s = headerStyle;
                     } else if (isCalcCol[C]) {
-                        worksheet[cellAddress].s = autoCalcStyle;
+                        cell.s = autoCalcStyle;
                     } else {
-                        worksheet[cellAddress].s = normalStyle;
+                        cell.s = normalStyle;
                     }
                 }
             }
 
             worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
-            worksheet['!rows'] = [{ hpt: 35 }];
+            worksheet['!rows'] = [{ hpt: 40 }];
 
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Mediciones");
