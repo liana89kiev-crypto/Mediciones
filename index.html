@@ -8,8 +8,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (XLSX) CDN -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS with Styles CDN (xlsx-js-style for full Excel formatting: colors, fonts, widths) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -807,38 +807,141 @@
             generateExcelFile(state.measurements, `Todas_Las_Mediciones_${new Date().toISOString().split('T')[0]}.xlsx`);
         }
 
+        // КРАСИВЕ СТИЛІЗОВАНЕ ФОРМАТУВАННЯ EXCEL (.xlsx)
         function generateExcelFile(recordsArray, filename) {
-            const excelRows = recordsArray.map(rec => {
-                const row = {
-                    "Дата та Час / Fecha y Hora": rec.timestamp,
-                    "Методика / Metodología": rec.methodologyTitle,
-                    "Фабрика / Planta": rec.inspector
-                };
+            const headers = [
+                "Дата та Час / Fecha y Hora",
+                "Методика / Metodología",
+                "Фабрика / Planta"
+            ];
 
+            const paramKeys = [];
+            recordsArray.forEach(rec => {
+                Object.keys(rec.values).forEach(k => {
+                    if (!paramKeys.includes(k)) {
+                        paramKeys.push(k);
+                    }
+                });
+            });
+
+            const fullHeaders = [...headers];
+            const isCalcCol = [false, false, false];
+
+            paramKeys.forEach(pName => {
+                fullHeaders.push(pName);
+                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio");
+                isCalcCol.push(isAuto);
+
+                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
+                    !pName.includes("Кількість") && !pName.includes("Cantidad") && 
+                    !pName.includes("Середня вага") && !pName.includes("Peso medio") &&
+                    !pName.includes("Примітки") && !pName.includes("Notas")) {
+                    
+                    fullHeaders.push(`Частка % / % Participación\n(${pName})`);
+                    isCalcCol.push(true);
+                }
+            });
+
+            const dataRows = [fullHeaders];
+
+            recordsArray.forEach(rec => {
                 let totalWog = 0;
-
                 Object.entries(rec.values).forEach(([k, v]) => {
                     if (k.includes("Загальна вага") || k.includes("Peso total")) {
                         totalWog = parseFloat(v) || 0;
                     }
                 });
 
-                Object.entries(rec.values).forEach(([paramName, val]) => {
-                    row[paramName] = val;
-                    
-                    const numVal = parseFloat(val);
-                    if (!isNaN(numVal) && totalWog > 0 && !paramName.includes("Загальна вага") && !paramName.includes("Peso total") && !paramName.includes("Кількість") && !paramName.includes("Cantidad") && !paramName.includes("Середня вага") && !paramName.includes("Peso medio")) {
-                        const sharePercent = ((numVal / totalWog) * 100).toFixed(2) + " %";
-                        row[`Частка % / % Participación (${paramName})`] = sharePercent;
+                const row = [
+                    rec.timestamp,
+                    rec.methodologyTitle,
+                    rec.inspector
+                ];
+
+                paramKeys.forEach(pName => {
+                    const val = rec.values[pName] || '-';
+                    row.push(val);
+
+                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
+                        !pName.includes("Кількість") && !pName.includes("Cantidad") && 
+                        !pName.includes("Середня вага") && !pName.includes("Peso medio") &&
+                        !pName.includes("Примітки") && !pName.includes("Notas")) {
+                        
+                        const numVal = parseFloat(val);
+                        if (!isNaN(numVal) && totalWog > 0) {
+                            row.push(((numVal / totalWog) * 100).toFixed(2) + " %");
+                        } else {
+                            row.push("-");
+                        }
                     }
                 });
 
-                return row;
+                dataRows.push(row);
             });
 
-            const worksheet = XLSX.utils.json_to_sheet(excelRows);
+            const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
+
+            const headerStyle = {
+                font: { bold: true, color: { rgb: "FFFFFF" }, sz: 11, name: "Segoe UI" },
+                fill: { fgColor: { rgb: "1E293B" } },
+                alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "94A3B8" } },
+                    bottom: { style: "medium", color: { rgb: "475569" } },
+                    left: { style: "thin", color: { rgb: "94A3B8" } },
+                    right: { style: "thin", color: { rgb: "94A3B8" } }
+                }
+            };
+
+            const autoCalcStyle = {
+                font: { bold: true, color: { rgb: "1E3A8A" }, sz: 10, name: "Segoe UI" },
+                fill: { fgColor: { rgb: "E0F2FE" } },
+                alignment: { vertical: "center", horizontal: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "CBD5E1" } },
+                    bottom: { style: "thin", color: { rgb: "CBD5E1" } },
+                    left: { style: "thin", color: { rgb: "CBD5E1" } },
+                    right: { style: "thin", color: { rgb: "CBD5E1" } }
+                }
+            };
+
+            const normalStyle = {
+                font: { sz: 10, name: "Segoe UI", color: { rgb: "1E293B" } },
+                alignment: { vertical: "center", horizontal: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "E2E8F0" } },
+                    bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                    left: { style: "thin", color: { rgb: "E2E8F0" } },
+                    right: { style: "thin", color: { rgb: "E2E8F0" } }
+                }
+            };
+
+            const colWidths = [];
+
+            for (let R = 0; R < dataRows.length; R++) {
+                for (let C = 0; C < dataRows[R].length; C++) {
+                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!worksheet[cellAddress]) continue;
+
+                    const cellVal = String(dataRows[R][C] || '');
+                    const valLength = cellVal.length;
+                    colWidths[C] = Math.max(colWidths[C] || 15, Math.min(valLength + 5, 45));
+
+                    if (R === 0) {
+                        worksheet[cellAddress].s = headerStyle;
+                    } else if (isCalcCol[C]) {
+                        worksheet[cellAddress].s = autoCalcStyle;
+                    } else {
+                        worksheet[cellAddress].s = normalStyle;
+                    }
+                }
+            }
+
+            worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
+            worksheet['!rows'] = [{ hpt: 35 }];
+
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Resultados");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Mediciones");
 
             XLSX.writeFile(workbook, filename);
         }
