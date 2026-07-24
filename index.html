@@ -657,7 +657,7 @@
                             { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' },
                             { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
                             { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
-                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
+                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Contramuslo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
                             { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
                             { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
                         ]
@@ -673,10 +673,10 @@
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             dictionary: {},
-            // АВТОМАТИЧНЕ ПРИВ'ЯЗУВАННЯ ХМАРИ (Рішення 1):
+            // АВТОМАТИЧНО ВШИТІ КЛЮЧИ (Рішення 1)
             config: JSON.parse(localStorage.getItem('qm_config')) || { 
                 binId: '6a60ba54da38895dfe7f4ed1', 
-                apiKey: '$2a$10$9s6G6lQ... (або ваш Access Key)' 
+                apiKey: '$2a$10$m5vuxXDrQuaRGRsuXa0NQ.5xt8PVhS1Dqui4kah97g51lMAngg946' 
             }
         };
 
@@ -711,7 +711,7 @@
             loadSettingsInputs();
             checkAndRestoreDraft();
 
-            // РІШЕННЯ 3: АВТОМАТИЧНА ФОНОВА СИНХРОНІЗАЦІЯ ПРИ СТАРТІ
+            // АВТОМАТИЧНА ФОНОВА СИНХРОНІЗАЦІЯ ПРИ СТАРТІ (Рішення 3)
             if (state.config.binId && state.config.apiKey) {
                 await syncData();
             }
@@ -824,7 +824,6 @@
                 alert("Доступ обмежено. Увійдіть як адміністратор!");
                 return;
             }
-            // Автоматична синхронізація при кожному перемиканні вкладок
             if (state.config.binId && state.config.apiKey) {
                 await syncData();
             }
