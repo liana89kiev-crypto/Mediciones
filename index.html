@@ -771,7 +771,6 @@
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
         let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
 
-        // --- ВБУДОВАНІ РОБОЧІ КЛЮЧІ ЗА ЗАМОВЧУВАННЯМ (Варіант 1) ---
         let state = {
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
@@ -800,13 +799,11 @@
             state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
         }
 
-        // --- CENTRALIZED REMOTE-FIRST POLICY (Blocking Init) ---
         document.addEventListener('DOMContentLoaded', async () => {
             applyLanguageUI();
             updateAdminUI();
             loadSettingsInputs();
 
-            // Перевіряємо наявність конфігурації (тепер вона завжди є за замовчуванням)
             if (state.config.binId && state.config.apiKey) {
                 await syncDataBlocking();
             } else {
@@ -852,7 +849,6 @@
             }
         }
 
-        // --- SMART MERGE ALGORITHM (Злиття за ID та updatedAt) ---
         function smartMergeWithRemote(remoteData) {
             if (remoteData.methodologies && Array.isArray(remoteData.methodologies)) {
                 const map = new Map();
@@ -938,6 +934,21 @@
             if (!param.unit) return labelText;
             const unitText = typeof param.unit === 'object' ? (param.unit[lang] || param.unit['uk'] || '') : param.unit;
             return unitText ? `${labelText} (${unitText})` : labelText;
+        }
+
+        // Отримання двомовної назви параметра для шапки Excel
+        function getBilingualLabelWithUnit(param) {
+            const labelUk = typeof param.label === 'object' ? (param.label['uk'] || '') : param.label;
+            const labelEs = typeof param.label === 'object' ? (param.label['es'] || labelUk) : labelUk;
+            
+            const unitUk = typeof param.unit === 'object' ? (param.unit['uk'] || '') : (param.unit || '');
+            const unitEs = typeof param.unit === 'object' ? (param.unit['es'] || unitUk) : unitUk;
+
+            const baseUk = unitUk ? `${labelUk} (${unitUk})` : labelUk;
+            const baseEs = unitEs ? `${labelEs} (${unitEs})` : labelEs;
+
+            if (baseUk === baseEs || !baseEs) return baseUk;
+            return `${baseUk}\n/ ${baseEs}`;
         }
 
         function applyLanguageUI() {
@@ -1413,6 +1424,7 @@
 
             const formData = new FormData(form);
             const values = {};
+            const paramIdToValueMap = {}; // Уніфікований маппінг за ID параметра для ідеального злиття
 
             const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
 
@@ -1424,6 +1436,7 @@
                 }
                 const pLabelStr = getLabelWithUnit(p, currentLang);
                 values[pLabelStr] = val || '-';
+                paramIdToValueMap[p.id] = val || '-';
             });
 
             const now = new Date();
@@ -1436,6 +1449,7 @@
                 if (recordIdx !== -1) {
                     state.measurements[recordIdx].inspector = inspector;
                     state.measurements[recordIdx].values = values;
+                    state.measurements[recordIdx].paramIdToValueMap = paramIdToValueMap;
                     state.measurements[recordIdx].timestamp = dateOnly;
                     state.measurements[recordIdx].updatedAt = currentTimeIso;
                 }
@@ -1450,7 +1464,8 @@
                     methodologyId: m.id,
                     methodologyTitle: getI18nText(m.title),
                     inspector: inspector,
-                    values: values
+                    values: values,
+                    paramIdToValueMap: paramIdToValueMap
                 };
                 state.measurements.unshift(newRecord);
             }
@@ -1484,10 +1499,18 @@
                 if (m) {
                     const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
                     allParams.forEach(p => {
-                        const pLabel = getLabelWithUnit(p, currentLang);
-                        const val = rec.values[pLabel];
                         const inputEl = document.getElementById(p.id);
-                        if (inputEl && val && val !== '-') {
+                        if (!inputEl) return;
+                        
+                        let val = '-';
+                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[p.id] !== undefined) {
+                            val = rec.paramIdToValueMap[p.id];
+                        } else {
+                            const pLabel = getLabelWithUnit(p, currentLang);
+                            val = rec.values[pLabel];
+                        }
+
+                        if (val && val !== '-') {
                             inputEl.value = val;
                         }
                     });
@@ -1688,59 +1711,69 @@
                     currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nФабрика"
                 ];
 
-                const integerParamLabels = new Set();
+                const integerParamIds = new Set();
                 const shareParamMap = new Map();
+                const paramIdToBilingualHeader = {};
                 
                 allParams.forEach(p => {
-                    ['uk', 'es'].forEach(lang => {
-                        const lbl = getLabelWithUnit(p, lang);
-                        if (p.isInteger) integerParamLabels.add(lbl);
-                        if (p.useShare && p.baseParamId) {
-                            const baseParamObj = allParams.find(x => x.id === p.baseParamId);
-                            if (baseParamObj) {
-                                shareParamMap.set(lbl, getLabelWithUnit(baseParamObj, lang));
-                            }
-                        }
-                    });
+                    const bilingualHeader = getBilingualLabelWithUnit(p);
+                    paramIdToBilingualHeader[p.id] = bilingualHeader;
+
+                    if (p.isInteger) integerParamIds.add(p.id);
+                    if (p.useShare && p.baseParamId) {
+                        shareParamMap.set(p.id, p.baseParamId);
+                    }
                 });
 
-                const paramKeys = [];
+                // Збираємо список усіх унікальних param.id, що присутні в обраних записах
+                const paramIdsOrder = [];
                 methodologyRecords.forEach(rec => {
-                    Object.keys(rec.values).forEach(k => {
-                        if (!paramKeys.includes(k)) {
-                            paramKeys.push(k);
-                        }
-                    });
+                    if (rec.paramIdToValueMap) {
+                        Object.keys(rec.paramIdToValueMap).forEach(pId => {
+                            if (!paramIdsOrder.includes(pId)) paramIdsOrder.push(pId);
+                        });
+                    } else if (rec.values) {
+                        // Для зворотньої сумісності зі старими записами
+                        Object.keys(rec.values).forEach(k => {
+                            if (!paramIdsOrder.includes(k)) paramIdsOrder.push(k);
+                        });
+                    }
                 });
+
+                // Якщо методики немає в стані, беремо зі списку параметрів самої методики
+                if (m && m.groups) {
+                    const sortedIds = m.groups.flatMap(g => g.params || []).map(p => p.id);
+                    paramIdsOrder.sort((a, b) => {
+                        const idxA = sortedIds.indexOf(a);
+                        const idxB = sortedIds.indexOf(b);
+                        return (idxA !== -1 ? idxA : 999) - (idxB !== -1 ? idxB : 999);
+                    });
+                }
 
                 const fullHeaders = [...headers];
                 const isIntegerCol = [false, false, false];
                 const isCalcCol = [false, false, false];
                 const shareRules = {};
 
-                paramKeys.forEach(pName => {
-                    fullHeaders.push(pName);
-                    const isInt = integerParamLabels.has(pName) || pName.includes("Кількість") || pName.includes("Cantidad") || pName.includes("шт") || pName.includes("гол");
+                paramIdsOrder.forEach(pId => {
+                    const bilingualHeader = paramIdToBilingualHeader[pId] || pId;
+                    fullHeaders.push(bilingualHeader);
+                    
+                    const isInt = integerParamIds.has(pId);
                     isIntegerCol.push(isInt);
                     isCalcCol.push(false);
 
-                    let matchedBaseLabel = null;
-                    for (const [pLbl, bLbl] of shareParamMap.entries()) {
-                        if (pName === pLbl || pName.includes(pLbl)) {
-                            matchedBaseLabel = bLbl;
-                            break;
-                        }
-                    }
-
-                    if (matchedBaseLabel || shareParamMap.has(pName)) {
-                        fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${pName})` : `Частка % / % Participación\n(${pName})`);
+                    if (shareParamMap.has(pId)) {
+                        const basePId = shareParamMap.get(pId);
+                        const baseHeader = paramIdToBilingualHeader[basePId] || "Base";
+                        fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${bilingualHeader})` : `Частка % / % Participación\n(${bilingualHeader})`);
                         isIntegerCol.push(false);
                         isCalcCol.push(true);
                         
                         const shareColIdx = fullHeaders.length - 1;
                         shareRules[shareColIdx] = {
-                            paramKey: pName,
-                            baseKey: matchedBaseLabel || Array.from(shareParamMap.values())[0]
+                            paramId: pId,
+                            baseParamId: basePId
                         };
                     }
                 });
@@ -1754,41 +1787,50 @@
                         rec.inspector
                     ];
 
-                    const getRecVal = (keyPattern) => {
-                        if (!keyPattern) return 0;
-                        for (const [k, v] of Object.entries(rec.values)) {
-                            if (k === keyPattern || k.includes(keyPattern) || keyPattern.includes(k)) {
-                                return parseFloat(v) || 0;
-                            }
+                    const getValByParamId = (pId) => {
+                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[pId] !== undefined) {
+                            return parseFloat(rec.paramIdToValueMap[pId]) || 0;
+                        }
+                        // Fallback для старих записів за назвою
+                        for (const [k, v] of Object.entries(rec.values || {})) {
+                            if (k.includes(pId)) return parseFloat(v) || 0;
                         }
                         return 0;
                     };
 
-                    paramKeys.forEach((pName, pIdx) => {
-                        const rawVal = rec.values[pName];
-                        const numVal = parseFloat(rawVal);
-                        const isInt = integerParamLabels.has(pName);
+                    paramIdsOrder.forEach((pId) => {
+                        let rawVal = '-';
+                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[pId] !== undefined) {
+                            rawVal = rec.paramIdToValueMap[pId];
+                        } else {
+                            // Якщо затухлий запис
+                            const pObj = allParams.find(x => x.id === pId);
+                            const pLabel = pObj ? getLabelWithUnit(pObj, currentLang) : pId;
+                            rawVal = rec.values[pLabel] || '-';
+                        }
 
-                        if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Дата") && !pName.includes("Fecha")) {
+                        const numVal = parseFloat(rawVal);
+                        const isInt = integerParamIds.has(pId);
+
+                        if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !String(pId).includes("Примітки") && !String(pId).includes("Notas") && !String(pId).includes("Дата")) {
                             row.push(isInt ? Math.round(numVal) : numVal);
                         } else {
                             row.push(rawVal || '-');
                         }
 
-                        const ruleEntry = Object.entries(shareRules).find(([colIdx, rule]) => rule.paramKey === pName);
+                        const ruleEntry = Object.entries(shareRules).find(([colIdx, rule]) => rule.paramId === pId);
                         if (ruleEntry) {
                             const rule = ruleEntry[1];
                             const valForShare = parseFloat(rawVal) || 0;
-                            
-                            let baseVal = getRecVal(rule.baseKey);
+                            let baseVal = getValByParamId(rule.baseParamId);
+
                             if (baseVal === 0) {
-                                for (const [k, v] of Object.entries(rec.values)) {
-                                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo") || k.includes("кг") || k.includes("kg")) {
-                                        const parsedB = parseFloat(v);
-                                        if (parsedB > 0) {
-                                            baseVal = parsedB;
-                                            break;
-                                        }
+                                // Пошук першої знайденої ваги в об'єкті
+                                for (const v of Object.values(rec.values || {})) {
+                                    const parsedB = parseFloat(v);
+                                    if (parsedB > 0) {
+                                        baseVal = parsedB;
+                                        break;
                                     }
                                 }
                             }
@@ -1860,7 +1902,7 @@
                             }
                         }
 
-                        colWidths[C] = Math.max(colWidths[C] || 18, 24);
+                        colWidths[C] = Math.max(colWidths[C] || 18, 26);
 
                         if (R === 0) {
                             cell.s = headerStyle;
