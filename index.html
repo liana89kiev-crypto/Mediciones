@@ -301,7 +301,6 @@
                     </div>
                 </div>
 
-                <!-- ПОСИЛАННЯ ТА СТАТУС -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">🔗 Посилання на док/таблицю (URL)</label>
@@ -650,18 +649,12 @@
                 docUrl: '',
                 groups: [
                     {
-                        title: { uk: 'Загальні дані', es: 'Datos generales' },
-                        isGeneral: true,
+                        title: { uk: 'Частини', es: 'Partes' },
                         params: [
                             { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
                             { id: 'p_carcass_count', label: { uk: 'Кількість тушок', es: 'Cantidad de canales' }, unit: { uk: 'шт.', es: 'uds' }, isInteger: true, type: 'decimal', required: true, code: 'v2' },
                             { id: 'p_total_weight_wog', label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
-                        ]
-                    },
-                    {
-                        title: { uk: 'Частини', es: 'Partes' },
-                        params: [
+                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' },
                             { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
                             { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
                             { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
@@ -884,7 +877,6 @@
                 const title = getI18nText(m.title);
                 const archiveTag = m.isArchived ? ` ${dict.lblArchived}` : '';
 
-                // ОПЕРАТОРИ БАЧАТЬ ТІЛЬКИ ТІ, ЩО ГОТОВІ І НЕ В АРХІВІ
                 if (!m.isArchived && m.status !== 'dev') {
                     select.innerHTML += `<option value="${m.id}">${title}</option>`;
                 }
@@ -1442,6 +1434,22 @@
                 });
             });
 
+            // ВИПРАВЛЕНИЙ ЕКСПОРТ В EXCEL: 
+            // Стовпчик частки % додається ТІЛЬКИ для тих параметрів, у яких у методиці налаштовано `useShare: true`
+            const shareParamLabels = new Set();
+            recordsArray.forEach(rec => {
+                const m = state.methodologies.find(x => x.id === rec.methodologyId);
+                if (m && m.groups) {
+                    m.groups.forEach(g => {
+                        g.params.forEach(p => {
+                            if (p.useShare) {
+                                shareParamLabels.add(getLabelWithUnit(p, currentLang));
+                            }
+                        });
+                    });
+                }
+            });
+
             const fullHeaders = [...headers];
             const isCalcCol = [false, false, false];
 
@@ -1450,12 +1458,7 @@
                 const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio");
                 isCalcCol.push(isAuto);
 
-                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
-                    !pName.includes("Кількість") && !pName.includes("Cantidad") && 
-                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && 
-                    !pName.includes("Примітки") && !pName.includes("Notas") && 
-                    !pName.includes("Дата") && !pName.includes("Fecha")) {
-                    
+                if (shareParamLabels.has(pName)) {
                     fullHeaders.push(`Частка % / % Participación\n(${pName})`);
                     isCalcCol.push(true);
                 }
@@ -1465,11 +1468,28 @@
 
             recordsArray.forEach(rec => {
                 let totalWog = 0;
-                Object.entries(rec.values).forEach(([k, v]) => {
-                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
-                        if (totalWog === 0) totalWog = parseFloat(v) || 0;
-                    }
-                });
+                const m = state.methodologies.find(x => x.id === rec.methodologyId);
+                
+                // Знаходимо базове значення для розрахунку частки (%)
+                let baseValForRecord = 0;
+                if (m && m.groups) {
+                    m.groups.forEach(g => {
+                        g.params.forEach(p => {
+                            if (p.isBaseWeight) {
+                                const pLab = getLabelWithUnit(p, currentLang);
+                                baseValForRecord = parseFloat(rec.values[pLab]) || 0;
+                            }
+                        });
+                    });
+                }
+                // Fallback якщо база не задана явно
+                if (baseValForRecord === 0) {
+                    Object.entries(rec.values).forEach(([k, v]) => {
+                        if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
+                            if (baseValForRecord === 0) baseValForRecord = parseFloat(v) || 0;
+                        }
+                    });
+                }
 
                 const row = [
                     rec.timestamp,
@@ -1487,14 +1507,9 @@
                         row.push(rawVal || '-');
                     }
 
-                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
-                        !pName.includes("Кількість") && !pName.includes("Cantidad") && 
-                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && 
-                        !pName.includes("Примітки") && !pName.includes("Notas") && 
-                        !pName.includes("Дата") && !pName.includes("Fecha")) {
-                        
-                        if (!isNaN(numVal) && totalWog > 0) {
-                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(3)) / 100);
+                    if (shareParamLabels.has(pName)) {
+                        if (!isNaN(numVal) && baseValForRecord > 0) {
+                            row.push(parseFloat(((numVal / baseValForRecord) * 100).toFixed(3)) / 100);
                         } else {
                             row.push("-");
                         }
@@ -1889,7 +1904,6 @@
             const esInput = document.getElementById(`p_label_es_${idx}`);
             const cleanTerm = term.trim().toLowerCase();
 
-            // 1. Точний збіг
             if (state.dictionary[cleanTerm] && state.dictionary[cleanTerm].es) {
                 if (!esInput.value) {
                     esInput.value = state.dictionary[cleanTerm].es;
@@ -1898,7 +1912,6 @@
                 return;
             }
 
-            // 2. Частковий збіг (найдовший ключ)
             let bestMatch = '';
             for (const key of Object.keys(state.dictionary)) {
                 const kLower = key.toLowerCase();
