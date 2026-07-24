@@ -663,6 +663,26 @@
                         ]
                     }
                 ]
+            },
+            {
+                id: 'm_wings_control_v1',
+                title: { uk: 'Замір по крилах', es: 'Control de alas' },
+                description: { uk: 'Спеціалізований замір виходу та якості крил', es: 'Control especializado de rendimiento de alas' },
+                isArchived: false,
+                status: 'ready',
+                docUrl: '',
+                groups: [
+                    {
+                        title: { uk: 'Показники', es: 'Parámetros' },
+                        params: [
+                            { id: 'w_date', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
+                            { id: 'w_total', label: { uk: 'Загальна вага крила', es: 'Peso total de alas' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, code: 'v2' },
+                            { id: 'w_1st', label: { uk: 'Плече (1-а фаланга)', es: '1er corte (Ala entera)' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v3' },
+                            { id: 'w_2nd', label: { uk: 'Передпліччя (2-а фаланга)', es: '2do corte' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v4' },
+                            { id: 'w_tip', label: { uk: 'Кінчик (3-я фаланга)', es: 'Punta de ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v5' }
+                        ]
+                    }
+                ]
             }
         ];
 
@@ -679,8 +699,6 @@
             }
         };
 
-        // НАДІЙНИЙ ЗАХИСТ БАЗИ: якщо в пам'яті вже є свої методики — код їх НЕ чіпає.
-        // Якщо пам'ять пуста — бере дефолтні.
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
         if (savedMethods && Array.isArray(savedMethods) && savedMethods.length > 0) {
             state.methodologies = savedMethods;
@@ -1618,7 +1636,7 @@
                         <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash-arrow-up mr-1"></i>${dict.btnRestoreMethod}</button>
                         <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash mr-1"></i>${dict.btnDeletePermanent}</button>
                     ` : `
-                        <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-pen mr-1"></i>${dict.btnEdit}</button>
+                        <button onclick="openMethodologyModal('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-pen mr-1"></i>${dict.btnEdit}</button>
                         <button onclick="archiveMethodology('${m.id}')" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-box-archive mr-1"></i>${dict.btnArchive}</button>
                     `;
 
@@ -2329,7 +2347,7 @@
             }
         }
 
-        clearAllData = function() {
+        function clearAllData() {
             if (!isAdmin) {
                 alert("Доступ обмежено!");
                 return;
