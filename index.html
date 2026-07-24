@@ -771,6 +771,7 @@
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
         let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
 
+        // --- ВБУДОВАНІ РОБОЧІ КЛЮЧІ ЗА ЗАМОВЧУВАННЯМ (Варіант 1) ---
         let state = {
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
@@ -805,6 +806,7 @@
             updateAdminUI();
             loadSettingsInputs();
 
+            // Перевіряємо наявність конфігурації (тепер вона завжди є за замовчуванням)
             if (state.config.binId && state.config.apiKey) {
                 await syncDataBlocking();
             } else {
@@ -820,7 +822,6 @@
             if (overlayTitle) overlayTitle.innerText = currentLang === 'es' ? "Sincronizando con la nube..." : "Синхронізація з хмарою...";
 
             try {
-                // Таймаут на 4 секунди, щоб додаток не зависав офлайн
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 4000);
 
@@ -853,7 +854,6 @@
 
         // --- SMART MERGE ALGORITHM (Злиття за ID та updatedAt) ---
         function smartMergeWithRemote(remoteData) {
-            // 1. Злиття методик
             if (remoteData.methodologies && Array.isArray(remoteData.methodologies)) {
                 const map = new Map();
                 state.methodologies.forEach(m => map.set(m.id, m));
@@ -873,7 +873,6 @@
                 state.methodologies = Array.from(map.values());
             }
 
-            // 2. Злиття замірів
             if (remoteData.measurements && Array.isArray(remoteData.measurements)) {
                 const map = new Map();
                 state.measurements.forEach(r => map.set(r.id, r));
@@ -893,7 +892,6 @@
                 state.measurements = Array.from(map.values());
             }
 
-            // 3. Злиття словника термінів
             if (remoteData.dictionary && typeof remoteData.dictionary === 'object') {
                 state.dictionary = { ...remoteData.dictionary, ...state.dictionary };
             }
