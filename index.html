@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mediciones SPA — Система замірів та зважування</title>
+    <!-- Dynamic Favicon (Scales Emoji) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS with Styles CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
@@ -15,6 +19,7 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
+    <!-- Header / Navbar -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -237,7 +242,6 @@
                     </div>
                 </div>
 
-                <!-- БЛОК РЕЗЕРВНОГО КОПІЮВАННЯ -->
                 <div class="mt-8 pt-6 border-t border-slate-200">
                     <h3 class="text-sm font-bold text-blue-600 mb-2" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1"></i> Резервне копіювання (Backup)</h3>
                     <p class="text-xs text-slate-500 mb-3" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
@@ -449,7 +453,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методику",
+                btnNewMethod: "Нова методика",
                 btnEdit: "Редагувати",
                 btnDelete: "Видалити",
                 lblParamsBadge: "параметрів",
@@ -483,7 +487,6 @@
                 adminOp: "Оператор",
                 adminAd: "Адмін",
                 adminPrompt: "Введіть пароль адміністратора:",
-                // Нові переклади:
                 editingBadge: "Редагування",
                 lblUnit: "Одиниця:",
                 optTemplate: "-- Шаблон --",
@@ -560,7 +563,6 @@
                 adminOp: "Operador",
                 adminAd: "Admin",
                 adminPrompt: "Ingrese la contraseña de administrador:",
-                // Нові переклади:
                 editingBadge: "Editando",
                 lblUnit: "Unidad:",
                 optTemplate: "-- Plantilla --",
@@ -634,7 +636,6 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        // Завантажуємо базові налаштування ТІЛЬКИ ПРИ ПЕРШОМУ ЗАПУСКУ (щоб не поверталися видалені методики)
         const isMethodsInit = localStorage.getItem('qm_methods_initialized');
         if (!isMethodsInit) {
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
@@ -750,7 +751,6 @@
             document.getElementById('lblDangerZone').innerText = dict.lblDangerZone;
             document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
 
-            // Нові переклади
             document.getElementById('editingBadgeText').innerText = dict.editingBadge;
             document.getElementById('lblBackupTitle').innerHTML = `<i class="fa-solid fa-shield-halved mr-1"></i> ${dict.lblBackupTitle}`;
             document.getElementById('lblBackupDesc').innerText = dict.lblBackupDesc;
@@ -1607,13 +1607,11 @@
                         <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1">[${p.code}]</div>
                         
                         <div class="flex-grow flex flex-col gap-2">
-                            <!-- Назва параметра (UA / ES) -->
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
                                 <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
                             </div>
 
-                            <!-- Одиниця виміру (Шаблони + Вручну UA / ES) -->
                             <div class="flex flex-col sm:flex-row items-center gap-2 bg-slate-100 p-2 rounded border border-slate-200">
                                 <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
                                 <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded p-1 text-[11px] bg-white w-full sm:w-40">
@@ -1629,7 +1627,7 @@
                                 <input type="text" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
                             </div>
                             
-                            <div class="pt-1">
+                            <div class="flex gap-2">
                                 <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-48 shadow-sm">
                                     <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
                                     <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
@@ -1978,7 +1976,6 @@
             }
         }
 
-        // --- БЕКАП ТА ВІДНОВЛЕННЯ ---
         function downloadBackup() {
             const backupData = {
                 methodologies: state.methodologies,
