@@ -681,6 +681,10 @@
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
         } else {
             state.methodologies = savedMethods;
+            // Перевіряємо та додаємо статус 'ready' для старих методик, якщо його немає
+            state.methodologies.forEach(m => {
+                if (!m.status) m.status = 'ready';
+            });
         }
 
         const savedDict = JSON.parse(localStorage.getItem('qm_dictionary'));
@@ -1434,8 +1438,6 @@
                 });
             });
 
-            // ВИПРАВЛЕНИЙ ЕКСПОРТ В EXCEL: 
-            // Стовпчик частки % додається ТІЛЬКИ для тих параметрів, у яких у методиці налаштовано `useShare: true`
             const shareParamLabels = new Set();
             recordsArray.forEach(rec => {
                 const m = state.methodologies.find(x => x.id === rec.methodologyId);
@@ -1467,11 +1469,9 @@
             const dataRows = [fullHeaders];
 
             recordsArray.forEach(rec => {
-                let totalWog = 0;
+                let baseValForRecord = 0;
                 const m = state.methodologies.find(x => x.id === rec.methodologyId);
                 
-                // Знаходимо базове значення для розрахунку частки (%)
-                let baseValForRecord = 0;
                 if (m && m.groups) {
                     m.groups.forEach(g => {
                         g.params.forEach(p => {
@@ -1482,7 +1482,6 @@
                         });
                     });
                 }
-                // Fallback якщо база не задана явно
                 if (baseValForRecord === 0) {
                     Object.entries(rec.values).forEach(([k, v]) => {
                         if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
