@@ -681,7 +681,6 @@
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
         } else {
             state.methodologies = savedMethods;
-            // Перевіряємо та додаємо статус 'ready' для старих методик, якщо його немає
             state.methodologies.forEach(m => {
                 if (!m.status) m.status = 'ready';
             });
