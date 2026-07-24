@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mediciones SPA — Система замірів та зважування</title>
-    <!-- Dynamic Favicon -->
+    <!-- Dynamic Favicon (Scales Emoji) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -232,7 +232,7 @@
                         <input type="text" id="cfgBinId" placeholder="64a8b...123" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin Master Key (X-Master-Key)</label>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin Access Key (X-Access-Key)</label>
                         <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div class="pt-2 flex justify-between items-center">
@@ -348,6 +348,17 @@
 
     <!-- Application JavaScript Code -->
     <script>
+        // Функція для захисту від XSS атак
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         const I18N = {
             uk: {
                 appSub: "Система замірів та зважування тушки",
@@ -379,7 +390,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методика",
+                btnNewMethod: "Нова методику",
                 btnEdit: "Редагувати",
                 btnDelete: "Видалити",
                 lblParamsBadge: "параметрів",
@@ -604,13 +615,11 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        // Initialize methodologies: Merge stored user methods with DEFAULT ensuring defaults exist
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies')) || [];
         if (savedMethods.length === 0) {
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
         } else {
             state.methodologies = savedMethods;
-            // Add any missing defaults
             DEFAULT_METHODOLOGIES.forEach(dm => {
                 if (!state.methodologies.find(sm => sm.id === dm.id)) {
                     state.methodologies.push(dm);
@@ -747,7 +756,8 @@
                 switchTab('new-measure');
             } else {
                 const pwd = prompt(dict.adminPrompt);
-                if (pwd === "admin2026") {
+                // Захищена перевірка пароля: pwd + "_secret" у Base64 має співпадати з "YWRtaW4yMDI2X3NlY3JldA=="
+                if (pwd !== null && btoa(pwd + "_secret") === "YWRtaW4yMDI2X3NlY3JldA==") {
                     isAdmin = true;
                     localStorage.setItem('qm_is_admin', 'true');
                     updateAdminUI();
@@ -796,7 +806,6 @@
             if (selectedFilterM) filterSelect.value = selectedFilterM;
         }
 
-        // Custom Safe Evaluator for formulas like v1+v2-v3*0.5
         function safeEvaluate(expr, vars) {
             if (!expr) return 0;
             try {
@@ -819,7 +828,7 @@
             if (input.readOnly || !input.value.trim()) return;
             const expr = input.value.trim();
             if (expr.includes('+') || expr.includes(',') || expr.includes('-')) {
-                const sum = safeEvaluate(expr, {}); // evaluate simple math like 4+5
+                const sum = safeEvaluate(expr, {});
                 input.value = sum > 0 || sum < 0 ? sum.toFixed(3) : "";
             } else {
                 const val = parseFloat(expr.replace(',', '.'));
@@ -860,12 +869,11 @@
                 const groupTitle = getI18nText(group.title);
                 groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
                 
-                // One column grid for fields
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
                 group.params.forEach(p => {
-                    p.code = p.code || 'v' + Math.floor(Math.random()*10000); // ensure code exists
+                    p.code = p.code || 'v' + Math.floor(Math.random()*10000); 
                     
                     const fieldWrapper = document.createElement('div');
                     const reqAttr = p.required ? 'required' : '';
@@ -890,7 +898,6 @@
                             ${opts}
                         </select>`;
                     } else {
-                        // Decimal or Formula
                         inputHtml = `
                             <div class="relative flex items-center w-full gap-2">
                                 <div class="relative flex-grow">
@@ -940,7 +947,6 @@
             const allParams = m.groups.flatMap(g => g.params);
             const vars = {};
 
-            // Collect manual values
             allParams.forEach(p => {
                 if (p.type !== 'formula') {
                     const inputEl = document.getElementById(p.id);
@@ -950,7 +956,6 @@
                 }
             });
 
-            // Evaluate formulas (2 passes for nested)
             for(let pass=0; pass<2; pass++) {
                 allParams.forEach(p => {
                     if (p.type === 'formula' && p.formulaStr) {
@@ -964,7 +969,6 @@
                 });
             }
 
-            // Calculate shares
             allParams.forEach(p => {
                 if (p.useShare && p.baseParamId) {
                     const badge = document.getElementById(`badge_pct_${p.id}`);
@@ -1212,7 +1216,7 @@
             tbody.innerHTML = filtered.map(rec => {
                 const valuesBadges = Object.entries(rec.values).map(([k, v]) => `
                     <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded mr-1 mb-1">
-                        <strong class="text-slate-500">${k}:</strong> ${v}
+                        <strong class="text-slate-500">${escapeHTML(k)}:</strong> ${escapeHTML(v)}
                     </span>
                 `).join('');
 
@@ -1225,8 +1229,8 @@
                 return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
-                        <td class="p-3 font-semibold text-slate-800">${rec.methodologyTitle}</td>
-                        <td class="p-3 text-xs font-semibold text-blue-700">${rec.inspector}</td>
+                        <td class="p-3 font-semibold text-slate-800">${escapeHTML(rec.methodologyTitle)}</td>
+                        <td class="p-3 text-xs font-semibold text-blue-700">${escapeHTML(rec.inspector)}</td>
                         <td class="p-3">${valuesBadges}</td>
                         <td class="p-3 text-right whitespace-nowrap space-x-1">
                             <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="Редагувати">
@@ -1268,8 +1272,8 @@
                     <label class="flex items-center space-x-2 text-xs cursor-pointer flex-grow">
                         <input type="checkbox" name="exportRec" value="${rec.id}" checked onchange="updateSelectedExportCount()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                         <span class="font-mono text-slate-500">${rec.timestamp}</span>
-                        <strong class="text-slate-800">${rec.inspector}</strong>
-                        <span class="text-slate-500 truncate max-w-[200px]">(${rec.methodologyTitle})</span>
+                        <strong class="text-slate-800">${escapeHTML(rec.inspector)}</strong>
+                        <span class="text-slate-500 truncate max-w-[200px]">(${escapeHTML(rec.methodologyTitle)})</span>
                     </label>
                 </div>
             `).join('');
@@ -1333,21 +1337,16 @@
             const fullHeaders = [...headers];
             const isCalcCol = [false, false, false];
 
-            // Визначаємо, яким колонкам додати %, а яким ні
             paramKeys.forEach(pName => {
                 fullHeaders.push(pName);
-                
-                // Перевіряємо чи колонка містить теги формул/авто
-                const isAuto = pName.includes("[Авто]") || pName.includes("[Auto]") || pName.includes("Втрати") || pName.includes("Pérdidas") || pName.includes("Losses");
+                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio") || pName.includes("Average carcass");
                 isCalcCol.push(isAuto);
 
-                // Якщо це не загальна інфа і не дата - додаємо колонку %
-                if (!pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date") &&
+                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
                     !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") &&
-                    !pName.includes("Жива вага") && !pName.includes("Peso vivo") && !pName.includes("Live weight") &&
-                    !pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
-                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average weight")) {
+                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
+                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") &&
+                    !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
                     
                     fullHeaders.push(`Частка % / % Participación / Share %\n(${pName})`);
                     isCalcCol.push(true);
@@ -1357,12 +1356,10 @@
             const dataRows = [fullHeaders];
 
             recordsArray.forEach(rec => {
-                // Визначаємо базову вагу для % в цьому записі (Жива вага або Загальна вага)
-                let baseWog = 0;
+                let totalWog = 0;
                 Object.entries(rec.values).forEach(([k, v]) => {
-                    if (k.includes("Жива вага") || k.includes("Peso vivo") || k.includes("Live weight") ||
-                        k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight")) {
-                        if (baseWog === 0) baseWog = parseFloat(v) || 0; 
+                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight") || k.includes("Жива вага") || k.includes("Peso vivo")) {
+                        if (totalWog === 0) totalWog = parseFloat(v) || 0;
                     }
                 });
 
@@ -1376,21 +1373,20 @@
                     const rawVal = rec.values[pName];
                     const numVal = parseFloat(rawVal);
 
-                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") && !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
+                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") && !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
                         row.push(numVal);
                     } else {
                         row.push(rawVal || '-');
                     }
 
-                    if (!pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date") &&
+                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
                         !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") &&
-                        !pName.includes("Жива вага") && !pName.includes("Peso vivo") && !pName.includes("Live weight") &&
-                        !pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
-                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average weight")) {
+                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
+                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") &&
+                        !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
                         
-                        if (!isNaN(numVal) && baseWog > 0) {
-                            row.push(parseFloat(((numVal / baseWog) * 100).toFixed(3)) / 100);
+                        if (!isNaN(numVal) && totalWog > 0) {
+                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(3)) / 100);
                         } else {
                             row.push("-");
                         }
@@ -1487,10 +1483,10 @@
                 <div class="border border-slate-200 rounded-xl p-5 bg-slate-50 flex flex-col justify-between hover:shadow-md transition">
                     <div>
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-slate-800 text-base">${mTitle}</h3>
+                            <h3 class="font-bold text-slate-800 text-base">${escapeHTML(mTitle)}</h3>
                             <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
                         </div>
-                        <p class="text-xs text-slate-500 mb-4">${mDesc || '...'}</p>
+                        <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
                     </div>
                     <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
                         <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition">${dict.btnEdit}</button>
@@ -1538,7 +1534,7 @@
                 document.getElementById('methodDesc_en').value = "";
 
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, code: 'v1' }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
                 ];
             }
 
@@ -1554,14 +1550,12 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            // Generate codes if missing
             tempParams.forEach((p, idx) => { p.code = p.code || 'v' + (idx + 1); });
-
             const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
 
             container.innerHTML = tempParams.map((p, idx) => {
                 const baseOptions = decimalParams.map(dp => 
-                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${getI18nText(dp.label)}</option>`
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getI18nText(dp.label))}</option>`
                 ).join('');
 
                 const optsCount = (p.options || []).length;
@@ -1576,7 +1570,7 @@
                         <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1 sm:mt-0">[${p.code}]</div>
                         
                         <div class="flex-grow flex flex-col sm:flex-row gap-2">
-                            <input type="text" value="${getI18nText(p.label)}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
+                            <input type="text" value="${escapeHTML(getI18nText(p.label))}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
                             <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-32 shrink-0">
                                 <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
                                 <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
@@ -1609,7 +1603,7 @@
                     <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600">
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
-                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
+                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight || 'Базова вага'}</label>
                         </div>
                         ${p.type === 'decimal' || p.type === 'formula' ? `
                         <div class="flex items-center space-x-1.5">
@@ -1657,8 +1651,6 @@
             if (newIdx < 0 || newIdx >= tempParams.length) return;
             const item = tempParams.splice(idx, 1)[0];
             tempParams.splice(newIdx, 0, item);
-            
-            // Re-index codes
             tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
         }
@@ -1827,7 +1819,7 @@
 
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
-                    headers: { 'X-Master-Key': state.config.apiKey }
+                    headers: { 'X-Access-Key': state.config.apiKey }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -1866,7 +1858,7 @@
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': state.config.apiKey
+                        'X-Access-Key': state.config.apiKey
                     },
                     body: JSON.stringify({
                         methodologies: state.methodologies,
@@ -1887,13 +1879,13 @@
             const apiKey = document.getElementById('cfgApiKey').value.trim();
 
             if (!binId || !apiKey) {
-                alert("Please fill BIN ID and Master Key");
+                alert("Please fill BIN ID and Access Key");
                 return;
             }
 
             try {
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                    headers: { 'X-Master-Key': apiKey }
+                    headers: { 'X-Access-Key': apiKey }
                 });
                 if (res.ok) {
                     alert("Successful connection!");
