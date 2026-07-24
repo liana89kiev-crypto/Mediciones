@@ -374,7 +374,6 @@
 
     <!-- Application JavaScript Code -->
     <script>
-        // Базовий вбудований словник (якщо локального ще немає)
         const DEFAULT_POULTRY_DICT = {
             "жива вага": { es: "Peso vivo" },
             "живок": { es: "Pollo vivo" },
@@ -391,6 +390,15 @@
             "загальна вага": { es: "Peso total" },
             "середня вага": { es: "Peso medio" },
             "дата": { es: "Fecha" }
+        };
+
+        const UNIT_PRESETS = {
+            'kg': { uk: 'кг', es: 'kg' },
+            'pcs': { uk: 'шт', es: 'unidades' },
+            'g': { uk: 'г', es: 'g' },
+            'pct': { uk: '%', es: '%' },
+            'heads': { uk: 'гол.', es: 'cabezas' },
+            'speed': { uk: 'гол/год', es: 'cabezas/hora' }
         };
 
         function escapeHTML(str) {
@@ -434,7 +442,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методику",
+                btnNewMethod: "Нова методика",
                 btnEdit: "Редагувати",
                 btnDelete: "Видалити",
                 lblParamsBadge: "параметрів",
@@ -547,11 +555,11 @@
                         isGeneral: false,
                         params: [
                             { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'ly_2', label: { uk: 'Жива вага (кг)', es: 'Peso vivo (kg)' }, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'ly_4', label: { uk: 'Вага після патрання (кг)', es: 'Peso canales (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
-                            { id: 'ly_5', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
-                            { id: 'ly_6', label: { uk: 'Втрати (кг)', es: 'Pérdidas (kg)' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
+                            { id: 'ly_2', label: { uk: 'Жива вага', es: 'Peso vivo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas' }, unit: { uk: 'гол.', es: 'cabezas' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'ly_4', label: { uk: 'Вага після патрання', es: 'Peso canales' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
+                            { id: 'ly_5', label: { uk: 'Середня вага тушки', es: 'Peso medio de canal' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
+                            { id: 'ly_6', label: { uk: 'Втрати', es: 'Pérdidas' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
                         ]
                     }
                 ]
@@ -566,19 +574,19 @@
                         isGeneral: true,
                         params: [
                             { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок (шт)', es: 'Cantidad (uds)' }, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага (кг)', es: 'Peso total (kg)' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага (кг)', es: 'Peso medio (kg)' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
+                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок', es: 'Cantidad de canales' }, unit: { uk: 'шт.', es: 'uds' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
                         ]
                     },
                     {
                         title: { uk: 'Частини', es: 'Partes' },
                         params: [
-                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
-                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
-                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
-                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
-                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
+                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
+                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
+                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
+                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
+                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
                         ]
                     }
                 ]
@@ -595,7 +603,6 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        // Завантажуємо базовий словник, якщо локального ще немає
         if (!state.dictionary) {
             state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
         }
@@ -653,6 +660,13 @@
                 return obj[currentLang] || obj['uk'] || obj['es'] || '';
             }
             return '';
+        }
+
+        function getLabelWithUnit(param, lang) {
+            const labelText = typeof param.label === 'object' ? (param.label[lang] || param.label['uk'] || '') : param.label;
+            if (!param.unit) return labelText;
+            const unitText = typeof param.unit === 'object' ? (param.unit[lang] || param.unit['uk'] || '') : param.unit;
+            return unitText ? `${labelText} (${unitText})` : labelText;
         }
 
         function applyLanguageUI() {
@@ -742,7 +756,6 @@
                 switchTab('new-measure');
             } else {
                 const pwd = prompt(dict.adminPrompt);
-                // Base64 + Secret: admin2026_secret
                 if (pwd !== null && btoa(pwd + "_secret") === "YWRtaW4yMDI2X3NlY3JldA==") {
                     isAdmin = true;
                     localStorage.setItem('qm_is_admin', 'true');
@@ -864,7 +877,7 @@
                     const fieldWrapper = document.createElement('div');
                     const reqAttr = p.required ? 'required' : '';
                     const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
-                    const paramLabel = getI18nText(p.label);
+                    const paramLabel = getLabelWithUnit(p, currentLang);
 
                     const isReadOnly = p.type === 'formula';
                     const bgClass = isReadOnly ? 'bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
@@ -1078,7 +1091,7 @@
                 if ((p.type === 'decimal' || p.type === 'formula') && val !== null && val !== '') {
                     val = parseFloat(val).toFixed(3);
                 }
-                const pLabelStr = getI18nText(p.label);
+                const pLabelStr = getLabelWithUnit(p, currentLang);
                 values[pLabelStr] = val || '-';
             });
 
@@ -1136,7 +1149,7 @@
                 if (m) {
                     const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
                     allParams.forEach(p => {
-                        const pLabel = getI18nText(p.label);
+                        const pLabel = getLabelWithUnit(p, currentLang);
                         const val = rec.values[pLabel];
                         const inputEl = document.getElementById(p.id);
                         if (inputEl && val && val !== '-') {
@@ -1517,7 +1530,7 @@
                 document.getElementById('methodDesc_es').value = "";
 
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
                 ];
             }
 
@@ -1538,10 +1551,12 @@
 
             container.innerHTML = tempParams.map((p, idx) => {
                 const baseOptions = decimalParams.map(dp => 
-                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getI18nText(dp.label))}</option>`
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`
                 ).join('');
 
                 const optsCount = (p.options || []).length;
+                const uUk = (p.unit && typeof p.unit === 'object') ? (p.unit.uk || '') : (p.unit || '');
+                const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
 
                 return `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3">
@@ -1553,14 +1568,29 @@
                         <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1">[${p.code}]</div>
                         
                         <div class="flex-grow flex flex-col gap-2">
-                            <!-- Блок назви з двома мовами та автозаповненням -->
+                            <!-- Назва параметра (UA / ES) -->
                             <div class="flex flex-col sm:flex-row gap-2">
                                 <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
                                 <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
                             </div>
-                            <!-- Кінець блоку назв -->
+
+                            <!-- Одиниця виміру (Шаблони + Вручну UA / ES) -->
+                            <div class="flex flex-col sm:flex-row items-center gap-2 bg-slate-100 p-2 rounded border border-slate-200">
+                                <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">Одиниця:</span>
+                                <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded p-1 text-[11px] bg-white w-full sm:w-40">
+                                    <option value="">-- Шаблон --</option>
+                                    <option value="kg">кг / kg</option>
+                                    <option value="pcs">шт / unidades</option>
+                                    <option value="g">г / g</option>
+                                    <option value="pct">% / %</option>
+                                    <option value="heads">гол. / cabezas</option>
+                                    <option value="speed">гол/год / cabezas/hora</option>
+                                </select>
+                                <input type="text" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
+                                <input type="text" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
+                            </div>
                             
-                            <div class="pt-2">
+                            <div class="pt-1">
                                 <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-48 shadow-sm">
                                     <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
                                     <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
@@ -1627,7 +1657,25 @@
             }
         }
 
-        // Автозаповнення тепер працює з НАШИМ динамічним словником (state.dictionary)
+        function applyUnitPreset(idx, presetKey) {
+            if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
+            if (UNIT_PRESETS[presetKey]) {
+                tempParams[idx].unit.uk = UNIT_PRESETS[presetKey].uk;
+                tempParams[idx].unit.es = UNIT_PRESETS[presetKey].es;
+            } else if (presetKey === '') {
+                tempParams[idx].unit.uk = '';
+                tempParams[idx].unit.es = '';
+            }
+            renderParamRows();
+        }
+
+        function updateParamUnit(idx, lang, val) {
+            if (!tempParams[idx].unit || typeof tempParams[idx].unit !== 'object') {
+                tempParams[idx].unit = { uk: '', es: '' };
+            }
+            tempParams[idx].unit[lang] = val;
+        }
+
         function autoFillFromDict(idx, term) {
             const esInput = document.getElementById(`p_label_es_${idx}`);
             const cleanTerm = term.trim().toLowerCase();
@@ -1648,7 +1696,6 @@
 
         function openDictionaryModal() {
             if (!isAdmin) return;
-            // Перетворюємо об'єкт словника на масив для зручного редагування
             tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: trans.es }));
             renderDictionaryRows();
             document.getElementById('dictionaryModal').classList.remove('hidden');
@@ -1680,8 +1727,6 @@
         function addDictionaryRow() {
             tempDictArray.push({ uk: '', es: '' });
             renderDictionaryRows();
-            
-            // Прокрутка вниз
             const container = document.getElementById('dictionaryRowsContainer');
             setTimeout(() => { container.parentElement.scrollTop = container.parentElement.scrollHeight; }, 50);
         }
@@ -1750,6 +1795,7 @@
             tempParams.push({
                 id: 'p_' + Date.now(),
                 label: { uk: '', es: '' },
+                unit: { uk: '', es: '' },
                 type: 'decimal',
                 required: false,
                 isBaseWeight: false,
