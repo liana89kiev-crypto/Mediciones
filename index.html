@@ -698,8 +698,6 @@
             }
         };
 
-        // НАЙГОЛОВНІШИЙ ЗАХИСТ БАЗИ:
-        // Якщо в браузері вже є збережені дані — код їх НІКОЛИ не затирає.
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
         if (savedMethods && Array.isArray(savedMethods) && savedMethods.length > 0) {
             state.methodologies = savedMethods;
@@ -1895,6 +1893,7 @@
             }
         }
 
+        // АВТОМАТИЧНЕ ВИЗНАЧЕННЯ ЦІЛОГО ЧИСЛА ЗА ОДИНИЦЯМИ ВИМІРУ
         function applyUnitPreset(idx, presetKey) {
             if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
             
@@ -1906,6 +1905,13 @@
                 tempParams[idx].unit.es = '';
             }
             
+            // АВТОМАТИКА: якщо обрано шт, гол або хв — ставимо галочку "ціле число" за замовчуванням
+            if (['pcs', 'heads', 'min'].includes(presetKey)) {
+                tempParams[idx].isInteger = true;
+            } else if (['kg', 'g', 'pct', 'speed'].includes(presetKey)) {
+                tempParams[idx].isInteger = false;
+            }
+
             renderParamRows();
 
             if (presetKey === 'custom') {
@@ -1924,6 +1930,12 @@
                 tempParams[idx].unit = { uk: '', es: '' };
             }
             tempParams[idx].unit[lang] = val;
+
+            // Автоматична перевірка введеної вручну одиниці
+            const cleanVal = val.trim().toLowerCase();
+            if (['шт', 'шт.', 'гол', 'гол.', 'хв', 'min', 'uds', 'cabezas'].includes(cleanVal)) {
+                tempParams[idx].isInteger = true;
+            }
         }
 
         function updateIsInteger(idx, isChecked) {
