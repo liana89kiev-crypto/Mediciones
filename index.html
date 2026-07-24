@@ -49,9 +49,6 @@
                         <button onclick="changeLang('es')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
                             <span>🇪🇸</span><span class="font-medium">Español</span>
                         </button>
-                        <button onclick="changeLang('en')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
-                            <span>🇬🇧</span><span class="font-medium">English</span>
-                        </button>
                     </div>
                 </div>
 
@@ -264,20 +261,18 @@
                 <input type="hidden" id="editMethodologyId">
                 
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики (UA / ES)</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <input type="text" id="methodTitle_en" placeholder="🇬🇧 Title (EN)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                     </div>
                 </div>
 
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція (UA / ES)</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
                         <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
-                        <textarea id="methodDesc_en" rows="2" placeholder="🇬🇧 Instruction (EN)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
                     </div>
                 </div>
 
@@ -342,23 +337,23 @@
 
     <!-- Application JavaScript Code -->
     <script>
-        // ВБУДОВАНИЙ ГАЛУЗЕВИЙ СЛОВНИК (Ви можете легко додавати нові слова сюди)
+        // ВБУДОВАНИЙ ГАЛУЗЕВИЙ СЛОВНИК (ДВОМОВНИЙ: UA -> ES)
         const POULTRY_DICT = {
-            "жива вага": { es: "Peso vivo", en: "Live weight" },
-            "живок": { es: "Pollo vivo", en: "Live bird" },
-            "крило": { es: "Ala", en: "Wing" },
-            "філе": { es: "Pechuga", en: "Fillet" },
-            "гомілка": { es: "Jamoncito", en: "Drumstick" },
-            "стегно": { es: "Contramuslo", en: "Thigh" },
-            "окорочок": { es: "Cuarto trasero", en: "Leg quarter" },
-            "спинка": { es: "Espalda", en: "Saddle" },
-            "гузка": { es: "Obispillo", en: "Tail" },
-            "втрати": { es: "Pérdidas", en: "Losses" },
-            "технічні втрати": { es: "Pérdidas técnicas", en: "Tech losses" },
-            "кількість": { es: "Cantidad", en: "Count" },
-            "загальна вага": { es: "Peso total", en: "Total weight" },
-            "середня вага": { es: "Peso medio", en: "Average weight" },
-            "дата": { es: "Fecha", en: "Date" }
+            "жива вага": { es: "Peso vivo" },
+            "живок": { es: "Pollo vivo" },
+            "крило": { es: "Ala" },
+            "філе": { es: "Pechuga" },
+            "гомілка": { es: "Jamoncito" },
+            "стегно": { es: "Contramuslo" },
+            "окорочок": { es: "Cuarto trasero" },
+            "спинка": { es: "Espalda" },
+            "гузка": { es: "Obispillo" },
+            "втрати": { es: "Pérdidas" },
+            "технічні втрати": { es: "Pérdidas técnicas" },
+            "кількість": { es: "Cantidad" },
+            "загальна вага": { es: "Peso total" },
+            "середня вага": { es: "Peso medio" },
+            "дата": { es: "Fecha" }
         };
 
         function escapeHTML(str) {
@@ -408,8 +403,8 @@
                 lblParamsBadge: "параметрів",
                 modalCreateTitle: "Створити нову методику",
                 modalEditTitle: "Редагувати методику",
-                lblModalMethodTitle: "Назва методики (UA / ES / EN)",
-                lblModalMethodDesc: "Опис / Інструкція (UA / ES / EN)",
+                lblModalMethodTitle: "Назва методики (UA / ES)",
+                lblModalMethodDesc: "Опис / Інструкція (UA / ES)",
                 lblModalParams: "Параметри методики",
                 btnAddParamRow: "+ Додати параметр",
                 btnCancelModal: "Скасувати",
@@ -473,8 +468,8 @@
                 lblParamsBadge: "parámetros",
                 modalCreateTitle: "Crear nueva metodología",
                 modalEditTitle: "Editar metodología",
-                lblModalMethodTitle: "Nombre de metodología (UA / ES / EN)",
-                lblModalMethodDesc: "Descripción / Instrucción (UA / ES / EN)",
+                lblModalMethodTitle: "Nombre de metodología (UA / ES)",
+                lblModalMethodDesc: "Descripción / Instrucción (UA / ES)",
                 lblModalParams: "Parámetros de la metodología",
                 btnAddParamRow: "+ Añadir parámetro",
                 btnCancelModal: "Cancelar",
@@ -501,117 +496,52 @@
                 adminOp: "Operador",
                 adminAd: "Admin",
                 adminPrompt: "Ingrese la contraseña de administrador:"
-            },
-            en: {
-                appSub: "Carcass measurement & weighing system",
-                syncDone: "Synced",
-                syncing: "Syncing...",
-                navNew: "New measurement",
-                navHistory: "History & Export",
-                navConstructor: "Builder",
-                lblFormTitle: "Conducting measurement",
-                lblDraftSaved: "Draft saved",
-                lblFactory: "Operator / Plant",
-                lblMethodology: "Select methodology",
-                optSelectMethod: "-- Select methodology --",
-                btnReset: "Clear",
-                btnSave: "Save results",
-                lblSelectPrompt: "Please select a methodology from the list above to start data entry.",
-                lblHistoryTitle: "Measurement history",
-                lblTotalRecords: "Records found",
-                btnExportAll: "Export to Excel (.xlsx)",
-                lblFilterMethod: "Filter by methodology",
-                lblFilterSearch: "Search",
-                lblFilterSort: "Sort",
-                optSortDesc: "Newest first",
-                optSortAsc: "Oldest first",
-                thDate: "Date",
-                thMethod: "Methodology",
-                thFactory: "Plant",
-                thResults: "Results",
-                thActions: "Actions",
-                lblConstructorTitle: "Methodologies management",
-                lblConstructorSub: "Create and edit measurement methodologies",
-                btnNewMethod: "New methodology",
-                btnEdit: "Edit",
-                btnDelete: "Delete",
-                lblParamsBadge: "params",
-                modalCreateTitle: "Create new methodology",
-                modalEditTitle: "Edit methodology",
-                lblModalMethodTitle: "Methodology title (UA / ES / EN)",
-                lblModalMethodDesc: "Description / Instructions (UA / ES / EN)",
-                lblModalParams: "Methodology parameters",
-                btnAddParamRow: "+ Add parameter",
-                btnCancelModal: "Cancel",
-                btnSaveModal: "Save methodology",
-                optTypeDecimal: "Number (0.000)",
-                optTypeText: "Text",
-                optTypeDate: "Date",
-                optTypeSelect: "Dropdown",
-                optTypeFormula: "🧮 Formula",
-                lblUseShare: "Calculate % of:",
-                lblBaseParam: "Base for %:",
-                lblNoBase: "-- No % calculation --",
-                lblSettingsTitle: "JSONBin.io Settings & Synchronization",
-                lblSettingsSub: "Provide your JSONBin.io keys for automatic cloud storage.",
-                btnTestConn: "Test connection",
-                btnSaveSettings: "Save",
-                lblDangerZone: "Danger zone",
-                btnClearLocal: "Clear all local measurement data",
-                placeholderText: "Enter text...",
-                msgSaved: "Measurement saved successfully!",
-                msgSelectFactory: "Please select a plant from the list!",
-                factories: ["Plant 1", "Plant 2", "Plant 3", "Plant 4", "Plant 5"],
-                allMethodsOpt: "All methodologies",
-                adminOp: "Operator",
-                adminAd: "Admin",
-                adminPrompt: "Enter administrator password:"
             }
         };
 
         const DEFAULT_METHODOLOGIES = [
             {
                 id: 'm_live_yield_v1',
-                title: { uk: 'Вихід від живка', es: 'Rendimiento de vivo', en: 'Live weight yield' },
-                description: { uk: 'Аналіз виходу продукції відносно живої ваги птиці', es: 'Análisis de rendimiento respecto al peso vivo', en: 'Yield analysis relative to live bird weight' },
+                title: { uk: 'Вихід від живка', es: 'Rendimiento de vivo' },
+                description: { uk: 'Аналіз виходу продукції відносно живої ваги птиці', es: 'Análisis de rendimiento respecto al peso vivo' },
                 groups: [
                     {
-                        title: { uk: 'Показники', es: 'Parámetros', en: 'Parameters' },
+                        title: { uk: 'Показники', es: 'Parámetros' },
                         isGeneral: false,
                         params: [
-                            { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha', en: 'Date' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'ly_2', label: { uk: 'Жива вага (кг)', es: 'Peso vivo (kg)', en: 'Live weight (kg)' }, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas', en: 'Head count' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'ly_4', label: { uk: 'Вага після патрання (кг)', es: 'Peso canales (kg)', en: 'Eviscerated weight (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
-                            { id: 'ly_5', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)', en: 'Average carcass weight' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
-                            { id: 'ly_6', label: { uk: 'Втрати (кг)', es: 'Pérdidas (kg)', en: 'Losses (kg)' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
+                            { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
+                            { id: 'ly_2', label: { uk: 'Жива вага (кг)', es: 'Peso vivo (kg)' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'ly_4', label: { uk: 'Вага після патрання (кг)', es: 'Peso canales (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
+                            { id: 'ly_5', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
+                            { id: 'ly_6', label: { uk: 'Втрати (кг)', es: 'Pérdidas (kg)' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
                         ]
                     }
                 ]
             },
             {
                 id: 'm_poultry_deboning_v10',
-                title: { uk: 'Замір розробки тушки', es: 'Control de despiece', en: 'Carcass deboning measurement' },
-                description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes', en: 'Analysis of anatomical parts yield' },
+                title: { uk: 'Замір розробки тушки', es: 'Control de despiece' },
+                description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes' },
                 groups: [
                     {
-                        title: { uk: 'Загальні дані', es: 'Datos generales', en: 'General data' },
+                        title: { uk: 'Загальні дані', es: 'Datos generales' },
                         isGeneral: true,
                         params: [
-                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición', en: 'Date' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок (шт)', es: 'Cantidad (uds)', en: 'Count (pcs)' }, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага (кг)', es: 'Peso total (kg)', en: 'Total weight (kg)' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага (кг)', es: 'Peso medio (kg)', en: 'Avg weight (kg)' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
+                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
+                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок (шт)', es: 'Cantidad (uds)' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага (кг)', es: 'Peso total (kg)' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага (кг)', es: 'Peso medio (kg)' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
                         ]
                     },
                     {
-                        title: { uk: 'Частини', es: 'Partes', en: 'Parts' },
+                        title: { uk: 'Частини', es: 'Partes' },
                         params: [
-                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala', en: 'Wing' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
-                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga', en: 'Fillet' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
-                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero', en: 'Leg quarter' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
-                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo', en: 'Saddle & Tail' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
-                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas', en: 'Losses' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
+                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
+                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
+                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
+                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
+                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
                         ]
                     }
                 ]
@@ -677,14 +607,14 @@
         function getI18nText(obj) {
             if (typeof obj === 'string') return obj;
             if (typeof obj === 'object' && obj !== null) {
-                return obj[currentLang] || obj['uk'] || obj['es'] || obj['en'] || '';
+                return obj[currentLang] || obj['uk'] || obj['es'] || '';
             }
             return '';
         }
 
         function applyLanguageUI() {
             const dict = I18N[currentLang] || I18N.uk;
-            const langLabels = { uk: 'UA', es: 'ES', en: 'UK' };
+            const langLabels = { uk: 'UA', es: 'ES' };
             document.getElementById('currentLangLabel').innerText = langLabels[currentLang] || 'UA';
             
             document.getElementById('appSubtitle').innerText = dict.appSub;
@@ -1332,9 +1262,9 @@
 
         function generateExcelFile(recordsArray, filename) {
             const headers = [
-                "Дата\nFecha\nDate",
-                "Методика\nMetodología\nMethodology",
-                "Фабрика\nPlanta\nPlant"
+                "Дата\nFecha",
+                "Методика\nMetodología",
+                "Фабрика\nPlanta"
             ];
 
             const paramKeys = [];
@@ -1351,16 +1281,16 @@
 
             paramKeys.forEach(pName => {
                 fullHeaders.push(pName);
-                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio") || pName.includes("Average carcass");
+                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio");
                 isCalcCol.push(isAuto);
 
-                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
-                    !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
-                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") &&
-                    !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
+                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
+                    !pName.includes("Кількість") && !pName.includes("Cantidad") && 
+                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && 
+                    !pName.includes("Примітки") && !pName.includes("Notas") && 
+                    !pName.includes("Дата") && !pName.includes("Fecha")) {
                     
-                    fullHeaders.push(`Частка % / % Participación / Share %\n(${pName})`);
+                    fullHeaders.push(`Частка % / % Participación\n(${pName})`);
                     isCalcCol.push(true);
                 }
             });
@@ -1370,7 +1300,7 @@
             recordsArray.forEach(rec => {
                 let totalWog = 0;
                 Object.entries(rec.values).forEach(([k, v]) => {
-                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight") || k.includes("Жива вага") || k.includes("Peso vivo")) {
+                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
                         if (totalWog === 0) totalWog = parseFloat(v) || 0;
                     }
                 });
@@ -1385,17 +1315,17 @@
                     const rawVal = rec.values[pName];
                     const numVal = parseFloat(rawVal);
 
-                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") && !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
+                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Дата") && !pName.includes("Fecha")) {
                         row.push(numVal);
                     } else {
                         row.push(rawVal || '-');
                     }
 
-                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
-                        !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
-                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes") &&
-                        !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
+                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && 
+                        !pName.includes("Кількість") && !pName.includes("Cantidad") && 
+                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && 
+                        !pName.includes("Примітки") && !pName.includes("Notas") && 
+                        !pName.includes("Дата") && !pName.includes("Fecha")) {
                         
                         if (!isNaN(numVal) && totalWog > 0) {
                             row.push(parseFloat(((numVal / totalWog) * 100).toFixed(3)) / 100);
@@ -1527,11 +1457,9 @@
                 
                 document.getElementById('methodTitle_uk').value = typeof m.title === 'object' ? (m.title.uk || '') : m.title;
                 document.getElementById('methodTitle_es').value = typeof m.title === 'object' ? (m.title.es || '') : m.title;
-                document.getElementById('methodTitle_en').value = typeof m.title === 'object' ? (m.title.en || '') : m.title;
 
                 document.getElementById('methodDesc_uk').value = typeof m.description === 'object' ? (m.description.uk || '') : m.description;
                 document.getElementById('methodDesc_es').value = typeof m.description === 'object' ? (m.description.es || '') : m.description;
-                document.getElementById('methodDesc_en').value = typeof m.description === 'object' ? (m.description.en || '') : m.description;
 
                 const allP = m.groups ? m.groups.flatMap(g => g.params) : m.params;
                 tempParams = JSON.parse(JSON.stringify(allP));
@@ -1540,13 +1468,11 @@
                 document.getElementById('editMethodologyId').value = "";
                 document.getElementById('methodTitle_uk').value = "";
                 document.getElementById('methodTitle_es').value = "";
-                document.getElementById('methodTitle_en').value = "";
                 document.getElementById('methodDesc_uk').value = "";
                 document.getElementById('methodDesc_es').value = "";
-                document.getElementById('methodDesc_en').value = "";
 
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
                 ];
             }
 
@@ -1582,13 +1508,10 @@
                         <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1">[${p.code}]</div>
                         
                         <div class="flex-grow flex flex-col gap-2">
-                            <!-- Блок назви з трьома мовами та автозаповненням -->
+                            <!-- Блок назви з двома мовами та автозаповненням -->
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="flex-grow border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
-                            </div>
-                            <div class="flex gap-2">
-                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
-                                <input type="text" id="p_label_en_${idx}" value="${escapeHTML(p.label.en || '')}" onchange="updateParamLabelLang(${idx}, 'en', this.value)" placeholder="🇬🇧 Переклад (EN)" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
+                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
                             </div>
                             <!-- Кінець блоку назв -->
                             
@@ -1651,7 +1574,7 @@
         function updateParamLabelLang(idx, lang, val) {
             if (typeof tempParams[idx].label !== 'object') {
                 const old = tempParams[idx].label;
-                tempParams[idx].label = { uk: old, es: old, en: old };
+                tempParams[idx].label = { uk: old, es: old };
             }
             tempParams[idx].label[lang] = val;
 
@@ -1663,7 +1586,6 @@
 
         function autoFillFromDict(idx, term) {
             const esInput = document.getElementById(`p_label_es_${idx}`);
-            const enInput = document.getElementById(`p_label_en_${idx}`);
             const cleanTerm = term.trim().toLowerCase();
 
             // Перевіряємо, чи є таке слово (або частина слова) у нашому словнику
@@ -1673,10 +1595,6 @@
                     if (!esInput.value) {
                         esInput.value = translations.es;
                         tempParams[idx].label.es = translations.es;
-                    }
-                    if (!enInput.value) {
-                        enInput.value = translations.en;
-                        tempParams[idx].label.en = translations.en;
                     }
                     break;
                 }
@@ -1718,7 +1636,7 @@
             const nextCode = 'v' + (tempParams.length + 1);
             tempParams.push({
                 id: 'p_' + Date.now(),
-                label: { uk: '', es: '', en: '' },
+                label: { uk: '', es: '' },
                 type: 'decimal',
                 required: false,
                 isBaseWeight: false,
@@ -1768,11 +1686,9 @@
             if (!isAdmin) return;
             const titleUk = document.getElementById('methodTitle_uk').value.trim();
             const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
-            const titleEn = document.getElementById('methodTitle_en').value.trim() || titleUk;
 
             const descUk = document.getElementById('methodDesc_uk').value.trim();
             const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
-            const descEn = document.getElementById('methodDesc_en').value.trim() || descUk;
 
             const editId = document.getElementById('editMethodologyId').value;
 
@@ -1781,12 +1697,12 @@
                 return;
             }
 
-            const newTitle = { uk: titleUk, es: titleEs, en: titleEn };
-            const newDesc = { uk: descUk, es: descEs, en: descEn };
+            const newTitle = { uk: titleUk, es: titleEs };
+            const newDesc = { uk: descUk, es: descEs };
 
             const groups = [
                 {
-                    title: { uk: 'Параметри методики', es: 'Parámetros', en: 'Parameters' },
+                    title: { uk: 'Параметри методики', es: 'Parámetros' },
                     isGeneral: false,
                     params: tempParams
                 }
