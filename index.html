@@ -656,20 +656,20 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        const isMethodsInit = localStorage.getItem('qm_methods_initialized');
-        if (!isMethodsInit) {
+        // НАШІ КЛЮЧОВІ ЗМІНИ: Словник і методики тепер беруться з пам'яті браузера назавжди.
+        // Код більше ніколи не затиратиме ваші персональні зміни словника!
+        const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
+        if (!savedMethods || savedMethods.length === 0) {
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
-            localStorage.setItem('qm_methods_initialized', 'true');
         } else {
-            state.methodologies = JSON.parse(localStorage.getItem('qm_methodologies')) || [];
+            state.methodologies = savedMethods;
         }
 
-        const isDictInit = localStorage.getItem('qm_dict_initialized');
-        if (!isDictInit) {
+        const savedDict = JSON.parse(localStorage.getItem('qm_dictionary'));
+        if (!savedDict || Object.keys(savedDict).length === 0) {
             state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
-            localStorage.setItem('qm_dict_initialized', 'true');
         } else {
-            state.dictionary = JSON.parse(localStorage.getItem('qm_dictionary')) || {};
+            state.dictionary = savedDict;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
