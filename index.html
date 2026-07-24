@@ -20,8 +20,19 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
+    <!-- BLOCKING SYNC OVERLAY (Remote-First Policy) -->
+    <div id="syncOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
+            <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div>
+                <h3 class="font-bold text-base mb-1" id="overlayTitle">Синхронізація з хмарою...</h3>
+                <p class="text-xs text-slate-400" id="overlaySub">Будь ласка, зачекайте, завантаження актуальних даних</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Header / Navbar -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <span class="text-3xl text-blue-400 bg-slate-800 p-2 rounded-xl border border-slate-700 shadow-inner"><i class="fa-solid fa-scale-balanced"></i></span>
@@ -152,7 +163,7 @@
                             <i class="fa-solid fa-file-excel text-emerald-200 shrink-0"></i>
                             <span id="btnExportAll" class="truncate">Експорт в Excel (.xlsx)</span>
                         </button>
-                        <button onclick="syncData()" class="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center justify-center border border-slate-200 shadow-sm" title="Синхронізувати">
+                        <button onclick="syncDataManual()" class="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center justify-center border border-slate-200 shadow-sm" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
@@ -239,7 +250,6 @@
                         <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
                     </div>
                     
-                    <!-- ПОТУЖНІ КНОПКИ УПРАВЛІННЯ СИНХРОНІЗАЦІЄЮ В НАЛАШТУВАННЯХ -->
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
                         <div class="text-xs text-slate-600">
                             <span class="font-bold block text-slate-800 mb-0.5" id="lblCloudSyncStatusHeader">Хмарна синхронізація</span>
@@ -695,6 +705,7 @@
                 isArchived: false,
                 status: 'ready',
                 docUrl: '',
+                updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
                         title: { uk: 'Показники', es: 'Parámetros' },
@@ -716,6 +727,7 @@
                 isArchived: false,
                 status: 'ready',
                 docUrl: '',
+                updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
                         title: { uk: 'Частини', es: 'Partes' },
@@ -740,6 +752,7 @@
                 isArchived: false,
                 status: 'ready',
                 docUrl: '',
+                updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
                         title: { uk: 'Показники', es: 'Parámetros' },
@@ -774,7 +787,10 @@
         } else {
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
         }
-        state.methodologies.forEach(m => { if (!m.status) m.status = 'ready'; });
+        state.methodologies.forEach(m => { 
+            if (!m.status) m.status = 'ready'; 
+            if (!m.updatedAt) m.updatedAt = new Date().toISOString();
+        });
 
         const savedDict = JSON.parse(localStorage.getItem('qm_dictionary'));
         if (savedDict && typeof savedDict === 'object' && Object.keys(savedDict).length > 0) {
@@ -783,51 +799,115 @@
             state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
         }
 
+        // --- CENTRALIZED REMOTE-FIRST POLICY (Blocking Init) ---
         document.addEventListener('DOMContentLoaded', async () => {
-            if (state.config.binId && state.config.apiKey) {
-                await syncDataSilent();
-            }
-            initApp();
-        });
-
-        async function syncDataSilent() {
-            try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
-                    headers: { 'X-Access-Key': state.config.apiKey }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.record) {
-                        if (data.record.methodologies && Array.isArray(data.record.methodologies) && data.record.methodologies.length > 0) {
-                            state.methodologies = data.record.methodologies;
-                        }
-                        if (data.record.measurements && Array.isArray(data.record.measurements)) {
-                            const combined = [...state.measurements];
-                            data.record.measurements.forEach(remoteRec => {
-                                if (!combined.some(localRec => localRec.id === remoteRec.id)) {
-                                    combined.push(remoteRec);
-                                }
-                            });
-                            state.measurements = combined;
-                        }
-                        if (data.record.dictionary && typeof data.record.dictionary === 'object' && Object.keys(data.record.dictionary).length > 0) {
-                            state.dictionary = data.record.dictionary;
-                        }
-                        saveStateToLocal();
-                    }
-                }
-            } catch (e) {}
-        }
-
-        function initApp() {
             applyLanguageUI();
             updateAdminUI();
+            loadSettingsInputs();
+
+            if (state.config.binId && state.config.apiKey) {
+                await syncDataBlocking();
+            } else {
+                hideSyncOverlay();
+            }
+
+            initAppAfterSync();
+        });
+
+        async function syncDataBlocking() {
+            const overlayTitle = document.getElementById('overlayTitle');
+            const overlaySub = document.getElementById('overlaySub');
+            if (overlayTitle) overlayTitle.innerText = currentLang === 'es' ? "Sincronizando con la nube..." : "Синхронізація з хмарою...";
+
+            try {
+                // Таймаут на 4 секунди, щоб додаток не зависав офлайн
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
+                    headers: { 'X-Access-Key': state.config.apiKey },
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.record) {
+                        smartMergeWithRemote(data.record);
+                    }
+                }
+            } catch (e) {
+                console.warn("Блокуюча синхронізація недоступна (офлайн-режим):", e);
+            } finally {
+                hideSyncOverlay();
+            }
+        }
+
+        function hideSyncOverlay() {
+            const overlay = document.getElementById('syncOverlay');
+            if (overlay) {
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // --- SMART MERGE ALGORITHM (Злиття за ID та updatedAt) ---
+        function smartMergeWithRemote(remoteData) {
+            // 1. Злиття методик
+            if (remoteData.methodologies && Array.isArray(remoteData.methodologies)) {
+                const map = new Map();
+                state.methodologies.forEach(m => map.set(m.id, m));
+
+                remoteData.methodologies.forEach(remoteM => {
+                    if (!map.has(remoteM.id)) {
+                        map.set(remoteM.id, remoteM);
+                    } else {
+                        const localM = map.get(remoteM.id);
+                        const localTime = new Date(localM.updatedAt || 0).getTime();
+                        const remoteTime = new Date(remoteM.updatedAt || 0).getTime();
+                        if (remoteTime > localTime) {
+                            map.set(remoteM.id, remoteM);
+                        }
+                    }
+                });
+                state.methodologies = Array.from(map.values());
+            }
+
+            // 2. Злиття замірів
+            if (remoteData.measurements && Array.isArray(remoteData.measurements)) {
+                const map = new Map();
+                state.measurements.forEach(r => map.set(r.id, r));
+
+                remoteData.measurements.forEach(remoteRec => {
+                    if (!map.has(remoteRec.id)) {
+                        map.set(remoteRec.id, remoteRec);
+                    } else {
+                        const localRec = map.get(remoteRec.id);
+                        const localTime = new Date(localRec.updatedAt || localRec.rawDate || 0).getTime();
+                        const remoteTime = new Date(remoteRec.updatedAt || remoteRec.rawDate || 0).getTime();
+                        if (remoteTime > localTime) {
+                            map.set(remoteRec.id, remoteRec);
+                        }
+                    }
+                });
+                state.measurements = Array.from(map.values());
+            }
+
+            // 3. Злиття словника термінів
+            if (remoteData.dictionary && typeof remoteData.dictionary === 'object') {
+                state.dictionary = { ...remoteData.dictionary, ...state.dictionary };
+            }
+
+            saveStateToLocal();
+        }
+
+        function initAppAfterSync() {
             saveStateToLocal();
             populateMethodologyDropdown();
             renderMethodologyCards();
             renderHistoryTable();
-            loadSettingsInputs();
             checkAndRestoreDraft();
+            updateSyncStatusUI('synced');
         }
 
         function toggleLangMenu() {
@@ -1351,6 +1431,7 @@
             const now = new Date();
             const dateOnly = now.toISOString().split('T')[0];
             const editingId = document.getElementById('editingRecordId').value;
+            const currentTimeIso = now.toISOString();
 
             if (editingId) {
                 const recordIdx = state.measurements.findIndex(r => r.id === editingId);
@@ -1358,6 +1439,7 @@
                     state.measurements[recordIdx].inspector = inspector;
                     state.measurements[recordIdx].values = values;
                     state.measurements[recordIdx].timestamp = dateOnly;
+                    state.measurements[recordIdx].updatedAt = currentTimeIso;
                 }
                 document.getElementById('editingRecordId').value = "";
                 document.getElementById('editingBadge').classList.add('hidden');
@@ -1365,7 +1447,8 @@
                 const newRecord = {
                     id: 'rec_' + Date.now(),
                     timestamp: dateOnly,
-                    rawDate: now.toISOString(),
+                    rawDate: currentTimeIso,
+                    updatedAt: currentTimeIso,
                     methodologyId: m.id,
                     methodologyTitle: getI18nText(m.title),
                     inspector: inspector,
@@ -1447,9 +1530,9 @@
             }
 
             if (sortOrder === 'ASC') {
-                filtered.sort((a, b) => new Date(a.rawDate) - new Date(b.rawDate));
+                filtered.sort((a, b) => new Date(a.rawDate || a.timestamp) - new Date(b.rawDate || b.timestamp));
             } else {
-                filtered.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+                filtered.sort((a, b) => new Date(b.rawDate || b.timestamp) - new Date(a.rawDate || a.timestamp));
             }
 
             return filtered;
@@ -1803,16 +1886,13 @@
             XLSX.writeFile(workbook, filename);
         }
 
-        // РУЧНА СИНХРОНІЗАЦІЯ ДЛЯ КНОПОК У НАЛАШТУВАННЯХ
         async function syncDataManual() {
-            const dict = I18N[currentLang] || I18N.uk;
             await syncData();
             alert(currentLang === 'es' ? "¡Datos sincronizados con éxito desde la nube!" : "Дані успішно стягнуто з хмари!");
             window.location.reload();
         }
 
         async function pushToJsonBinManual() {
-            const dict = I18N[currentLang] || I18N.uk;
             await pushToJsonBin();
             alert(currentLang === 'es' ? "¡Datos subidos con éxito a la nube!" : "Дані успішно вивантажено в хмару!");
         }
@@ -1875,7 +1955,6 @@
             container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">...</div>`;
         }
 
-        // --- МОДАЛКА МЕТОДИК ТА ПАРАМЕТРИ ---
         let tempParams = [];
         let editingOptionIdx = null;
 
@@ -1884,7 +1963,10 @@
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgArchiveConfirm)) {
                 const m = state.methodologies.find(x => x.id === id);
-                if (m) m.isArchived = true;
+                if (m) {
+                    m.isArchived = true;
+                    m.updatedAt = new Date().toISOString();
+                }
                 saveStateToLocal();
                 populateMethodologyDropdown();
                 renderMethodologyCards();
@@ -1897,7 +1979,10 @@
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgRestoreConfirm)) {
                 const m = state.methodologies.find(x => x.id === id);
-                if (m) m.isArchived = false;
+                if (m) {
+                    m.isArchived = false;
+                    m.updatedAt = new Date().toISOString();
+                }
                 saveStateToLocal();
                 populateMethodologyDropdown();
                 renderMethodologyCards();
@@ -2247,9 +2332,6 @@
             }
         }
 
-        // --- МОДАЛКА СЛОВНИКА ---
-        let tempDictArray = [];
-
         function openDictionaryModal() {
             if (!isAdmin) return;
             tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: trans.es }));
@@ -2314,7 +2396,8 @@
             alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
         }
 
-        // --- ІНШІ ФУНКЦІЇ ---
+        let tempDictArray = [];
+
         function openOptionsModal(idx) {
             editingOptionIdx = idx;
             const currentOpts = tempParams[idx].options || [];
@@ -2427,6 +2510,7 @@
 
             const newTitle = { uk: titleUk, es: titleEs };
             const newDesc = { uk: descUk, es: descEs };
+            const currentTimeIso = new Date().toISOString();
 
             const groups = [
                 {
@@ -2447,7 +2531,8 @@
                         docUrl: docUrl,
                         status: status,
                         groups: groups,
-                        isArchived: wasArchived
+                        isArchived: wasArchived,
+                        updatedAt: currentTimeIso
                     };
                 }
             } else {
@@ -2458,7 +2543,8 @@
                     docUrl: docUrl,
                     status: status,
                     groups: groups,
-                    isArchived: false
+                    isArchived: false,
+                    updatedAt: currentTimeIso
                 });
             }
 
@@ -2473,7 +2559,6 @@
         function loadSettingsInputs() {
             document.getElementById('cfgBinId').value = state.config.binId || '';
             document.getElementById('cfgApiKey').value = state.config.apiKey || '';
-            updateSyncStatusUI();
         }
 
         function saveSettings() {
@@ -2557,23 +2642,8 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.record) {
-                        if (data.record.measurements && Array.isArray(data.record.measurements)) {
-                            const combined = [...state.measurements];
-                            data.record.measurements.forEach(remoteRec => {
-                                if (!combined.some(localRec => localRec.id === remoteRec.id)) {
-                                    combined.push(remoteRec);
-                                }
-                            });
-                            state.measurements = combined;
-                        }
-                        if (data.record.methodologies && Array.isArray(data.record.methodologies) && data.record.methodologies.length > 0) {
-                            state.methodologies = data.record.methodologies;
-                        }
-                        if (data.record.dictionary && typeof data.record.dictionary === 'object' && Object.keys(data.record.dictionary).length > 0) {
-                            state.dictionary = data.record.dictionary;
-                        }
-                        saveStateToLocal();
+                    if (data && data.record) {
+                        smartMergeWithRemote(data.record);
                         populateMethodologyDropdown();
                         renderMethodologyCards();
                         renderHistoryTable();
