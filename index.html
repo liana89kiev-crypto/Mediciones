@@ -457,7 +457,15 @@
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
                 btnNewMethod: "Нова методика",
                 btnEdit: "Редагувати",
-                btnDelete: "Видалити",
+                btnDeletePermanent: "Видалити назавжди",
+                btnArchive: "В архів",
+                btnRestoreMethod: "Відновити",
+                lblActiveMethods: "Активні методики",
+                lblArchivedMethods: "Архів",
+                msgArchiveConfirm: "Перемістити цю методику в архів? Вона більше не буде доступна для нових замірів.",
+                msgRestoreConfirm: "Відновити цю методику з архіву?",
+                msgDeleteConfirm: "Видалити назавжди? Це неможливо скасувати. (Історичні дані втратять опис полів)",
+                lblArchived: "[АРХІВ]",
                 lblParamsBadge: "параметрів",
                 modalCreateTitle: "Створити нову методику",
                 modalEditTitle: "Редагувати методику",
@@ -533,7 +541,15 @@
                 lblConstructorSub: "Cree y edite metodologías de medición",
                 btnNewMethod: "Nueva metodología",
                 btnEdit: "Editar",
-                btnDelete: "Eliminar",
+                btnDeletePermanent: "Eliminar permanente",
+                btnArchive: "Archivar",
+                btnRestoreMethod: "Restaurar",
+                lblActiveMethods: "Metodologías activas",
+                lblArchivedMethods: "Archivo",
+                msgArchiveConfirm: "¿Mover esta metodología al archivo? Ya no estará disponible para nuevas mediciones.",
+                msgRestoreConfirm: "¿Restaurar esta metodología del archivo?",
+                msgDeleteConfirm: "¿Eliminar permanentemente? ¡No se puede deshacer! (Los datos históricos perderán sus descripciones)",
+                lblArchived: "[ARCHIVO]",
                 lblParamsBadge: "parámetros",
                 modalCreateTitle: "Crear nueva metodología",
                 modalEditTitle: "Editar metodología",
@@ -584,6 +600,7 @@
                 id: 'm_live_yield_v1',
                 title: { uk: 'Вихід від живка', es: 'Rendimiento de vivo' },
                 description: { uk: 'Аналіз виходу продукції відносно живої ваги птиці', es: 'Análisis de rendimiento respecto al peso vivo' },
+                isArchived: false,
                 groups: [
                     {
                         title: { uk: 'Показники', es: 'Parámetros' },
@@ -603,6 +620,7 @@
                 id: 'm_poultry_deboning_v10',
                 title: { uk: 'Замір розробки тушки', es: 'Control de despiece' },
                 description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes' },
+                isArchived: false,
                 groups: [
                     {
                         title: { uk: 'Загальні дані', es: 'Datos generales' },
@@ -838,11 +856,19 @@
 
             state.methodologies.forEach(m => {
                 const title = getI18nText(m.title);
-                select.innerHTML += `<option value="${m.id}">${title}</option>`;
-                filterSelect.innerHTML += `<option value="${m.id}">${title}</option>`;
+                const archiveTag = m.isArchived ? ` ${dict.lblArchived}` : '';
+
+                if (!m.isArchived) {
+                    select.innerHTML += `<option value="${m.id}">${title}</option>`;
+                }
+                filterSelect.innerHTML += `<option value="${m.id}">${title}${archiveTag}</option>`;
             });
 
-            if (selectedM) select.value = selectedM;
+            if (selectedM && state.methodologies.find(m => m.id === selectedM && !m.isArchived)) {
+                select.value = selectedM;
+            } else {
+                select.value = "";
+            }
             if (selectedFilterM) filterSelect.value = selectedFilterM;
         }
 
@@ -1515,30 +1541,96 @@
             const container = document.getElementById('methodologyList');
             const dict = I18N[currentLang] || I18N.uk;
 
-            container.innerHTML = state.methodologies.map(m => {
-                const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
-                const mTitle = getI18nText(m.title);
-                const mDesc = getI18nText(m.description);
-                return `
-                <div class="border border-slate-200 rounded-xl p-5 bg-slate-50 flex flex-col justify-between hover:shadow-md transition">
-                    <div>
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-slate-800 text-base">${escapeHTML(mTitle)}</h3>
-                            <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
+            const active = state.methodologies.filter(m => !m.isArchived);
+            const archived = state.methodologies.filter(m => m.isArchived);
+
+            const renderCards = (list, isArchived) => {
+                return list.map(m => {
+                    const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
+                    const mTitle = getI18nText(m.title);
+                    const mDesc = getI18nText(m.description);
+
+                    const actions = isArchived ? `
+                        <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash-arrow-up mr-1"></i>${dict.btnRestoreMethod}</button>
+                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash mr-1"></i>${dict.btnDeletePermanent}</button>
+                    ` : `
+                        <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-pen mr-1"></i>${dict.btnEdit}</button>
+                        <button onclick="archiveMethodology('${m.id}')" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-box-archive mr-1"></i>${dict.btnArchive}</button>
+                    `;
+
+                    return `
+                    <div class="border ${isArchived ? 'border-dashed border-slate-300 bg-slate-100' : 'border-slate-200 bg-slate-50'} rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
+                                <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-100 text-blue-700'} font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
                         </div>
-                        <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
+                        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
+                            ${actions}
+                        </div>
                     </div>
-                    <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
-                        <button onclick="editMethodology('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition">${dict.btnEdit}</button>
-                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition">${dict.btnDelete}</button>
-                    </div>
-                </div>
-            `}).join('');
+                    `;
+                }).join('');
+            };
+
+            let html = '';
+            
+            if (active.length > 0) {
+                html += `<div class="col-span-1 md:col-span-2 mb-2"><h3 class="text-sm font-bold text-slate-700 uppercase">${dict.lblActiveMethods}</h3></div>`;
+                html += renderCards(active, false);
+            }
+            
+            if (archived.length > 0) {
+                html += `<div class="col-span-1 md:col-span-2 mt-6 mb-2 border-t border-slate-200 pt-4"><h3 class="text-sm font-bold text-slate-500 uppercase">${dict.lblArchivedMethods}</h3></div>`;
+                html += renderCards(archived, true);
+            }
+
+            container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">Немає методик</div>`;
         }
 
         // --- МОДАЛКА МЕТОДИК ТА ПАРАМЕТРИ ---
         let tempParams = [];
         let editingOptionIdx = null;
+
+        function archiveMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert("Доступ обмежено!");
+            if (confirm(dict.msgArchiveConfirm)) {
+                const m = state.methodologies.find(x => x.id === id);
+                if (m) m.isArchived = true;
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function restoreMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert("Доступ обмежено!");
+            if (confirm(dict.msgRestoreConfirm)) {
+                const m = state.methodologies.find(x => x.id === id);
+                if (m) m.isArchived = false;
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function deleteMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert("Доступ обмежено!");
+            if (confirm(dict.msgDeleteConfirm)) {
+                state.methodologies = state.methodologies.filter(x => x.id !== id);
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
 
         function openMethodologyModal(methodId = null) {
             if (!isAdmin) {
@@ -1711,7 +1803,6 @@
             
             renderParamRows();
 
-            // Якщо вибрали ручне введення - одразу фокусуємось на полі "Од. (UA)"
             if (presetKey === 'custom') {
                 setTimeout(() => {
                     const el = document.getElementById(`unit_uk_${idx}`);
@@ -1860,7 +1951,6 @@
             });
             renderParamRows();
 
-            // Прокрутка до нового параметра та встановлення курсору
             setTimeout(() => {
                 const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
                 const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
@@ -1935,11 +2025,13 @@
             if (editId) {
                 const idx = state.methodologies.findIndex(m => m.id === editId);
                 if (idx !== -1) {
+                    const wasArchived = state.methodologies[idx].isArchived || false;
                     state.methodologies[idx] = { 
                         id: editId, 
                         title: newTitle, 
                         description: newDesc, 
-                        groups: groups 
+                        groups: groups,
+                        isArchived: wasArchived
                     };
                 }
             } else {
@@ -1947,7 +2039,8 @@
                     id: 'm_custom_' + Date.now(),
                     title: newTitle,
                     description: newDesc,
-                    groups: groups
+                    groups: groups,
+                    isArchived: false
                 });
             }
 
@@ -1957,24 +2050,6 @@
             closeMethodologyModal();
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
             alert("Methodology saved successfully!");
-        }
-
-        function deleteMethodology(id) {
-            if (!isAdmin) {
-                alert("Доступ обмежено!");
-                return;
-            }
-            if (confirm("Delete methodology? / Видалити методику?")) {
-                state.methodologies = state.methodologies.filter(x => x.id !== id);
-                saveStateToLocal();
-                populateMethodologyDropdown();
-                renderMethodologyCards();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            }
-        }
-
-        function editMethodology(id) {
-            openMethodologyModal(id);
         }
 
         function loadSettingsInputs() {
