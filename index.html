@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mediciones SPA — Система замірів та зважування</title>
-    <!-- Dynamic Favicon (Scales Emoji) -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS with Styles CDN -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
@@ -19,7 +15,6 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
-    <!-- Header / Navbar -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
@@ -83,7 +78,7 @@
                         <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру
                     </h2>
                     <span id="editingBadge" class="hidden text-xs bg-amber-500 text-white px-3 py-1 rounded-full font-bold flex items-center">
-                        <i class="fa-solid fa-pen mr-1"></i> Редагування запису
+                        <i class="fa-solid fa-pen mr-1"></i> <span id="editingBadgeText">Редагування запису</span>
                     </span>
                     <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
                         <i class="fa-solid fa-floppy-disk mr-1"></i> <span id="lblDraftSaved">Черновик збережено</span>
@@ -215,11 +210,11 @@
             </div>
         </section>
 
-        <!-- TAB 4: SETTINGS (JSONBIN.IO) -->
+        <!-- TAB 4: SETTINGS & BACKUP -->
         <section id="sec-settings" class="hidden space-y-6">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 max-w-2xl mx-auto">
                 <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-800 flex items-center" id="lblSettingsTitle">
-                    <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io & Синхронізації
+                    <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io
                 </h2>
                 <p class="text-xs text-slate-500 mb-6" id="lblSettingsSub">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.</p>
 
@@ -238,6 +233,21 @@
                         </button>
                         <button onclick="saveSettings()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow" id="btnSaveSettings">
                             Зберегти
+                        </button>
+                    </div>
+                </div>
+
+                <!-- БЛОК РЕЗЕРВНОГО КОПІЮВАННЯ -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="text-sm font-bold text-blue-600 mb-2" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1"></i> Резервне копіювання (Backup)</h3>
+                    <p class="text-xs text-slate-500 mb-3" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
+                    <div class="flex gap-2">
+                        <button onclick="downloadBackup()" class="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-semibold transition">
+                            <i class="fa-solid fa-download mr-1"></i> <span id="btnBackupText">Завантажити копію</span>
+                        </button>
+                        <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreBackup(event)">
+                        <button onclick="document.getElementById('restoreFile').click()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition border border-slate-300">
+                            <i class="fa-solid fa-upload mr-1"></i> <span id="btnRestoreText">Відновити з копії</span>
                         </button>
                     </div>
                 </div>
@@ -290,7 +300,6 @@
                         </button>
                     </div>
                     <div id="paramRowsContainer" class="space-y-3">
-                        <!-- Dynamic parameter rows -->
                     </div>
                 </div>
             </div>
@@ -328,7 +337,6 @@
                     <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline">Зняти виділення</button>
                 </div>
                 <div id="exportCheckboxesList" class="space-y-2 divide-y divide-slate-100">
-                    <!-- Dynamic checkboxes -->
                 </div>
             </div>
             <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
@@ -361,7 +369,6 @@
                 </div>
                 
                 <div id="dictionaryRowsContainer" class="space-y-2">
-                    <!-- Dynamic dictionary rows -->
                 </div>
             </div>
             
@@ -394,7 +401,7 @@
 
         const UNIT_PRESETS = {
             'kg': { uk: 'кг', es: 'kg' },
-            'pcs': { uk: 'шт', es: 'unidades' },
+            'pcs': { uk: 'шт.', es: 'uds' },
             'g': { uk: 'г', es: 'g' },
             'pct': { uk: '%', es: '%' },
             'heads': { uk: 'гол.', es: 'cabezas' },
@@ -442,7 +449,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методика",
+                btnNewMethod: "Нова методику",
                 btnEdit: "Редагувати",
                 btnDelete: "Видалити",
                 lblParamsBadge: "параметрів",
@@ -462,7 +469,7 @@
                 lblUseShare: "Рахувати % від:",
                 lblBaseParam: "База для %:",
                 lblNoBase: "-- Без розрахунку % --",
-                lblSettingsTitle: "Налаштування JSONBin.io & Синхронізації",
+                lblSettingsTitle: "Налаштування JSONBin.io",
                 lblSettingsSub: "Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.",
                 btnTestConn: "Тест з'єднання",
                 btnSaveSettings: "Зберегти",
@@ -475,7 +482,19 @@
                 allMethodsOpt: "Всі методики",
                 adminOp: "Оператор",
                 adminAd: "Адмін",
-                adminPrompt: "Введіть пароль адміністратора:"
+                adminPrompt: "Введіть пароль адміністратора:",
+                // Нові переклади:
+                editingBadge: "Редагування",
+                lblUnit: "Одиниця:",
+                optTemplate: "-- Шаблон --",
+                lblIsBaseWeight: "Базова вага",
+                autoText: "авто",
+                lblBackupTitle: "Резервне копіювання (Backup)",
+                lblBackupDesc: "Створіть повну локальну копію бази даних (методики, заміри, словник).",
+                btnBackup: "Завантажити копію",
+                btnRestore: "Відновити з копії",
+                msgRestoreConfirm: "УВАГА: Це повністю перезапише всі ваші поточні дані! Продовжити?",
+                msgRestoreSuccess: "Резервну копію успішно відновлено! Сторінка буде перезавантажена."
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
@@ -527,7 +546,7 @@
                 lblUseShare: "Calcular % de:",
                 lblBaseParam: "Base para %:",
                 lblNoBase: "-- Sin cálculo de % --",
-                lblSettingsTitle: "Configuración de JSONBin.io y Sincronización",
+                lblSettingsTitle: "Configuración de JSONBin.io",
                 lblSettingsSub: "Ingrese sus claves de JSONBin.io para el guardado automático en la nube.",
                 btnTestConn: "Probar conexión",
                 btnSaveSettings: "Guardar",
@@ -540,7 +559,19 @@
                 allMethodsOpt: "Todas las metodologías",
                 adminOp: "Operador",
                 adminAd: "Admin",
-                adminPrompt: "Ingrese la contraseña de administrador:"
+                adminPrompt: "Ingrese la contraseña de administrador:",
+                // Нові переклади:
+                editingBadge: "Editando",
+                lblUnit: "Unidad:",
+                optTemplate: "-- Plantilla --",
+                lblIsBaseWeight: "Peso base",
+                autoText: "auto",
+                lblBackupTitle: "Copia de seguridad (Backup)",
+                lblBackupDesc: "Cree una copia local completa de la base de datos (metodologías, mediciones, diccionario).",
+                btnBackup: "Descargar copia",
+                btnRestore: "Restaurar copia",
+                msgRestoreConfirm: "ATENCIÓN: ¡Esto sobrescribirá todos sus datos actuales! ¿Continuar?",
+                msgRestoreSuccess: "¡Copia de seguridad restaurada con éxito! La página se recargará."
             }
         };
 
@@ -599,24 +630,25 @@
         let state = {
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
-            dictionary: JSON.parse(localStorage.getItem('qm_dictionary')) || null,
+            dictionary: {},
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        if (!state.dictionary) {
-            state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
+        // Завантажуємо базові налаштування ТІЛЬКИ ПРИ ПЕРШОМУ ЗАПУСКУ (щоб не поверталися видалені методики)
+        const isMethodsInit = localStorage.getItem('qm_methods_initialized');
+        if (!isMethodsInit) {
+            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
+            localStorage.setItem('qm_methods_initialized', 'true');
+        } else {
+            state.methodologies = JSON.parse(localStorage.getItem('qm_methodologies')) || [];
         }
 
-        const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies')) || [];
-        if (savedMethods.length === 0) {
-            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
+        const isDictInit = localStorage.getItem('qm_dict_initialized');
+        if (!isDictInit) {
+            state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
+            localStorage.setItem('qm_dict_initialized', 'true');
         } else {
-            state.methodologies = savedMethods;
-            DEFAULT_METHODOLOGIES.forEach(dm => {
-                if (!state.methodologies.find(sm => sm.id === dm.id)) {
-                    state.methodologies.push(dm);
-                }
-            });
+            state.dictionary = JSON.parse(localStorage.getItem('qm_dictionary')) || {};
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -717,6 +749,13 @@
             document.getElementById('btnSaveSettings').innerText = dict.btnSaveSettings;
             document.getElementById('lblDangerZone').innerText = dict.lblDangerZone;
             document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
+
+            // Нові переклади
+            document.getElementById('editingBadgeText').innerText = dict.editingBadge;
+            document.getElementById('lblBackupTitle').innerHTML = `<i class="fa-solid fa-shield-halved mr-1"></i> ${dict.lblBackupTitle}`;
+            document.getElementById('lblBackupDesc').innerText = dict.lblBackupDesc;
+            document.getElementById('btnBackupText').innerText = dict.btnBackup;
+            document.getElementById('btnRestoreText').innerText = dict.btnRestore;
 
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
@@ -919,7 +958,7 @@
 
                     fieldWrapper.innerHTML = `
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1 flex justify-between">
-                            <span>${paramLabel} ${reqStar} ${isReadOnly ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}</span>
+                            <span>${escapeHTML(paramLabel)} ${reqStar} ${isReadOnly ? `<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 ${dict.autoText})</span>` : ''}</span>
                         </label>
                         ${inputHtml}
                     `;
@@ -1576,9 +1615,9 @@
 
                             <!-- Одиниця виміру (Шаблони + Вручну UA / ES) -->
                             <div class="flex flex-col sm:flex-row items-center gap-2 bg-slate-100 p-2 rounded border border-slate-200">
-                                <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">Одиниця:</span>
+                                <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
                                 <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded p-1 text-[11px] bg-white w-full sm:w-40">
-                                    <option value="">-- Шаблон --</option>
+                                    <option value="">${dict.optTemplate}</option>
                                     <option value="kg">кг / kg</option>
                                     <option value="pcs">шт / unidades</option>
                                     <option value="g">г / g</option>
@@ -1624,7 +1663,7 @@
                     <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600">
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
-                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight || 'Базова вага'}</label>
+                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
                         </div>
                         ${p.type === 'decimal' || p.type === 'formula' ? `
                         <div class="flex items-center space-x-1.5">
@@ -1937,6 +1976,57 @@
             } else {
                 el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>`;
             }
+        }
+
+        // --- БЕКАП ТА ВІДНОВЛЕННЯ ---
+        function downloadBackup() {
+            const backupData = {
+                methodologies: state.methodologies,
+                measurements: state.measurements,
+                dictionary: state.dictionary,
+                config: state.config
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "mediciones_backup_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function restoreBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const dict = I18N[currentLang] || I18N.uk;
+            
+            if (!confirm(dict.msgRestoreConfirm)) {
+                event.target.value = ''; 
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.methodologies) state.methodologies = data.methodologies;
+                    if (data.measurements) state.measurements = data.measurements;
+                    if (data.dictionary) state.dictionary = data.dictionary;
+                    if (data.config) state.config = data.config;
+                    
+                    saveStateToLocal();
+                    
+                    if (state.config.binId && state.config.apiKey) {
+                        pushToJsonBin();
+                    }
+                    
+                    alert(dict.msgRestoreSuccess);
+                    window.location.reload();
+                } catch(err) {
+                    alert("Error: Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
         }
 
         async function syncData() {
