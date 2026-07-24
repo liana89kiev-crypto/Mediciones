@@ -628,7 +628,6 @@
                 groups: [
                     {
                         title: { uk: 'Показники', es: 'Parámetros' },
-                        isGeneral: false,
                         params: [
                             { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
                             { id: 'ly_2', label: { uk: 'Жива вага', es: 'Peso vivo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v2' },
@@ -699,6 +698,8 @@
             }
         };
 
+        // НАЙГОЛОВНІШИЙ ЗАХИСТ БАЗИ:
+        // Якщо в браузері вже є збережені дані — код їх НІКОЛИ не затирає.
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
         if (savedMethods && Array.isArray(savedMethods) && savedMethods.length > 0) {
             state.methodologies = savedMethods;
