@@ -242,6 +242,7 @@
                     </div>
                 </div>
 
+                <!-- БЛОК РЕЗЕРВНОГО КОПІЮВАННЯ -->
                 <div class="mt-8 pt-6 border-t border-slate-200">
                     <h3 class="text-sm font-bold text-blue-600 mb-2" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1"></i> Резервне копіювання (Backup)</h3>
                     <p class="text-xs text-slate-500 mb-3" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
@@ -409,7 +410,8 @@
             'g': { uk: 'г', es: 'g' },
             'pct': { uk: '%', es: '%' },
             'heads': { uk: 'гол.', es: 'cabezas' },
-            'speed': { uk: 'гол/год', es: 'cabezas/hora' }
+            'speed': { uk: 'гол/год', es: 'cabezas/hora' },
+            'min': { uk: 'хв', es: 'min' }
         };
 
         function escapeHTML(str) {
@@ -1598,7 +1600,7 @@
                 const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
 
                 return `
-                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3">
+                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3" id="paramRowBlock_${idx}">
                     <div class="flex items-start gap-2">
                         <div class="flex flex-col space-y-0.5 mt-1">
                             <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
@@ -1622,9 +1624,11 @@
                                     <option value="pct">% / %</option>
                                     <option value="heads">гол. / cabezas</option>
                                     <option value="speed">гол/год / cabezas/hora</option>
+                                    <option value="min">хв / min</option>
+                                    <option value="custom">✏️ Своя / Manual</option>
                                 </select>
-                                <input type="text" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
-                                <input type="text" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
+                                <input type="text" id="unit_uk_${idx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
+                                <input type="text" id="unit_es_${idx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
                             </div>
                             
                             <div class="flex gap-2">
@@ -1644,7 +1648,7 @@
                     </div>
 
                     ${p.type === 'select' ? `
-                    <div class="pl-8 sm:pl-12">
+                    <div class="pl-8 sm:pl-12 mt-2">
                         <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded font-medium">
                             <i class="fa-solid fa-list mr-1"></i> Редагувати варіанти списку (${optsCount})
                         </button>
@@ -1652,13 +1656,13 @@
                     ` : ''}
 
                     ${p.type === 'formula' ? `
-                    <div class="pl-8 sm:pl-12">
+                    <div class="pl-8 sm:pl-12 mt-2">
                         <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
                         <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50 rounded p-1.5 text-xs font-mono">
                     </div>
                     ` : ''}
 
-                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600">
+                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-2">
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
                             <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
@@ -1696,14 +1700,27 @@
 
         function applyUnitPreset(idx, presetKey) {
             if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
+            
             if (UNIT_PRESETS[presetKey]) {
                 tempParams[idx].unit.uk = UNIT_PRESETS[presetKey].uk;
                 tempParams[idx].unit.es = UNIT_PRESETS[presetKey].es;
-            } else if (presetKey === '') {
+            } else if (presetKey === '' || presetKey === 'custom') {
                 tempParams[idx].unit.uk = '';
                 tempParams[idx].unit.es = '';
             }
+            
             renderParamRows();
+
+            // Якщо вибрали ручне введення - одразу фокусуємось на полі "Од. (UA)"
+            if (presetKey === 'custom') {
+                setTimeout(() => {
+                    const el = document.getElementById(`unit_uk_${idx}`);
+                    if(el) {
+                        el.focus();
+                        el.select();
+                    }
+                }, 50);
+            }
         }
 
         function updateParamUnit(idx, lang, val) {
@@ -1829,6 +1846,7 @@
 
         function addParamRow() {
             const nextCode = 'v' + (tempParams.length + 1);
+            const newIdx = tempParams.length;
             tempParams.push({
                 id: 'p_' + Date.now(),
                 label: { uk: '', es: '' },
@@ -1841,6 +1859,16 @@
                 code: nextCode
             });
             renderParamRows();
+
+            // Прокрутка до нового параметра та встановлення курсору
+            setTimeout(() => {
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
+                if (newRow && ukInput) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ukInput.focus();
+                }
+            }, 100);
         }
 
         function removeParamRow(idx) {
