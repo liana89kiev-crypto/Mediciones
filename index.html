@@ -206,7 +206,7 @@
                     <div class="flex gap-2 w-full sm:w-auto">
                         <button onclick="openDictionaryModal()" class="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold shadow-sm transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-book"></i>
-                            <span>Словник термінів</span>
+                            <span id="btnDictTerms">Словник термінів</span>
                         </button>
                         <button onclick="openMethodologyModal()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-plus"></i>
@@ -303,14 +303,14 @@
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">🔗 Посилання на док/таблицю (URL)</label>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" id="lblDocUrl">🔗 Посилання на док/таблицю (URL)</label>
                         <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded p-2 text-xs outline-none bg-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">📊 Статус методики</label>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" id="lblMethodStatusLabel">📊 Статус методики</label>
                         <select id="methodStatus" class="w-full border border-slate-300 rounded p-2 text-xs bg-white font-semibold">
-                            <option value="ready">🟢 Готова до використання</option>
-                            <option value="dev">🟡 В розробці (прихована)</option>
+                            <option value="ready" id="optStatusReady">🟢 Готова до використання</option>
+                            <option value="dev" id="optStatusDev">🟡 В розробці (прихована)</option>
                         </select>
                     </div>
                 </div>
@@ -337,12 +337,12 @@
     <!-- Modal 2: Custom Dropdown Options Modal -->
     <div id="optionsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2">Редагування варіантів списку</h3>
-            <p class="text-xs text-slate-500">Вкажіть варіанти вибору (по одному на кожен рядок):</p>
+            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2" id="lblOptsModalTitle">Редагування варіантів списку</h3>
+            <p class="text-xs text-slate-500" id="lblOptsModalSub">Вкажіть варіанти вибору (по одному на кожен рядок):</p>
             <textarea id="optionsTextArea" rows="5" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
             <div class="flex justify-end space-x-2">
-                <button onclick="closeOptionsModal()" class="px-3 py-1.5 border border-slate-300 rounded text-xs">Скасувати</button>
-                <button onclick="saveOptionsFromModal()" class="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold">Зберегти варіанти</button>
+                <button onclick="closeOptionsModal()" class="px-3 py-1.5 border border-slate-300 rounded text-xs" id="btnOptsCancel">Скасувати</button>
+                <button onclick="saveOptionsFromModal()" class="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold" id="btnOptsSave">Зберегти варіанти</button>
             </div>
         </div>
     </div>
@@ -351,22 +351,22 @@
     <div id="exportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="px-5 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 class="font-bold text-slate-800 text-sm">Вибір замірів для експорту в Excel</h3>
+                <h3 class="font-bold text-slate-800 text-sm" id="lblExportModalTitle">Вибір замірів для експорту в Excel</h3>
                 <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-4 overflow-y-auto space-y-3 flex-grow">
                 <div class="flex justify-between items-center text-xs pb-2 border-b">
-                    <button onclick="toggleSelectAllExport(true)" class="text-blue-600 hover:underline font-semibold">Вибрати всі</button>
-                    <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline">Зняти виділення</button>
+                    <button onclick="toggleSelectAllExport(true)" class="text-blue-600 hover:underline font-semibold" id="lblSelectAll">Вибрати всі</button>
+                    <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline" id="lblDeselectAll">Зняти виділення</button>
                 </div>
                 <div id="exportCheckboxesList" class="space-y-2 divide-y divide-slate-100">
                 </div>
             </div>
             <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
-                <span class="text-xs text-slate-500">Вибрано: <strong id="selectedExportCount">0</strong></span>
+                <span class="text-xs text-slate-500" id="lblSelectedCountText">Вибрано: <strong id="selectedExportCount">0</strong></span>
                 <button onclick="executeSelectedExport()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center space-x-1.5">
                     <i class="fa-solid fa-file-excel"></i>
-                    <span>Завантажити XLSX</span>
+                    <span id="lblDownloadXlsxBtn">Завантажити XLSX</span>
                 </button>
             </div>
         </div>
@@ -377,16 +377,16 @@
         <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
             <div class="px-5 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <div>
-                    <h3 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-book text-blue-600 mr-2"></i> Галузевий словник термінів</h3>
-                    <p class="text-[10px] text-slate-500">Використовується для автоперекладу параметрів</p>
+                    <h3 class="font-bold text-slate-800 text-sm" id="lblDictTitle"><i class="fa-solid fa-book text-blue-600 mr-2"></i> Галузевий словник термінів</h3>
+                    <p class="text-[10px] text-slate-500" id="lblDictSub">Використовується для автоперекладу параметрів</p>
                 </div>
                 <button onclick="closeDictionaryModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
             <div class="p-4 overflow-y-auto flex-grow bg-white">
                 <div class="flex justify-between items-center mb-3">
-                    <span class="text-xs font-bold text-slate-700 uppercase">Список пар (UA - ES)</span>
-                    <button onclick="addDictionaryRow()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded text-xs font-bold transition">
+                    <span class="text-xs font-bold text-slate-700 uppercase" id="lblDictPairsHeader">Список пар (UA - ES)</span>
+                    <button onclick="addDictionaryRow()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded text-xs font-bold transition" id="btnAddDictWord">
                         + Додати слово
                     </button>
                 </div>
@@ -396,8 +396,8 @@
             </div>
             
             <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end space-x-2">
-                <button onclick="closeDictionaryModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-medium">Скасувати</button>
-                <button onclick="saveDictionary()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow">Зберегти словник</button>
+                <button onclick="closeDictionaryModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-medium" id="btnDictCancel">Скасувати</button>
+                <button onclick="saveDictionary()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow" id="btnDictSave">Зберегти словник</button>
             </div>
         </div>
     </div>
@@ -527,7 +527,28 @@
                 btnBackup: "Завантажити копію",
                 btnRestore: "Відновити з копії",
                 msgRestoreConfirm: "УВАГА: Це повністю перезапише всі ваші поточні дані! Продовжити?",
-                msgRestoreSuccess: "Резервну копію успішно відновлено! Сторінка буде перезавантажена."
+                msgRestoreSuccess: "Резервну копію успішно відновлено! Сторінка буде перезавантажена.",
+                devBadgeText: "🟡 В розробці",
+                btnDictTerms: "Словник термінів",
+                lblDocUrl: "🔗 Посилання на док/таблицю (URL)",
+                lblMethodStatusLabel: "📊 Статус методики",
+                optStatusReady: "🟢 Готова до використання",
+                optStatusDev: "🟡 В розробці (прихована)",
+                lblOptsModalTitle: "Редагування варіантів списку",
+                lblOptsModalSub: "Вкажіть варіанти вибору (по одному на кожен рядок):",
+                btnOptsCancel: "Скасувати",
+                btnOptsSave: "Зберегти варіанти",
+                lblExportModalTitle: "Вибір замірів для експорту в Excel",
+                lblSelectAll: "Вибрати всі",
+                lblDeselectAll: "Зняти виділення",
+                lblSelectedCountText: "Вибрано:",
+                lblDownloadXlsxBtn: "Завантажити XLSX",
+                lblDictTitle: "Галузевий словник термінів",
+                lblDictSub: "Використовується для автоперекладу параметрів",
+                lblDictPairsHeader: "Список пар (UA - ES)",
+                btnAddDictWord: "+ Додати слово",
+                btnDictCancel: "Скасувати",
+                btnDictSave: "Зберегти словник"
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
@@ -613,7 +634,28 @@
                 btnBackup: "Descargar copia",
                 btnRestore: "Restaurar copia",
                 msgRestoreConfirm: "ATENCIÓN: ¡Esto sobrescribirá todos sus datos actuales! ¿Continuar?",
-                msgRestoreSuccess: "¡Copia de seguridad restaurada con éxito! La página se recargará."
+                msgRestoreSuccess: "¡Copia de seguridad restaurada con éxito! La página se recargará.",
+                devBadgeText: "🟡 En desarrollo",
+                btnDictTerms: "Diccionario",
+                lblDocUrl: "🔗 Enlace a doc/tabla (URL)",
+                lblMethodStatusLabel: "📊 Estado de metodología",
+                optStatusReady: "🟢 Listo para usar",
+                optStatusDev: "🟡 En desarrollo (oculto)",
+                lblOptsModalTitle: "Editar opciones de lista",
+                lblOptsModalSub: "Ingrese las opciones (una por línea):",
+                btnOptsCancel: "Cancelar",
+                btnOptsSave: "Guardar opciones",
+                lblExportModalTitle: "Seleccionar mediciones para exportar a Excel",
+                lblSelectAll: "Seleccionar todo",
+                lblDeselectAll: "Deseleccionar todo",
+                lblSelectedCountText: "Seleccionados:",
+                lblDownloadXlsxBtn: "Descargar XLSX",
+                lblDictTitle: "Diccionario de términos",
+                lblDictSub: "Usado para la traducción automática de parámetros",
+                lblDictPairsHeader: "Pares de términos (UA - ES)",
+                btnAddDictWord: "+ Añadir palabra",
+                btnDictCancel: "Cancelar",
+                btnDictSave: "Guardar diccionario"
             }
         };
 
@@ -820,6 +862,27 @@
             document.getElementById('btnRestoreText').innerText = dict.btnRestore;
             document.getElementById('docLinkText').innerText = dict.docLinkText;
 
+            document.getElementById('btnDictTerms').innerText = dict.btnDictTerms;
+            document.getElementById('lblDocUrl').innerText = dict.lblDocUrl;
+            document.getElementById('lblMethodStatusLabel').innerText = dict.lblMethodStatusLabel;
+            document.getElementById('optStatusReady').innerText = dict.optStatusReady;
+            document.getElementById('optStatusDev').innerText = dict.optStatusDev;
+            document.getElementById('lblOptsModalTitle').innerText = dict.lblOptsModalTitle;
+            document.getElementById('lblOptsModalSub').innerText = dict.lblOptsModalSub;
+            document.getElementById('btnOptsCancel').innerText = dict.btnOptsCancel;
+            document.getElementById('btnOptsSave').innerText = dict.btnOptsSave;
+            document.getElementById('lblExportModalTitle').innerText = dict.lblExportModalTitle;
+            document.getElementById('lblSelectAll').innerText = dict.lblSelectAll;
+            document.getElementById('lblDeselectAll').innerText = dict.lblDeselectAll;
+            document.getElementById('lblSelectedCountText').innerHTML = `${dict.lblSelectedCountText} <strong id="selectedExportCount">0</strong>`;
+            document.getElementById('lblDownloadXlsxBtn').innerText = dict.lblDownloadXlsxBtn;
+            document.getElementById('lblDictTitle').innerHTML = `<i class="fa-solid fa-book text-blue-600 mr-2"></i> ${dict.lblDictTitle}`;
+            document.getElementById('lblDictSub').innerText = dict.lblDictSub;
+            document.getElementById('lblDictPairsHeader').innerText = dict.lblDictPairsHeader;
+            document.getElementById('btnAddDictWord').innerText = dict.btnAddDictWord;
+            document.getElementById('btnDictCancel').innerText = dict.btnDictCancel;
+            document.getElementById('btnDictSave').innerText = dict.btnDictSave;
+
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
             inspectorSelect.innerHTML = `<option value="">-- ${dict.lblFactory} --</option>` +
@@ -836,7 +899,7 @@
 
         async function switchTab(tabId) {
             if (tabId === 'methodologies' && !isAdmin) {
-                alert("Доступ обмежено. Увійдіть як адміністратор!");
+                alert(currentLang === 'es' ? "Acceso restringido. ¡Inicie sesión como administrador!" : "Доступ обмежено. Увійдіть як адміністратор!");
                 return;
             }
             if (state.config.binId && state.config.apiKey) {
@@ -866,9 +929,9 @@
                     isAdmin = true;
                     localStorage.setItem('qm_is_admin', 'true');
                     updateAdminUI();
-                    alert("Режим адміністратора активовано!");
+                    alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
                 } else if (pwd !== null) {
-                    alert("Невірний пароль!");
+                    alert(currentLang === 'es' ? "¡Contraseña incorrecta!" : "Невірний пароль!");
                 }
             }
         }
@@ -1265,7 +1328,8 @@
             const rec = state.measurements.find(r => r.id === id);
             if (!rec) return;
 
-            if (confirm("Ви дійсно бажаєте відредагувати та продовжити цей замір? / ¿Desea editar esta medición?")) {
+            const confirmMsg = currentLang === 'es' ? "¿Desea editar esta medición?" : "Ви дійсно бажаєте відредагувати та продовжити цей замір?";
+            if (confirm(confirmMsg)) {
                 switchTab('new-measure');
                 document.getElementById('inspectorName').value = rec.inspector;
                 document.getElementById('methodologySelect').value = rec.methodologyId;
@@ -1337,7 +1401,8 @@
             document.getElementById('recordCount').innerText = filtered.length;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">Записів не знайдено</td></tr>`;
+                const noRecText = currentLang === 'es' ? 'No se encontraron registros' : 'Записів не знайдено';
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">${noRecText}</td></tr>`;
                 return;
             }
 
@@ -1354,6 +1419,9 @@
                     </button>
                 ` : '';
 
+                const editTooltip = currentLang === 'es' ? 'Editar' : 'Редагувати';
+                const xlsxTooltip = currentLang === 'es' ? 'Exportar XLSX' : 'XLSX';
+
                 return `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
@@ -1361,10 +1429,10 @@
                         <td class="p-3 text-xs font-semibold text-blue-700">${escapeHTML(rec.inspector)}</td>
                         <td class="p-3">${valuesBadges}</td>
                         <td class="p-3 text-right whitespace-nowrap space-x-1">
-                            <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="Редагувати">
+                            <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="${editTooltip}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition" title="XLSX">
+                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition" title="${xlsxTooltip}">
                                 <i class="fa-solid fa-file-excel"></i>
                             </button>
                             ${deleteBtnHtml}
@@ -1376,10 +1444,11 @@
 
         function deleteMeasurement(id) {
             if (!isAdmin) {
-                alert("Доступ обмежено!");
+                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
             }
-            if (confirm("Ви дійсно бажаєте видалити цей замір?")) {
+            const confirmDel = currentLang === 'es' ? "¿Realmente desea eliminar esta medición?" : "Ви дійсно бажаєте видалити цей замір?";
+            if (confirm(confirmDel)) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
                 saveStateToLocal();
                 renderHistoryTable();
@@ -1390,7 +1459,7 @@
         function openExportModal() {
             const filtered = getFilteredMeasurements();
             if (filtered.length === 0) {
-                alert("Немає даних для експорту!");
+                alert(currentLang === 'es' ? "¡No hay datos para exportar!" : "Немає даних для експорту!");
                 return;
             }
 
@@ -1430,7 +1499,7 @@
             const selectedIds = Array.from(selectedBoxes).map(cb => cb.value);
 
             if (selectedIds.length === 0) {
-                alert("Оберіть хоча б один замір!");
+                alert(currentLang === 'es' ? "¡Seleccione al menos una medición!" : "Оберіть хоча б один замір!");
                 return;
             }
 
@@ -1446,173 +1515,206 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
+        // РОЗУМНИЙ ЕКСПОРТ В EXCEL ЗГІДНО З ПРАВИЛАМИ (Різні методики на різні листи, однакові об'єднуються, цілі числа без знаків, частки)
         function generateExcelFile(recordsArray, filename) {
-            const headers = [
-                "Дата\nFecha",
-                "Методика\nMetodología",
-                "Фабрика\nPlanta"
-            ];
+            const workbook = XLSX.utils.book_new();
 
-            const paramKeys = [];
+            // Групуємо записи за методикою (використовуємо канонічну назву базової мови або ID, щоб об'єднати UA та ES вивантаження однакових методик)
+            const groupsByMethod = {};
             recordsArray.forEach(rec => {
-                Object.keys(rec.values).forEach(k => {
-                    if (!paramKeys.includes(k)) {
-                        paramKeys.push(k);
-                    }
-                });
-            });
-
-            const shareParamLabels = new Set();
-            recordsArray.forEach(rec => {
-                const m = state.methodologies.find(x => x.id === rec.methodologyId);
-                if (m && m.groups) {
-                    m.groups.forEach(g => {
-                        g.params.forEach(p => {
-                            if (p.useShare) {
-                                shareParamLabels.add(getLabelWithUnit(p, currentLang));
-                            }
-                        });
-                    });
+                const mId = rec.methodologyId || 'general';
+                if (!groupsByMethod[mId]) {
+                    groupsByMethod[mId] = {
+                        title: rec.methodologyTitle,
+                        records: []
+                    };
                 }
+                groupsByMethod[mId].records.push(rec);
             });
 
-            const fullHeaders = [...headers];
-            const isCalcCol = [false, false, false];
-
-            paramKeys.forEach(pName => {
-                fullHeaders.push(pName);
-                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio");
-                isCalcCol.push(isAuto);
-
-                if (shareParamLabels.has(pName)) {
-                    fullHeaders.push(`Частка % / % Participación\n(${pName})`);
-                    isCalcCol.push(true);
-                }
-            });
-
-            const dataRows = [fullHeaders];
-
-            recordsArray.forEach(rec => {
-                let baseValForRecord = 0;
-                const m = state.methodologies.find(x => x.id === rec.methodologyId);
+            // Для кожної методики створюємо окремий аркуш (Sheet)
+            Object.entries(groupsByMethod).forEach(([mId, groupData]) => {
+                const methodologyRecords = groupData.records;
                 
-                if (m && m.groups) {
-                    m.groups.forEach(g => {
-                        g.params.forEach(p => {
-                            if (p.isBaseWeight) {
-                                const pLab = getLabelWithUnit(p, currentLang);
-                                baseValForRecord = parseFloat(rec.values[pLab]) || 0;
-                            }
-                        });
-                    });
-                }
-                if (baseValForRecord === 0) {
-                    Object.entries(rec.values).forEach(([k, v]) => {
-                        if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
-                            if (baseValForRecord === 0) baseValForRecord = parseFloat(v) || 0;
-                        }
-                    });
-                }
+                // Знаходимо саму методику в конфігурації
+                const m = state.methodologies.find(x => x.id === mId) || {
+                    groups: [{
+                        params: Object.keys(methodologyRecords[0]?.values || {}).map((k, idx) => ({
+                            id: 'p_' + idx,
+                            label: k,
+                            type: 'decimal'
+                        }))
+                    }]
+                };
 
-                const row = [
-                    rec.timestamp,
-                    rec.methodologyTitle,
-                    rec.inspector
+                const allParams = m.groups ? m.groups.flatMap(g => g.params || []) : (m.params || []);
+
+                const headers = [
+                    currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
+                    currentLang === 'es' ? "Metodología\nMetodología" : "Методика\nMetodología",
+                    currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nPlanta"
                 ];
 
-                paramKeys.forEach(pName => {
-                    const rawVal = rec.values[pName];
-                    const numVal = parseFloat(rawVal);
+                // Визначаємо які параметри є цілими числами
+                const integerParamLabels = new Set();
+                const shareParamLabels = new Set();
+                
+                allParams.forEach(p => {
+                    const pLabel = getLabelWithUnit(p, currentLang);
+                    if (p.isInteger) integerParamLabels.add(pLabel);
+                    if (p.useShare) shareParamLabels.add(pLabel);
+                });
 
-                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Дата") && !pName.includes("Fecha")) {
-                        row.push(numVal);
-                    } else {
-                        row.push(rawVal || '-');
-                    }
+                const paramKeys = [];
+                methodologyRecords.forEach(rec => {
+                    Object.keys(rec.values).forEach(k => {
+                        if (!paramKeys.includes(k)) {
+                            paramKeys.push(k);
+                        }
+                    });
+                });
+
+                const fullHeaders = [...headers];
+                const isIntegerCol = [false, false, false];
+                const isCalcCol = [false, false, false];
+
+                paramKeys.forEach(pName => {
+                    fullHeaders.push(pName);
+                    const isInt = integerParamLabels.has(pName) || pName.includes("Кількість") || pName.includes("Cantidad") || pName.includes("шт") || pName.includes("гол");
+                    isIntegerCol.push(isInt);
+                    isCalcCol.push(false);
 
                     if (shareParamLabels.has(pName)) {
-                        if (!isNaN(numVal) && baseValForRecord > 0) {
-                            row.push(parseFloat(((numVal / baseValForRecord) * 100).toFixed(3)) / 100);
-                        } else {
-                            row.push("-");
-                        }
+                        fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${pName})` : `Частка % / % Participación\n(${pName})`);
+                        isIntegerCol.push(false);
+                        isCalcCol.push(true);
                     }
                 });
 
-                dataRows.push(row);
-            });
+                const dataRows = [fullHeaders];
 
-            const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
+                methodologyRecords.forEach(rec => {
+                    let baseValForRecord = 0;
+                    allParams.forEach(p => {
+                        if (p.isBaseWeight) {
+                            const pLab = getLabelWithUnit(p, currentLang);
+                            baseValForRecord = parseFloat(rec.values[pLab]) || 0;
+                        }
+                    });
+                    if (baseValForRecord === 0) {
+                        Object.entries(rec.values).forEach(([k, v]) => {
+                            if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
+                                if (baseValForRecord === 0) baseValForRecord = parseFloat(v) || 0;
+                            }
+                        });
+                    }
 
-            const headerStyle = {
-                font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10, name: "Segoe UI" },
-                fill: { fgColor: { rgb: "1E293B" } },
-                alignment: { wrapText: true, vertical: "center", horizontal: "center" },
-                border: {
-                    top: { style: "thin", color: { rgb: "94A3B8" } },
-                    bottom: { style: "medium", color: { rgb: "475569" } },
-                    left: { style: "thin", color: { rgb: "94A3B8" } },
-                    right: { style: "thin", color: { rgb: "94A3B8" } }
-                }
-            };
+                    const row = [
+                        rec.timestamp,
+                        rec.methodologyTitle,
+                        rec.inspector
+                    ];
 
-            const autoCalcStyle = {
-                font: { bold: true, color: { rgb: "1E3A8A" }, sz: 10, name: "Segoe UI" },
-                fill: { fgColor: { rgb: "E0F2FE" } },
-                alignment: { wrapText: true, vertical: "center", horizontal: "center" },
-                border: {
-                    top: { style: "thin", color: { rgb: "CBD5E1" } },
-                    bottom: { style: "thin", color: { rgb: "CBD5E1" } },
-                    left: { style: "thin", color: { rgb: "CBD5E1" } },
-                    right: { style: "thin", color: { rgb: "CBD5E1" } }
-                }
-            };
+                    paramKeys.forEach(pName => {
+                        const rawVal = rec.values[pName];
+                        const numVal = parseFloat(rawVal);
+                        const isInt = integerParamLabels.has(pName);
 
-            const normalStyle = {
-                font: { sz: 10, name: "Segoe UI", color: { rgb: "1E293B" } },
-                alignment: { vertical: "center", horizontal: "center" },
-                border: {
-                    top: { style: "thin", color: { rgb: "E2E8F0" } },
-                    bottom: { style: "thin", color: { rgb: "E2E8F0" } },
-                    left: { style: "thin", color: { rgb: "E2E8F0" } },
-                    right: { style: "thin", color: { rgb: "E2E8F0" } }
-                }
-            };
-
-            const colWidths = [];
-
-            for (let R = 0; R < dataRows.length; R++) {
-                for (let C = 0; C < dataRows[R].length; C++) {
-                    const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-                    if (!worksheet[cellAddress]) continue;
-
-                    const cell = worksheet[cellAddress];
-
-                    if (typeof cell.v === 'number') {
-                        if (isCalcCol[C] && String(fullHeaders[C]).includes("Частка %")) {
-                            cell.z = '0.000%';
+                        if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Дата") && !pName.includes("Fecha")) {
+                            row.push(isInt ? Math.round(numVal) : numVal);
                         } else {
-                            cell.z = '0.000';
+                            row.push(rawVal || '-');
+                        }
+
+                        if (shareParamLabels.has(pName)) {
+                            if (!isNaN(numVal) && baseValForRecord > 0) {
+                                row.push(parseFloat(((numVal / baseValForRecord) * 100).toFixed(3)) / 100);
+                            } else {
+                                row.push("-");
+                            }
+                        }
+                    });
+
+                    dataRows.push(row);
+                });
+
+                const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
+
+                const headerStyle = {
+                    font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10, name: "Segoe UI" },
+                    fill: { fgColor: { rgb: "1E293B" } },
+                    alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: "94A3B8" } },
+                        bottom: { style: "medium", color: { rgb: "475569" } },
+                        left: { style: "thin", color: { rgb: "94A3B8" } },
+                        right: { style: "thin", color: { rgb: "94A3B8" } }
+                    }
+                };
+
+                const autoCalcStyle = {
+                    font: { bold: true, color: { rgb: "1E3A8A" }, sz: 10, name: "Segoe UI" },
+                    fill: { fgColor: { rgb: "E0F2FE" } },
+                    alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: "CBD5E1" } },
+                        bottom: { style: "thin", color: { rgb: "CBD5E1" } },
+                        left: { style: "thin", color: { rgb: "CBD5E1" } },
+                        right: { style: "thin", color: { rgb: "CBD5E1" } }
+                    }
+                };
+
+                const normalStyle = {
+                    font: { sz: 10, name: "Segoe UI", color: { rgb: "1E293B" } },
+                    alignment: { vertical: "center", horizontal: "center" },
+                    border: {
+                        top: { style: "thin", color: { rgb: "E2E8F0" } },
+                        bottom: { style: "thin", color: { rgb: "E2E8F0" } },
+                        left: { style: "thin", color: { rgb: "E2E8F0" } },
+                        right: { style: "thin", color: { rgb: "E2E8F0" } }
+                    }
+                };
+
+                const colWidths = [];
+
+                for (let R = 0; R < dataRows.length; R++) {
+                    for (let C = 0; C < dataRows[R].length; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!worksheet[cellAddress]) continue;
+
+                        const cell = worksheet[cellAddress];
+
+                        if (typeof cell.v === 'number') {
+                            if (isCalcCol[C] && String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación")) {
+                                cell.z = '0.000%';
+                            } else if (isIntegerCol[C]) {
+                                cell.z = '0';
+                            } else {
+                                cell.z = '0.000';
+                            }
+                        }
+
+                        colWidths[C] = Math.max(colWidths[C] || 18, 24);
+
+                        if (R === 0) {
+                            cell.s = headerStyle;
+                        } else if (isCalcCol[C]) {
+                            cell.s = autoCalcStyle;
+                        } else {
+                            cell.s = normalStyle;
                         }
                     }
-
-                    colWidths[C] = Math.max(colWidths[C] || 18, 24);
-
-                    if (R === 0) {
-                        cell.s = headerStyle;
-                    } else if (isCalcCol[C]) {
-                        cell.s = autoCalcStyle;
-                    } else {
-                        cell.s = normalStyle;
-                    }
                 }
-            }
 
-            worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
-            worksheet['!rows'] = [{ hpt: 48 }];
+                worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
+                worksheet['!rows'] = [{ hpt: 48 }];
 
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Mediciones");
+                // Назва листа в Excel (очищаємо від заборонених символів Excel)
+                let sheetName = getI18nText(m.title) || "Medición";
+                sheetName = sheetName.replace(/[\*\?\/\\\[\]:]/g, "").substring(0, 31);
+
+                XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            });
 
             XLSX.writeFile(workbook, filename);
         }
@@ -1645,12 +1747,12 @@
                             <div class="flex justify-between items-start mb-2">
                                 <div class="flex items-center gap-2">
                                     <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
-                                    ${isDev ? '<span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">🟡 В розробці</span>' : ''}
+                                    ${isDev ? `<span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">${dict.devBadgeText}</span>` : ''}
                                 </div>
                                 <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-100 text-blue-700'} font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
                             <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
-                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 mb-3"><i class="fa-solid fa-external-link-alt"></i> Інструкція / Таблиця</a>` : ''}
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 mb-3"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
                         </div>
                         <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
                             ${actions}
@@ -1672,7 +1774,7 @@
                 html += renderCards(archived, true);
             }
 
-            container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">Немає методик</div>`;
+            container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">...</div>`;
         }
 
         // --- МОДАЛКА МЕТОДИК ТА ПАРАМЕТРИ ---
@@ -1681,7 +1783,7 @@
 
         function archiveMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
-            if (!isAdmin) return alert("Доступ обмежено!");
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgArchiveConfirm)) {
                 const m = state.methodologies.find(x => x.id === id);
                 if (m) m.isArchived = true;
@@ -1694,7 +1796,7 @@
 
         function restoreMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
-            if (!isAdmin) return alert("Доступ обмежено!");
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgRestoreConfirm)) {
                 const m = state.methodologies.find(x => x.id === id);
                 if (m) m.isArchived = false;
@@ -1707,7 +1809,7 @@
 
         function deleteMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
-            if (!isAdmin) return alert("Доступ обмежено!");
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgDeleteConfirm)) {
                 state.methodologies = state.methodologies.filter(x => x.id !== id);
                 saveStateToLocal();
@@ -1719,7 +1821,7 @@
 
         function openMethodologyModal(methodId = null) {
             if (!isAdmin) {
-                alert("Доступ обмежено!");
+                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
             }
             const modal = document.getElementById('methodologyModal');
@@ -1893,7 +1995,6 @@
             }
         }
 
-        // АВТОМАТИЧНЕ ВИЗНАЧЕННЯ ЦІЛОГО ЧИСЛА ЗА ОДИНИЦЯМИ ВИМІРУ
         function applyUnitPreset(idx, presetKey) {
             if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
             
@@ -1905,7 +2006,6 @@
                 tempParams[idx].unit.es = '';
             }
             
-            // АВТОМАТИКА: якщо обрано шт, гол або хв — ставимо галочку "ціле число" за замовчуванням
             if (['pcs', 'heads', 'min'].includes(presetKey)) {
                 tempParams[idx].isInteger = true;
             } else if (['kg', 'g', 'pct', 'speed'].includes(presetKey)) {
@@ -1931,7 +2031,6 @@
             }
             tempParams[idx].unit[lang] = val;
 
-            // Автоматична перевірка введеної вручну одиниці
             const cleanVal = val.trim().toLowerCase();
             if (['шт', 'шт.', 'гол', 'гол.', 'хв', 'min', 'uds', 'cabezas'].includes(cleanVal)) {
                 tempParams[idx].isInteger = true;
@@ -1990,7 +2089,7 @@
             const container = document.getElementById('dictionaryRowsContainer');
             
             if (tempDictArray.length === 0) {
-                container.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">Словник порожній</div>`;
+                container.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">...</div>`;
                 return;
             }
 
@@ -2036,7 +2135,7 @@
             closeDictionaryModal();
             
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            alert("Словник успішно збережено!");
+            alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
         }
 
         // --- ІНШІ ФУНКЦІЇ ---
@@ -2146,7 +2245,7 @@
             const editId = document.getElementById('editMethodologyId').value;
 
             if (!titleUk) {
-                alert("Будь ласка, введіть назву методики!");
+                alert(currentLang === 'es' ? "¡Ingrese el título de la metodología!" : "Будь ласка, введіть назву методики!");
                 return;
             }
 
@@ -2205,7 +2304,7 @@
             state.config.binId = document.getElementById('cfgBinId').value.trim();
             state.config.apiKey = document.getElementById('cfgApiKey').value.trim();
             saveStateToLocal();
-            alert("Settings saved!");
+            alert(currentLang === 'es' ? "¡Configuración guardada!" : "Налаштування збережено!");
             if (state.config.binId && state.config.apiKey) syncData();
         }
 
@@ -2214,11 +2313,11 @@
             const dict = I18N[currentLang] || I18N.uk;
 
             if (status === 'synced') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px]">${dict.syncDone}</span>`;
             } else if (status === 'syncing') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px]">${dict.syncing}</span>`;
             } else {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px]">Local</span>`;
             }
         }
 
@@ -2351,21 +2450,21 @@
                     headers: { 'X-Access-Key': apiKey }
                 });
                 if (res.ok) {
-                    alert("Successful connection!");
+                    alert(currentLang === 'es' ? "¡Conexión exitosa!" : "Успішне з'єднання!");
                 } else {
-                    alert("Connection error.");
+                    alert(currentLang === 'es' ? "Error de conexión." : "Помилка з'єднання.");
                 }
             } catch (e) {
-                alert("Network error.");
+                alert(currentLang === 'es' ? "Error de red." : "Помилка мережі.");
             }
         }
 
         function clearAllData() {
             if (!isAdmin) {
-                alert("Доступ обмежено!");
+                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
             }
-            if (confirm("Delete all local measurements?")) {
+            if (confirm(currentLang === 'es' ? "¿Eliminar todas las mediciones locales?" : "Ви дійсно бажаєте видалити всі локальні заміри?")) {
                 state.measurements = [];
                 saveStateToLocal();
                 renderHistoryTable();
