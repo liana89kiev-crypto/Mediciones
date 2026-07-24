@@ -673,7 +673,11 @@
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             dictionary: {},
-            config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
+            // АВТОМАТИЧНЕ ПРИВ'ЯЗУВАННЯ ХМАРИ (Рішення 1):
+            config: JSON.parse(localStorage.getItem('qm_config')) || { 
+                binId: '6a60ba54da38895dfe7f4ed1', 
+                apiKey: '$2a$10$9s6G6lQ... (або ваш Access Key)' 
+            }
         };
 
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
@@ -697,7 +701,7 @@
             initApp();
         });
 
-        function initApp() {
+        async function initApp() {
             applyLanguageUI();
             updateAdminUI();
             saveStateToLocal();
@@ -706,8 +710,10 @@
             renderHistoryTable();
             loadSettingsInputs();
             checkAndRestoreDraft();
+
+            // РІШЕННЯ 3: АВТОМАТИЧНА ФОНОВА СИНХРОНІЗАЦІЯ ПРИ СТАРТІ
             if (state.config.binId && state.config.apiKey) {
-                syncData();
+                await syncData();
             }
         }
 
@@ -813,11 +819,16 @@
             localStorage.setItem('qm_config', JSON.stringify(state.config));
         }
 
-        function switchTab(tabId) {
+        async function switchTab(tabId) {
             if (tabId === 'methodologies' && !isAdmin) {
                 alert("Доступ обмежено. Увійдіть як адміністратор!");
                 return;
             }
+            // Автоматична синхронізація при кожному перемиканні вкладок
+            if (state.config.binId && state.config.apiKey) {
+                await syncData();
+            }
+
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
