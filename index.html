@@ -148,7 +148,6 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
                             <span id="syncText">Локально</span>
                         </div>
-                        <!-- Виправлена верстка кнопки експорту з відступом для іконки -->
                         <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2 pl-4 pr-4">
                             <i class="fa-solid fa-file-excel text-emerald-200 shrink-0"></i>
                             <span id="btnExportAll" class="truncate">Експорт в Excel (.xlsx)</span>
@@ -239,6 +238,23 @@
                         <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">JSONBin Access Key (X-Access-Key)</label>
                         <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
                     </div>
+                    
+                    <!-- ПОТУЖНІ КНОПКИ УПРАВЛІННЯ СИНХРОНІЗАЦІЄЮ В НАЛАШТУВАННЯХ -->
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="text-xs text-slate-600">
+                            <span class="font-bold block text-slate-800 mb-0.5" id="lblCloudSyncStatusHeader">Хмарна синхронізація</span>
+                            <span id="lblCloudSyncStatusDesc">Миттєве оновлення з загальною базою</span>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="syncDataManual()" class="flex-1 sm:flex-none px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-rotate"></i> <span id="btnSyncPull">Стягнути з хмари</span>
+                            </button>
+                            <button onclick="pushToJsonBinManual()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> <span id="btnSyncPush">Вивантажити в хмару</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="pt-2 flex justify-between items-center">
                         <button onclick="testJsonBinConnection()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 shadow-sm transition" id="btnTestConn">
                             Тест з'єднання
@@ -552,7 +568,11 @@
                 lblDictPairsHeader: "Список пар (UA - ES)",
                 btnAddDictWord: "+ Додати слово",
                 btnDictCancel: "Скасувати",
-                btnDictSave: "Зберегти словник"
+                btnDictSave: "Зберегти словник",
+                btnSyncPull: "Стягнути з хмари",
+                btnSyncPush: "Вивантажити в хмару",
+                lblCloudSyncStatusHeader: "Хмарна синхронізація",
+                lblCloudSyncStatusDesc: "Миттєве оновлення з загальною базою"
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
@@ -659,7 +679,11 @@
                 lblDictPairsHeader: "Pares de términos (UA - ES)",
                 btnAddDictWord: "+ Añadir palabra",
                 btnDictCancel: "Cancelar",
-                btnDictSave: "Guardar diccionario"
+                btnDictSave: "Guardar diccionario",
+                btnSyncPull: "Sincronizar (Descargar)",
+                btnSyncPush: "Subir a la nube",
+                lblCloudSyncStatusHeader: "Sincronización en la nube",
+                lblCloudSyncStatusDesc: "Actualización instantánea con la base común"
             }
         };
 
@@ -914,6 +938,11 @@
             document.getElementById('btnAddDictWord').innerText = dict.btnAddDictWord;
             document.getElementById('btnDictCancel').innerText = dict.btnDictCancel;
             document.getElementById('btnDictSave').innerText = dict.btnDictSave;
+
+            document.getElementById('lblCloudSyncStatusHeader').innerText = dict.lblCloudSyncStatusHeader;
+            document.getElementById('lblCloudSyncStatusDesc').innerText = dict.lblCloudSyncStatusDesc;
+            document.getElementById('btnSyncPull').innerText = dict.btnSyncPull;
+            document.getElementById('btnSyncPush').innerText = dict.btnSyncPush;
 
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
@@ -1508,6 +1537,7 @@
             `).join('');
 
             updateSelectedExportCount();
+            document.getElementById('exportModal').classList.add('hidden');
             document.getElementById('exportModal').classList.remove('hidden');
         }
 
@@ -1547,7 +1577,6 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
-        // ВИПРАВЛЕНИЙ ВИПАТОР В EXCEL: Використовує універсальний пошук значень в збереженому записі
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
@@ -1579,7 +1608,7 @@
                 ];
 
                 const integerParamLabels = new Set();
-                const shareParamMap = new Map(); // Зберігає відповідність мітки параметра та базової ваги
+                const shareParamMap = new Map();
                 
                 allParams.forEach(p => {
                     ['uk', 'es'].forEach(lang => {
@@ -1606,8 +1635,7 @@
                 const fullHeaders = [...headers];
                 const isIntegerCol = [false, false, false];
                 const isCalcCol = [false, false, false];
-                // Зберігаємо правило розрахунку частки для кожного стовпчика: які ключі брати для ділення
-                const shareRules = {}; // стовпчик_індекс -> { paramKey, baseKey }
+                const shareRules = {};
 
                 paramKeys.forEach(pName => {
                     fullHeaders.push(pName);
@@ -1615,7 +1643,6 @@
                     isIntegerCol.push(isInt);
                     isCalcCol.push(false);
 
-                    // Шукаємо чи є цей параметр таким, для якого потрібно вирахувати частку
                     let matchedBaseLabel = null;
                     for (const [pLbl, bLbl] of shareParamMap.entries()) {
                         if (pName === pLbl || pName.includes(pLbl)) {
@@ -1629,7 +1656,6 @@
                         isIntegerCol.push(false);
                         isCalcCol.push(true);
                         
-                        // Запам'ятовуємо індекс цього нового стовпчика частки
                         const shareColIdx = fullHeaders.length - 1;
                         shareRules[shareColIdx] = {
                             paramKey: pName,
@@ -1647,7 +1673,6 @@
                         rec.inspector
                     ];
 
-                    // Допоміжна функція пошуку значення в записах заміру (незалежно від того, яка мова була в налаштуваннях)
                     const getRecVal = (keyPattern) => {
                         if (!keyPattern) return 0;
                         for (const [k, v] of Object.entries(rec.values)) {
@@ -1669,19 +1694,13 @@
                             row.push(rawVal || '-');
                         }
 
-                        // Перевіряємо, чи цей стовпчик має розрахунок частки
-                        const currentGlobalColIdx = row.length - 1;
-                        // Шукаємо, чи є для цього стовпчика правило частки
                         const ruleEntry = Object.entries(shareRules).find(([colIdx, rule]) => rule.paramKey === pName);
-                        
                         if (ruleEntry) {
                             const rule = ruleEntry[1];
                             const valForShare = parseFloat(rawVal) || 0;
                             
-                            // Шукаємо базову вагу в цьому ж записі (наприклад, загальну вагу або живу вагу)
                             let baseVal = getRecVal(rule.baseKey);
                             if (baseVal === 0) {
-                                // Альтернативний пошук базованої ваги в збереженому об'єкті
                                 for (const [k, v] of Object.entries(rec.values)) {
                                     if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo") || k.includes("кг") || k.includes("kg")) {
                                         const parsedB = parseFloat(v);
@@ -1784,7 +1803,20 @@
             XLSX.writeFile(workbook, filename);
         }
 
-        // РЕКВІЗИТИ КАРТОК МЕТОДИК У КОНСТРУКТОРІ: ТІЛЬКИ НАЗВА ТА ОПИС
+        // РУЧНА СИНХРОНІЗАЦІЯ ДЛЯ КНОПОК У НАЛАШТУВАННЯХ
+        async function syncDataManual() {
+            const dict = I18N[currentLang] || I18N.uk;
+            await syncData();
+            alert(currentLang === 'es' ? "¡Datos sincronizados con éxito desde la nube!" : "Дані успішно стягнуто з хмари!");
+            window.location.reload();
+        }
+
+        async function pushToJsonBinManual() {
+            const dict = I18N[currentLang] || I18N.uk;
+            await pushToJsonBin();
+            alert(currentLang === 'es' ? "¡Datos subidos con éxito a la nube!" : "Дані успішно вивантажено в хмару!");
+        }
+
         function renderMethodologyCards() {
             const container = document.getElementById('methodologyList');
             const dict = I18N[currentLang] || I18N.uk;
