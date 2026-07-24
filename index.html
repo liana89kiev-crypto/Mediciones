@@ -148,9 +148,10 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
                             <span id="syncText">Локально</span>
                         </div>
-                        <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-file-excel"></i>
-                            <span id="btnExportAll">Експорт в Excel (.xlsx)</span>
+                        <!-- Виправлена верстка кнопки експорту з відступом для іконки -->
+                        <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2 pl-4 pr-4">
+                            <i class="fa-solid fa-file-excel text-emerald-200 shrink-0"></i>
+                            <span id="btnExportAll" class="truncate">Експорт в Excel (.xlsx)</span>
                         </button>
                         <button onclick="syncData()" class="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center justify-center border border-slate-200 shadow-sm" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
@@ -1546,6 +1547,7 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
+        // ВИПРАВЛЕНИЙ ВИПАТОР В EXCEL: Використовує універсальний пошук значень в збереженому записі
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
@@ -1572,18 +1574,23 @@
 
                 const headers = [
                     currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
-                    currentLang === 'es' ? "Metodología\nMetodología" : "Методика\nMetodología",
+                    currentLang === 'es' ? "Metodología\nMetodología" : "Методика\nМетодика",
                     currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nФабрика"
                 ];
 
                 const integerParamLabels = new Set();
-                const shareParamLabels = new Set();
+                const shareParamMap = new Map(); // Зберігає відповідність мітки параметра та базової ваги
                 
                 allParams.forEach(p => {
                     ['uk', 'es'].forEach(lang => {
                         const lbl = getLabelWithUnit(p, lang);
                         if (p.isInteger) integerParamLabels.add(lbl);
-                        if (p.useShare) shareParamLabels.add(lbl);
+                        if (p.useShare && p.baseParamId) {
+                            const baseParamObj = allParams.find(x => x.id === p.baseParamId);
+                            if (baseParamObj) {
+                                shareParamMap.set(lbl, getLabelWithUnit(baseParamObj, lang));
+                            }
+                        }
                     });
                 });
 
@@ -1599,6 +1606,8 @@
                 const fullHeaders = [...headers];
                 const isIntegerCol = [false, false, false];
                 const isCalcCol = [false, false, false];
+                // Зберігаємо правило розрахунку частки для кожного стовпчика: які ключі брати для ділення
+                const shareRules = {}; // стовпчик_індекс -> { paramKey, baseKey }
 
                 paramKeys.forEach(pName => {
                     fullHeaders.push(pName);
@@ -1606,42 +1615,50 @@
                     isIntegerCol.push(isInt);
                     isCalcCol.push(false);
 
-                    if (shareParamLabels.has(pName)) {
+                    // Шукаємо чи є цей параметр таким, для якого потрібно вирахувати частку
+                    let matchedBaseLabel = null;
+                    for (const [pLbl, bLbl] of shareParamMap.entries()) {
+                        if (pName === pLbl || pName.includes(pLbl)) {
+                            matchedBaseLabel = bLbl;
+                            break;
+                        }
+                    }
+
+                    if (matchedBaseLabel || shareParamMap.has(pName)) {
                         fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${pName})` : `Частка % / % Participación\n(${pName})`);
                         isIntegerCol.push(false);
                         isCalcCol.push(true);
+                        
+                        // Запам'ятовуємо індекс цього нового стовпчика частки
+                        const shareColIdx = fullHeaders.length - 1;
+                        shareRules[shareColIdx] = {
+                            paramKey: pName,
+                            baseKey: matchedBaseLabel || Array.from(shareParamMap.values())[0]
+                        };
                     }
                 });
 
                 const dataRows = [fullHeaders];
 
                 methodologyRecords.forEach(rec => {
-                    let baseValForRecord = 0;
-                    if (m && m.groups) {
-                        m.groups.forEach(g => {
-                            g.params.forEach(p => {
-                                if (p.isBaseWeight) {
-                                    const pLab = getLabelWithUnit(p, currentLang);
-                                    baseValForRecord = parseFloat(rec.values[pLab]) || 0;
-                                }
-                            });
-                        });
-                    }
-                    if (baseValForRecord === 0) {
-                        Object.entries(rec.values).forEach(([k, v]) => {
-                            if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
-                                if (baseValForRecord === 0) baseValForRecord = parseFloat(v) || 0;
-                            }
-                        });
-                    }
-
                     const row = [
                         rec.timestamp,
                         rec.methodologyTitle,
                         rec.inspector
                     ];
 
-                    paramKeys.forEach(pName => {
+                    // Допоміжна функція пошуку значення в записах заміру (незалежно від того, яка мова була в налаштуваннях)
+                    const getRecVal = (keyPattern) => {
+                        if (!keyPattern) return 0;
+                        for (const [k, v] of Object.entries(rec.values)) {
+                            if (k === keyPattern || k.includes(keyPattern) || keyPattern.includes(k)) {
+                                return parseFloat(v) || 0;
+                            }
+                        }
+                        return 0;
+                    };
+
+                    paramKeys.forEach((pName, pIdx) => {
                         const rawVal = rec.values[pName];
                         const numVal = parseFloat(rawVal);
                         const isInt = integerParamLabels.has(pName);
@@ -1652,9 +1669,32 @@
                             row.push(rawVal || '-');
                         }
 
-                        if (shareParamLabels.has(pName)) {
-                            if (!isNaN(numVal) && baseValForRecord > 0) {
-                                row.push(parseFloat(((numVal / baseValForRecord) * 100).toFixed(3)) / 100);
+                        // Перевіряємо, чи цей стовпчик має розрахунок частки
+                        const currentGlobalColIdx = row.length - 1;
+                        // Шукаємо, чи є для цього стовпчика правило частки
+                        const ruleEntry = Object.entries(shareRules).find(([colIdx, rule]) => rule.paramKey === pName);
+                        
+                        if (ruleEntry) {
+                            const rule = ruleEntry[1];
+                            const valForShare = parseFloat(rawVal) || 0;
+                            
+                            // Шукаємо базову вагу в цьому ж записі (наприклад, загальну вагу або живу вагу)
+                            let baseVal = getRecVal(rule.baseKey);
+                            if (baseVal === 0) {
+                                // Альтернативний пошук базованої ваги в збереженому об'єкті
+                                for (const [k, v] of Object.entries(rec.values)) {
+                                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo") || k.includes("кг") || k.includes("kg")) {
+                                        const parsedB = parseFloat(v);
+                                        if (parsedB > 0) {
+                                            baseVal = parsedB;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (valForShare > 0 && baseVal > 0) {
+                                row.push(parseFloat(((valForShare / baseVal) * 100).toFixed(3)) / 100);
                             } else {
                                 row.push("-");
                             }
