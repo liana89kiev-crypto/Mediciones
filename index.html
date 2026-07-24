@@ -679,21 +679,21 @@
             }
         };
 
+        // НАДІЙНИЙ ЗАХИСТ БАЗИ: якщо в пам'яті вже є свої методики — код їх НЕ чіпає.
+        // Якщо пам'ять пуста — бере дефолтні.
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
-        if (!savedMethods || savedMethods.length === 0) {
-            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
-        } else {
+        if (savedMethods && Array.isArray(savedMethods) && savedMethods.length > 0) {
             state.methodologies = savedMethods;
-            state.methodologies.forEach(m => {
-                if (!m.status) m.status = 'ready';
-            });
+        } else {
+            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
         }
+        state.methodologies.forEach(m => { if (!m.status) m.status = 'ready'; });
 
         const savedDict = JSON.parse(localStorage.getItem('qm_dictionary'));
-        if (!savedDict || Object.keys(savedDict).length === 0) {
-            state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
-        } else {
+        if (savedDict && typeof savedDict === 'object' && Object.keys(savedDict).length > 0) {
             state.dictionary = savedDict;
+        } else {
+            state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1725,7 +1725,6 @@
                 document.getElementById('methodDocUrl').value = m.docUrl || '';
                 document.getElementById('methodStatus').value = m.status || 'ready';
 
-                // Надійне витягування параметрів з урахуванням різних можливих структур
                 let allP = [];
                 if (m.groups && Array.isArray(m.groups)) {
                     allP = m.groups.flatMap(g => g.params || []);
@@ -2262,10 +2261,10 @@
                             });
                             state.measurements = combined;
                         }
-                        if (data.record.methodologies && Array.isArray(data.record.methodologies)) {
+                        if (data.record.methodologies && Array.isArray(data.record.methodologies) && data.record.methodologies.length > 0) {
                             state.methodologies = data.record.methodologies;
                         }
-                        if (data.record.dictionary && typeof data.record.dictionary === 'object') {
+                        if (data.record.dictionary && typeof data.record.dictionary === 'object' && Object.keys(data.record.dictionary).length > 0) {
                             state.dictionary = data.record.dictionary;
                         }
                         saveStateToLocal();
@@ -2330,7 +2329,7 @@
             }
         }
 
-        function clearAllData() {
+        clearAllData = function() {
             if (!isAdmin) {
                 alert("Доступ обмежено!");
                 return;
