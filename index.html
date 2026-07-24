@@ -105,7 +105,12 @@
                 </div>
 
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
-                    <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
+                    <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                        <span id="descTextContent">...</span>
+                        <a id="methodologyDocLink" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800 font-semibold text-xs flex items-center gap-1 bg-white px-2 py-1 rounded border border-blue-200 shadow-sm">
+                            <i class="fa-solid fa-external-link-alt"></i> <span id="docLinkText">Інструкція / Таблиця</span>
+                        </a>
+                    </div>
                     <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-6">
                         <input type="hidden" id="editingRecordId" value="">
                         <div id="dynamicFields" class="space-y-6"></div>
@@ -242,7 +247,6 @@
                     </div>
                 </div>
 
-                <!-- БЛОК РЕЗЕРВНОГО КОПІЮВАННЯ -->
                 <div class="mt-8 pt-6 border-t border-slate-200">
                     <h3 class="text-sm font-bold text-blue-600 mb-2" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1"></i> Резервне копіювання (Backup)</h3>
                     <p class="text-xs text-slate-500 mb-3" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
@@ -294,6 +298,21 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
                         <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
+                    </div>
+                </div>
+
+                <!-- ПОСИЛАННЯ ТА СТАТУС -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">🔗 Посилання на док/таблицю (URL)</label>
+                        <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded p-2 text-xs outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">📊 Статус методики</label>
+                        <select id="methodStatus" class="w-full border border-slate-300 rounded p-2 text-xs bg-white font-semibold">
+                            <option value="ready">🟢 Готова до використання</option>
+                            <option value="dev">🟡 В розробці (прихована)</option>
+                        </select>
                     </div>
                 </div>
 
@@ -501,7 +520,9 @@
                 lblUnit: "Одиниця:",
                 optTemplate: "-- Шаблон --",
                 lblIsBaseWeight: "Базова вага",
+                lblIsInteger: "Ціле число (без знаків після коми)",
                 autoText: "авто",
+                docLinkText: "Інструкція / Таблиця",
                 lblBackupTitle: "Резервне копіювання (Backup)",
                 lblBackupDesc: "Створіть повну локальну копію бази даних (методики, заміри, словник).",
                 btnBackup: "Завантажити копію",
@@ -585,7 +606,9 @@
                 lblUnit: "Unidad:",
                 optTemplate: "-- Plantilla --",
                 lblIsBaseWeight: "Peso base",
+                lblIsInteger: "Número entero (sin decimales)",
                 autoText: "auto",
+                docLinkText: "Instrucción / Tabla",
                 lblBackupTitle: "Copia de seguridad (Backup)",
                 lblBackupDesc: "Cree una copia local completa de la base de datos (metodologías, mediciones, diccionario).",
                 btnBackup: "Descargar copia",
@@ -601,6 +624,8 @@
                 title: { uk: 'Вихід від живка', es: 'Rendimiento de vivo' },
                 description: { uk: 'Аналіз виходу продукції відносно живої ваги птиці', es: 'Análisis de rendimiento respecto al peso vivo' },
                 isArchived: false,
+                status: 'ready',
+                docUrl: '',
                 groups: [
                     {
                         title: { uk: 'Показники', es: 'Parámetros' },
@@ -608,7 +633,7 @@
                         params: [
                             { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
                             { id: 'ly_2', label: { uk: 'Жива вага', es: 'Peso vivo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas' }, unit: { uk: 'гол.', es: 'cabezas' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas' }, unit: { uk: 'гол.', es: 'cabezas' }, isInteger: true, type: 'decimal', required: true, code: 'v3' },
                             { id: 'ly_4', label: { uk: 'Вага після патрання', es: 'Peso canales' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
                             { id: 'ly_5', label: { uk: 'Середня вага тушки', es: 'Peso medio de canal' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
                             { id: 'ly_6', label: { uk: 'Втрати', es: 'Pérdidas' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
@@ -621,13 +646,15 @@
                 title: { uk: 'Замір розробки тушки', es: 'Control de despiece' },
                 description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes' },
                 isArchived: false,
+                status: 'ready',
+                docUrl: '',
                 groups: [
                     {
                         title: { uk: 'Загальні дані', es: 'Datos generales' },
                         isGeneral: true,
                         params: [
                             { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок', es: 'Cantidad de canales' }, unit: { uk: 'шт.', es: 'uds' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок', es: 'Cantidad de canales' }, unit: { uk: 'шт.', es: 'uds' }, isInteger: true, type: 'decimal', required: true, code: 'v2' },
                             { id: 'p_total_weight_wog', label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v3' },
                             { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
                         ]
@@ -656,8 +683,6 @@
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        // НАШІ КЛЮЧОВІ ЗМІНИ: Словник і методики тепер беруться з пам'яті браузера назавжди.
-        // Код більше ніколи не затиратиме ваші персональні зміни словника!
         const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
         if (!savedMethods || savedMethods.length === 0) {
             state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
@@ -776,6 +801,7 @@
             document.getElementById('lblBackupDesc').innerText = dict.lblBackupDesc;
             document.getElementById('btnBackupText').innerText = dict.btnBackup;
             document.getElementById('btnRestoreText').innerText = dict.btnRestore;
+            document.getElementById('docLinkText').innerText = dict.docLinkText;
 
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
@@ -858,13 +884,14 @@
                 const title = getI18nText(m.title);
                 const archiveTag = m.isArchived ? ` ${dict.lblArchived}` : '';
 
-                if (!m.isArchived) {
+                // ОПЕРАТОРИ БАЧАТЬ ТІЛЬКИ ТІ, ЩО ГОТОВІ І НЕ В АРХІВІ
+                if (!m.isArchived && m.status !== 'dev') {
                     select.innerHTML += `<option value="${m.id}">${title}</option>`;
                 }
                 filterSelect.innerHTML += `<option value="${m.id}">${title}${archiveTag}</option>`;
             });
 
-            if (selectedM && state.methodologies.find(m => m.id === selectedM && !m.isArchived)) {
+            if (selectedM && state.methodologies.find(m => m.id === selectedM && !m.isArchived && m.status !== 'dev')) {
                 select.value = selectedM;
             } else {
                 select.value = "";
@@ -890,17 +917,18 @@
             }
         }
 
-        function handleFieldBlur(input) {
+        function handleFieldBlur(input, isInteger = false) {
             if (input.readOnly || !input.value.trim()) return;
             const expr = input.value.trim();
+            let val = 0;
             if (expr.includes('+') || expr.includes(',') || expr.includes('-')) {
-                const sum = safeEvaluate(expr, {});
-                input.value = sum > 0 || sum < 0 ? sum.toFixed(3) : "";
+                val = safeEvaluate(expr, {});
             } else {
-                const val = parseFloat(expr.replace(',', '.'));
-                if (!isNaN(val)) {
-                    input.value = val.toFixed(3);
-                }
+                val = parseFloat(expr.replace(',', '.'));
+            }
+
+            if (!isNaN(val)) {
+                input.value = isInteger ? Math.round(val).toString() : val.toFixed(3);
             }
             calculateLiveFields();
             saveDraft();
@@ -911,7 +939,8 @@
             const container = document.getElementById('dynamicFormContainer');
             const placeholder = document.getElementById('noMethodologySelected');
             const fieldsDiv = document.getElementById('dynamicFields');
-            const descDiv = document.getElementById('methodologyDescription');
+            const descDivText = document.getElementById('descTextContent');
+            const docLinkBtn = document.getElementById('methodologyDocLink');
             const dict = I18N[currentLang] || I18N.uk;
 
             if (!methodId) {
@@ -923,7 +952,15 @@
             const m = state.methodologies.find(x => x.id === methodId);
             if (!m) return;
 
-            descDiv.innerText = getI18nText(m.description) || '...';
+            descDivText.innerText = getI18nText(m.description) || '...';
+            
+            if (m.docUrl && m.docUrl.trim() !== '') {
+                docLinkBtn.href = m.docUrl.trim();
+                docLinkBtn.classList.remove('hidden');
+            } else {
+                docLinkBtn.classList.add('hidden');
+            }
+
             fieldsDiv.innerHTML = '';
 
             const groups = m.groups || [{ title: 'Parameters', params: m.params || [] }];
@@ -969,7 +1006,7 @@
                                 <div class="relative flex-grow">
                                     <input type="text" name="${p.id}" id="${p.id}" data-code="${p.code}" ${reqAttr} ${isReadOnly ? 'readonly' : ''} 
                                         oninput="calculateLiveFields()" 
-                                        onblur="handleFieldBlur(this)" 
+                                        onblur="handleFieldBlur(this, ${p.isInteger ? 'true' : 'false'})" 
                                         class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}" 
                                         placeholder="${isReadOnly ? '0.000' : '4.75+2.12'}">
                                 </div>
@@ -1025,11 +1062,15 @@
             for(let pass=0; pass<2; pass++) {
                 allParams.forEach(p => {
                     if (p.type === 'formula' && p.formulaStr) {
-                        const result = safeEvaluate(p.formulaStr, vars);
+                        let result = safeEvaluate(p.formulaStr, vars);
                         vars[p.code] = result;
                         const inputEl = document.getElementById(p.id);
                         if (inputEl) {
-                            inputEl.value = (result !== 0) ? result.toFixed(3) : "";
+                            if (result !== 0) {
+                                inputEl.value = p.isInteger ? Math.round(result).toString() : result.toFixed(3);
+                            } else {
+                                inputEl.value = "";
+                            }
                         }
                     }
                 });
@@ -1156,7 +1197,8 @@
             allParams.forEach(p => {
                 let val = formData.get(p.id);
                 if ((p.type === 'decimal' || p.type === 'formula') && val !== null && val !== '') {
-                    val = parseFloat(val).toFixed(3);
+                    const num = parseFloat(val);
+                    val = p.isInteger ? Math.round(num).toString() : num.toFixed(3);
                 }
                 const pLabelStr = getLabelWithUnit(p, currentLang);
                 values[pLabelStr] = val || '-';
@@ -1549,6 +1591,7 @@
                     const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
                     const mTitle = getI18nText(m.title);
                     const mDesc = getI18nText(m.description);
+                    const isDev = m.status === 'dev';
 
                     const actions = isArchived ? `
                         <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash-arrow-up mr-1"></i>${dict.btnRestoreMethod}</button>
@@ -1562,10 +1605,14 @@
                     <div class="border ${isArchived ? 'border-dashed border-slate-300 bg-slate-100' : 'border-slate-200 bg-slate-50'} rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition">
                         <div>
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
+                                    ${isDev ? '<span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">🟡 В розробці</span>' : ''}
+                                </div>
                                 <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-100 text-blue-700'} font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
                             <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 mb-3"><i class="fa-solid fa-external-link-alt"></i> Інструкція / Таблиця</a>` : ''}
                         </div>
                         <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
                             ${actions}
@@ -1646,13 +1693,18 @@
                 document.getElementById('modalTitle').innerText = dict.modalEditTitle;
                 document.getElementById('editMethodologyId').value = m.id;
                 
-                document.getElementById('methodTitle_uk').value = typeof m.title === 'object' ? (m.title.uk || '') : m.title;
-                document.getElementById('methodTitle_es').value = typeof m.title === 'object' ? (m.title.es || '') : m.title;
+                const titleObj = typeof m.title === 'object' && m.title !== null ? m.title : { uk: m.title || '', es: m.title || '' };
+                document.getElementById('methodTitle_uk').value = titleObj.uk || '';
+                document.getElementById('methodTitle_es').value = titleObj.es || '';
 
-                document.getElementById('methodDesc_uk').value = typeof m.description === 'object' ? (m.description.uk || '') : m.description;
-                document.getElementById('methodDesc_es').value = typeof m.description === 'object' ? (m.description.es || '') : m.description;
+                const descObj = typeof m.description === 'object' && m.description !== null ? m.description : { uk: m.description || '', es: m.description || '' };
+                document.getElementById('methodDesc_uk').value = descObj.uk || '';
+                document.getElementById('methodDesc_es').value = descObj.es || '';
 
-                const allP = m.groups ? m.groups.flatMap(g => g.params) : m.params;
+                document.getElementById('methodDocUrl').value = m.docUrl || '';
+                document.getElementById('methodStatus').value = m.status || 'ready';
+
+                const allP = m.groups ? m.groups.flatMap(g => g.params) : (m.params || []);
                 tempParams = JSON.parse(JSON.stringify(allP));
             } else {
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
@@ -1661,6 +1713,8 @@
                 document.getElementById('methodTitle_es').value = "";
                 document.getElementById('methodDesc_uk').value = "";
                 document.getElementById('methodDesc_es').value = "";
+                document.getElementById('methodDocUrl').value = "";
+                document.getElementById('methodStatus').value = "ready";
 
                 tempParams = [
                     { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
@@ -1690,6 +1744,8 @@
                 const optsCount = (p.options || []).length;
                 const uUk = (p.unit && typeof p.unit === 'object') ? (p.unit.uk || '') : (p.unit || '');
                 const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
+                const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
+                const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
 
                 return `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3" id="paramRowBlock_${idx}">
@@ -1702,8 +1758,8 @@
                         
                         <div class="flex-grow flex flex-col gap-2">
                             <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
-                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
+                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(labelUk)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
                             </div>
 
                             <div class="flex flex-col sm:flex-row items-center gap-2 bg-slate-100 p-2 rounded border border-slate-200">
@@ -1758,6 +1814,10 @@
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
                             <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <input type="checkbox" id="int_${idx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${idx}, this.checked)">
+                            <label for="int_${idx}" class="font-medium text-amber-700 font-semibold">${dict.lblIsInteger}</label>
                         </div>
                         ${p.type === 'decimal' || p.type === 'formula' ? `
                         <div class="flex items-center space-x-1.5">
@@ -1821,17 +1881,38 @@
             tempParams[idx].unit[lang] = val;
         }
 
+        function updateIsInteger(idx, isChecked) {
+            tempParams[idx].isInteger = isChecked;
+        }
+
         function autoFillFromDict(idx, term) {
             const esInput = document.getElementById(`p_label_es_${idx}`);
             const cleanTerm = term.trim().toLowerCase();
 
-            for (const [key, translations] of Object.entries(state.dictionary)) {
-                if (cleanTerm.includes(key.toLowerCase()) || key.toLowerCase().includes(cleanTerm)) {
-                    if (!esInput.value) {
-                        esInput.value = translations.es;
-                        tempParams[idx].label.es = translations.es;
+            // 1. Точний збіг
+            if (state.dictionary[cleanTerm] && state.dictionary[cleanTerm].es) {
+                if (!esInput.value) {
+                    esInput.value = state.dictionary[cleanTerm].es;
+                    tempParams[idx].label.es = state.dictionary[cleanTerm].es;
+                }
+                return;
+            }
+
+            // 2. Частковий збіг (найдовший ключ)
+            let bestMatch = '';
+            for (const key of Object.keys(state.dictionary)) {
+                const kLower = key.toLowerCase();
+                if (cleanTerm === kLower || cleanTerm.includes(kLower) || kLower.includes(cleanTerm)) {
+                    if (kLower.length > bestMatch.length) {
+                        bestMatch = key;
                     }
-                    break;
+                }
+            }
+
+            if (bestMatch && state.dictionary[bestMatch].es) {
+                if (!esInput.value) {
+                    esInput.value = state.dictionary[bestMatch].es;
+                    tempParams[idx].label.es = state.dictionary[bestMatch].es;
                 }
             }
         }
@@ -1888,7 +1969,7 @@
         function saveDictionary() {
             const newDict = {};
             tempDictArray.forEach(item => {
-                const ukWord = item.uk.trim();
+                const ukWord = item.uk.trim().toLowerCase();
                 const esWord = item.es.trim();
                 if (ukWord) {
                     newDict[ukWord] = { es: esWord };
@@ -2004,6 +2085,9 @@
             const descUk = document.getElementById('methodDesc_uk').value.trim();
             const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
 
+            const docUrl = document.getElementById('methodDocUrl').value.trim();
+            const status = document.getElementById('methodStatus').value;
+
             const editId = document.getElementById('editMethodologyId').value;
 
             if (!titleUk) {
@@ -2030,6 +2114,8 @@
                         id: editId, 
                         title: newTitle, 
                         description: newDesc, 
+                        docUrl: docUrl,
+                        status: status,
                         groups: groups,
                         isArchived: wasArchived
                     };
@@ -2039,6 +2125,8 @@
                     id: 'm_custom_' + Date.now(),
                     title: newTitle,
                     description: newDesc,
+                    docUrl: docUrl,
+                    status: status,
                     groups: groups,
                     isArchived: false
                 });
