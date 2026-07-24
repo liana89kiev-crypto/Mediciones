@@ -759,7 +759,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // Пріоритет хмари при старті для запобігання розсинхрону
             if (state.config.binId && state.config.apiKey) {
                 await syncDataSilent();
             }
@@ -883,7 +882,7 @@
             document.getElementById('lblSettingsTitle').innerHTML = `<i class="fa-solid fa-database text-slate-600 mr-2.5"></i> ${dict.lblSettingsTitle}`;
             document.getElementById('lblSettingsSub').innerText = dict.lblSettingsSub;
             document.getElementById('btnTestConn').innerText = dict.btnTestConn;
-            document.getElementById('btnSaveSettings').innerText = dict.btnSaveSettings;
+            document.getElementById('btnSaveSettings').innerText = dict.saveSettings || dict.btnSaveSettings;
             document.getElementById('lblDangerZone').innerText = dict.lblDangerZone;
             document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
 
@@ -1743,6 +1742,838 @@
             });
 
             XLSX.writeFile(workbook, filename);
+        }
+
+        // РЕКВІЗИТИ КАРТОК МЕТОДИК У КОНСТРУКТОРІ: ТІЛЬКИ НАЗВА ТА ОПИС
+        function renderMethodologyCards() {
+            const container = document.getElementById('methodologyList');
+            const dict = I18N[currentLang] || I18N.uk;
+
+            const active = state.methodologies.filter(m => !m.isArchived);
+            const archived = state.methodologies.filter(m => m.isArchived);
+
+            const renderCards = (list, isArchived) => {
+                return list.map(m => {
+                    const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
+                    const mTitle = getI18nText(m.title);
+                    const mDesc = getI18nText(m.description);
+                    const isDev = m.status === 'dev';
+
+                    const actions = isArchived ? `
+                        <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-trash-arrow-up mr-1.5"></i>${dict.btnRestoreMethod}</button>
+                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-trash mr-1.5"></i>${dict.btnDeletePermanent}</button>
+                    ` : `
+                        <button onclick="openMethodologyModal('${m.id}')" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-pen mr-1.5"></i>${dict.btnEdit}</button>
+                        <button onclick="archiveMethodology('${m.id}')" class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-box-archive mr-1.5"></i>${dict.btnArchive}</button>
+                    `;
+
+                    return `
+                    <div class="border ${isArchived ? 'border-dashed border-slate-300 bg-slate-100/70' : 'border-slate-200/80 bg-white'} rounded-2xl p-5 card-shadow flex flex-col justify-between transition hover:border-slate-300">
+                        <div>
+                            <div class="flex justify-between items-start mb-2.5">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
+                                    ${isDev ? `<span class="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-bold shadow-xs">${dict.devBadgeText}</span>` : ''}
+                                </div>
+                                <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-50 text-blue-700 border border-blue-100'} font-bold px-2.5 py-1 rounded-xl shadow-xs">${paramCount} ${dict.lblParamsBadge}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-4 leading-relaxed">${escapeHTML(mDesc) || '...'}</p>
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-xl border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
+                        </div>
+                        <div class="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
+                            ${actions}
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            };
+
+            let html = '';
+            
+            if (active.length > 0) {
+                html += `<div class="col-span-1 md:col-span-2 mb-1"><h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">${dict.lblActiveMethods}</h3></div>`;
+                html += renderCards(active, false);
+            }
+            
+            if (archived.length > 0) {
+                html += `<div class="col-span-1 md:col-span-2 mt-6 mb-1 border-t border-slate-100 pt-4"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">${dict.lblArchivedMethods}</h3></div>`;
+                html += renderCards(archived, true);
+            }
+
+            container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">...</div>`;
+        }
+
+        // --- МОДАЛКА МЕТОДИК ТА ПАРАМЕТРИ ---
+        let tempParams = [];
+        let editingOptionIdx = null;
+
+        function archiveMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
+            if (confirm(dict.msgArchiveConfirm)) {
+                const m = state.methodologies.find(x => x.id === id);
+                if (m) m.isArchived = true;
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function restoreMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
+            if (confirm(dict.msgRestoreConfirm)) {
+                const m = state.methodologies.find(x => x.id === id);
+                if (m) m.isArchived = false;
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function deleteMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
+            if (confirm(dict.msgDeleteConfirm)) {
+                state.methodologies = state.methodologies.filter(x => x.id !== id);
+                saveStateToLocal();
+                populateMethodologyDropdown();
+                renderMethodologyCards();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
+        }
+
+        function openMethodologyModal(methodId = null) {
+            if (!isAdmin) {
+                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
+                return;
+            }
+            const modal = document.getElementById('methodologyModal');
+            const dict = I18N[currentLang] || I18N.uk;
+            tempParams = [];
+
+            if (methodId) {
+                const m = state.methodologies.find(x => x.id === methodId);
+                document.getElementById('modalTitle').innerText = dict.modalEditTitle;
+                document.getElementById('editMethodologyId').value = m.id;
+                
+                const titleObj = typeof m.title === 'object' && m.title !== null ? m.title : { uk: m.title || '', es: m.title || '' };
+                document.getElementById('methodTitle_uk').value = titleObj.uk || '';
+                document.getElementById('methodTitle_es').value = titleObj.es || '';
+
+                const descObj = typeof m.description === 'object' && m.description !== null ? m.description : { uk: m.description || '', es: m.description || '' };
+                document.getElementById('methodDesc_uk').value = descObj.uk || '';
+                document.getElementById('methodDesc_es').value = descObj.es || '';
+
+                document.getElementById('methodDocUrl').value = m.docUrl || '';
+                document.getElementById('methodStatus').value = m.status || 'ready';
+
+                let allP = [];
+                if (m.groups && Array.isArray(m.groups)) {
+                    allP = m.groups.flatMap(g => g.params || []);
+                } else if (m.params && Array.isArray(m.params)) {
+                    allP = m.params;
+                }
+                tempParams = JSON.parse(JSON.stringify(allP));
+            } else {
+                document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
+                document.getElementById('editMethodologyId').value = "";
+                document.getElementById('methodTitle_uk').value = "";
+                document.getElementById('methodTitle_es').value = "";
+                document.getElementById('methodDesc_uk').value = "";
+                document.getElementById('methodDesc_es').value = "";
+                document.getElementById('methodDocUrl').value = "";
+                document.getElementById('methodStatus').value = "ready";
+
+                tempParams = [
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
+                ];
+            }
+
+            renderParamRows();
+            modal.classList.remove('hidden');
+        }
+
+        function closeMethodologyModal() {
+            document.getElementById('methodologyModal').classList.add('hidden');
+        }
+
+        function getAllExistingParams() {
+            const map = new Map();
+            state.methodologies.forEach(m => {
+                const params = m.groups ? m.groups.flatMap(g => g.params || []) : (m.params || []);
+                params.forEach(p => {
+                    const ukName = typeof p.label === 'object' ? (p.label.uk || '') : p.label;
+                    if (ukName && !map.has(ukName.toLowerCase())) {
+                        map.set(ukName.toLowerCase(), {
+                            label: p.label,
+                            unit: p.unit,
+                            type: p.type,
+                            isInteger: p.isInteger || false
+                        });
+                    }
+                });
+            });
+            return Array.from(map.values());
+        }
+
+        function renderParamRows() {
+            const container = document.getElementById('paramRowsContainer');
+            const dict = I18N[currentLang] || I18N.uk;
+
+            tempParams.forEach((p, idx) => { p.code = p.code || 'v' + (idx + 1); });
+            const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
+            const existingParamsPool = getAllExistingParams();
+
+            container.innerHTML = tempParams.map((p, idx) => {
+                const baseOptions = decimalParams.map(dp => 
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`
+                ).join('');
+
+                const optsCount = (p.options || []).length;
+                const uUk = (p.unit && typeof p.unit === 'object') ? (p.unit.uk || '') : (p.unit || '');
+                const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
+                const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
+                const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
+
+                const datalistId = `pool_list_${idx}`;
+                const datalistOptions = existingParamsPool.map(poolItem => {
+                    const pUk = typeof poolItem.label === 'object' ? poolItem.label.uk : poolItem.label;
+                    return `<option value="${escapeHTML(pUk)}"></option>`;
+                }).join('');
+
+                return `
+                <div class="p-4 border border-slate-200/80 rounded-2xl bg-slate-50/70 flex flex-col gap-3.5 shadow-xs transition hover:border-slate-300" id="paramRowBlock_${idx}">
+                    <div class="flex items-start gap-2.5">
+                        <div class="flex flex-col space-y-0.5 mt-1">
+                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-2 py-1 rounded-lg border border-blue-200 shrink-0 mt-1 shadow-2xs">[${p.code}]</div>
+                        
+                        <div class="flex-grow flex flex-col gap-2.5">
+                            <div class="flex flex-col sm:flex-row gap-2.5">
+                                <div class="w-full sm:w-1/2 relative">
+                                    <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(labelUk)}" list="${datalistId}" oninput="updateParamLabelLang(${idx}, 'uk', this.value)" onchange="checkParamAutocomplete(${idx}, this.value)" placeholder="🇺🇦 Назва (UA) — почніть вводити..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <datalist id="${datalistId}">
+                                        ${datalistOptions}
+                                    </datalist>
+                                </div>
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm text-slate-600 focus:text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <div class="flex flex-col sm:flex-row items-center gap-2.5 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/80 shadow-inner">
+                                <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
+                                <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white w-full sm:w-40 shadow-sm outline-none">
+                                    <option value="">${dict.optTemplate}</option>
+                                    <option value="kg">кг / kg</option>
+                                    <option value="pcs">шт / unidades</option>
+                                    <option value="g">г / g</option>
+                                    <option value="pct">% / %</option>
+                                    <option value="heads">гол. / cabezas</option>
+                                    <option value="speed">гол/год / cabezas/hora</option>
+                                    <option value="min">хв / min</option>
+                                    <option value="custom">✏️ Своя / Manual</option>
+                                </select>
+                                <input type="text" id="unit_uk_${idx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                                <input type="text" id="unit_es_${idx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                            </div>
+                            
+                            <div class="flex gap-2.5">
+                                <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded-xl p-2 text-xs bg-white w-full sm:w-48 shadow-sm outline-none">
+                                    <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
+                                    <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
+                                    <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
+                                    <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
+                                    <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col gap-1 shrink-0 mt-1">
+                            <button type="button" onclick="duplicateParamRow(${idx})" class="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition" title="Дублювати параметр">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition" title="Видалити параметр">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    ${p.type === 'select' ? `
+                    <div class="pl-8 sm:pl-12 mt-1">
+                        <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200/80 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-medium shadow-2xs transition">
+                            <i class="fa-solid fa-list mr-1.5"></i> Редагувати варіанти списку (${optsCount})
+                        </button>
+                    </div>
+                    ` : ''}
+
+                    ${p.type === 'formula' ? `
+                    <div class="pl-8 sm:pl-12 mt-1">
+                        <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
+                        <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
+                    </div>
+                    ` : ''}
+
+                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-1">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)" class="rounded text-blue-600 w-4 h-4">
+                            <label for="base_${idx}" class="font-medium cursor-pointer">${dict.lblIsBaseWeight}</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="int_${idx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${idx}, this.checked)" class="rounded text-amber-600 w-4 h-4">
+                            <label for="int_${idx}" class="font-medium text-amber-800 font-semibold cursor-pointer">${dict.lblIsInteger}</label>
+                        </div>
+                        ${p.type === 'decimal' || p.type === 'formula' ? `
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)" class="rounded text-emerald-600 w-4 h-4">
+                            <label for="share_${idx}" class="font-medium cursor-pointer">${dict.lblUseShare}</label>
+                        </div>
+                        ${p.useShare ? `
+                        <div class="flex items-center space-x-1.5">
+                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 bg-white text-xs w-32 sm:w-auto shadow-sm outline-none">
+                                <option value="">${dict.lblNoBase}</option>
+                                ${baseOptions}
+                            </select>
+                        </div>
+                        ` : ''}
+                        ` : ''}
+                    </div>
+                </div>
+            `;}).join('');
+        }
+
+        function checkParamAutocomplete(idx, val) {
+            const cleanVal = val.trim().toLowerCase();
+            const pool = getAllExistingParams();
+            const found = pool.find(item => {
+                const pUk = typeof item.label === 'object' ? item.label.uk : item.label;
+                return pUk && pUk.toLowerCase() === cleanVal;
+            });
+
+            if (found) {
+                tempParams[idx].label = found.label;
+                tempParams[idx].unit = found.unit;
+                tempParams[idx].type = found.type;
+                tempParams[idx].isInteger = found.isInteger;
+                renderParamRows();
+            } else {
+                updateParamLabelLang(idx, 'uk', val);
+            }
+        }
+
+        function duplicateParamRow(idx) {
+            const sourceParam = tempParams[idx];
+            if (!sourceParam) return;
+            const clonedParam = JSON.parse(JSON.stringify(sourceParam));
+            clonedParam.id = 'p_' + Date.now();
+            clonedParam.isBaseWeight = false;
+
+            tempParams.push(clonedParam);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+
+            setTimeout(() => {
+                const newIdx = tempParams.length - 1;
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
+                if (newRow && ukInput) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ukInput.focus();
+                    ukInput.select();
+                }
+            }, 50);
+        }
+
+        function updateParamLabelLang(idx, lang, val) {
+            if (typeof tempParams[idx].label !== 'object') {
+                const old = tempParams[idx].label;
+                tempParams[idx].label = { uk: old, es: old };
+            }
+            tempParams[idx].label[lang] = val;
+
+            if (lang === 'uk' && val.trim() !== '') {
+                autoFillFromDict(idx, val);
+            }
+        }
+
+        function applyUnitPreset(idx, presetKey) {
+            if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
+            
+            if (UNIT_PRESETS[presetKey]) {
+                tempParams[idx].unit.uk = UNIT_PRESETS[presetKey].uk;
+                tempParams[idx].unit.es = UNIT_PRESETS[presetKey].es;
+            } else if (presetKey === '' || presetKey === 'custom') {
+                tempParams[idx].unit.uk = '';
+                tempParams[idx].unit.es = '';
+            }
+            
+            if (['pcs', 'heads', 'min'].includes(presetKey)) {
+                tempParams[idx].isInteger = true;
+            } else if (['kg', 'g', 'pct', 'speed'].includes(presetKey)) {
+                tempParams[idx].isInteger = false;
+            }
+
+            renderParamRows();
+
+            if (presetKey === 'custom') {
+                setTimeout(() => {
+                    const el = document.getElementById(`unit_uk_${idx}`);
+                    if(el) {
+                        el.focus();
+                        el.select();
+                    }
+                }, 50);
+            }
+        }
+
+        function updateParamUnit(idx, lang, val) {
+            if (!tempParams[idx].unit || typeof tempParams[idx].unit !== 'object') {
+                tempParams[idx].unit = { uk: '', es: '' };
+            }
+            tempParams[idx].unit[lang] = val;
+
+            const cleanVal = val.trim().toLowerCase();
+            if (['шт', 'шт.', 'гол', 'гол.', 'хв', 'min', 'uds', 'cabezas'].includes(cleanVal)) {
+                tempParams[idx].isInteger = true;
+            }
+        }
+
+        function updateIsInteger(idx, isChecked) {
+            tempParams[idx].isInteger = isChecked;
+        }
+
+        function autoFillFromDict(idx, term) {
+            const esInput = document.getElementById(`p_label_es_${idx}`);
+            const cleanTerm = term.trim().toLowerCase();
+
+            if (state.dictionary[cleanTerm] && state.dictionary[cleanTerm].es) {
+                if (!esInput.value) {
+                    esInput.value = state.dictionary[cleanTerm].es;
+                    tempParams[idx].label.es = state.dictionary[cleanTerm].es;
+                }
+                return;
+            }
+
+            let bestMatch = '';
+            for (const key of Object.keys(state.dictionary)) {
+                const kLower = key.toLowerCase();
+                if (cleanTerm === kLower || cleanTerm.includes(kLower) || kLower.includes(cleanTerm)) {
+                    if (kLower.length > bestMatch.length) {
+                        bestMatch = key;
+                    }
+                }
+            }
+
+            if (bestMatch && state.dictionary[bestMatch].es) {
+                if (!esInput.value) {
+                    esInput.value = state.dictionary[bestMatch].es;
+                    tempParams[idx].label.es = state.dictionary[bestMatch].es;
+                }
+            }
+        }
+
+        // --- МОДАЛКА СЛОВНИКА ---
+        let tempDictArray = [];
+
+        function openDictionaryModal() {
+            if (!isAdmin) return;
+            tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: trans.es }));
+            renderDictionaryRows();
+            document.getElementById('dictionaryModal').classList.remove('hidden');
+        }
+
+        function closeDictionaryModal() {
+            document.getElementById('dictionaryModal').classList.add('hidden');
+        }
+
+        function renderDictionaryRows() {
+            const container = document.getElementById('dictionaryRowsContainer');
+            
+            if (tempDictArray.length === 0) {
+                container.innerHTML = `<div class="text-center py-4 text-slate-400 text-xs">...</div>`;
+                return;
+            }
+
+            container.innerHTML = tempDictArray.map((item, idx) => `
+                <div class="flex items-center gap-2.5">
+                    <input type="text" value="${escapeHTML(item.uk)}" onchange="updateDictWord(${idx}, 'uk', this.value)" placeholder="Слово українською" class="w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none">
+                    <input type="text" value="${escapeHTML(item.es)}" onchange="updateDictWord(${idx}, 'es', this.value)" placeholder="Переклад (ES)" class="w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none">
+                    <button onclick="removeDictionaryRow(${idx})" class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-xl transition shrink-0">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addDictionaryRow() {
+            tempDictArray.push({ uk: '', es: '' });
+            renderDictionaryRows();
+            const container = document.getElementById('dictionaryRowsContainer');
+            setTimeout(() => { container.parentElement.scrollTop = container.parentElement.scrollHeight; }, 50);
+        }
+
+        function removeDictionaryRow(idx) {
+            tempDictArray.splice(idx, 1);
+            renderDictionaryRows();
+        }
+
+        function updateDictWord(idx, lang, val) {
+            tempDictArray[idx][lang] = val;
+        }
+
+        function saveDictionary() {
+            const newDict = {};
+            tempDictArray.forEach(item => {
+                const ukWord = item.uk.trim().toLowerCase();
+                const esWord = item.es.trim();
+                if (ukWord) {
+                    newDict[ukWord] = { es: esWord };
+                }
+            });
+
+            state.dictionary = newDict;
+            saveStateToLocal();
+            closeDictionaryModal();
+            
+            if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
+        }
+
+        // --- ІНШІ ФУНКЦІЇ ---
+        function openOptionsModal(idx) {
+            editingOptionIdx = idx;
+            const currentOpts = tempParams[idx].options || [];
+            document.getElementById('optionsTextArea').value = currentOpts.join('\n');
+            document.getElementById('optionsModal').classList.remove('hidden');
+        }
+
+        function closeOptionsModal() {
+            document.getElementById('optionsModal').classList.add('hidden');
+            editingOptionIdx = null;
+        }
+
+        function saveOptionsFromModal() {
+            if (editingOptionIdx !== null) {
+                const text = document.getElementById('optionsTextArea').value;
+                const opts = text.split('\n').map(s => s.trim()).filter(Boolean);
+                tempParams[editingOptionIdx].options = opts;
+                renderParamRows();
+            }
+            closeOptionsModal();
+        }
+
+        function moveParam(idx, direction) {
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= tempParams.length) return;
+            const item = tempParams.splice(idx, 1)[0];
+            tempParams.splice(newIdx, 0, item);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+        }
+
+        function addParamRow() {
+            const nextCode = 'v' + (tempParams.length + 1);
+            const newIdx = tempParams.length;
+            tempParams.push({
+                id: 'p_' + Date.now(),
+                label: { uk: '', es: '' },
+                unit: { uk: '', es: '' },
+                type: 'decimal',
+                required: false,
+                isBaseWeight: false,
+                useShare: false,
+                baseParamId: '',
+                code: nextCode
+            });
+            renderParamRows();
+
+            setTimeout(() => {
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
+                if (newRow && ukInput) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ukInput.focus();
+                }
+            }, 100);
+        }
+
+        function removeParamRow(idx) {
+            tempParams.splice(idx, 1);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+        }
+
+        function updateParamType(idx, val) {
+            tempParams[idx].type = val;
+            renderParamRows();
+        }
+
+        function updateParamFormula(idx, val) {
+            tempParams[idx].formulaStr = val;
+        }
+
+        function updateBaseWeight(idx, isChecked) {
+            tempParams.forEach((p, i) => {
+                p.isBaseWeight = (i === idx && isChecked);
+            });
+            renderParamRows();
+        }
+
+        function updateUseShare(idx, isChecked) {
+            tempParams[idx].useShare = isChecked;
+            if (isChecked && !tempParams[idx].baseParamId) {
+                const firstBase = tempParams.find(p => p.isBaseWeight) || tempParams.find(p => p.type === 'decimal');
+                if (firstBase) tempParams[idx].baseParamId = firstBase.id;
+            }
+            renderParamRows();
+        }
+
+        function updateBaseParamId(idx, val) {
+            tempParams[idx].baseParamId = val;
+        }
+
+        function saveMethodology() {
+            if (!isAdmin) return;
+            const titleUk = document.getElementById('methodTitle_uk').value.trim();
+            const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
+
+            const descUk = document.getElementById('methodDesc_uk').value.trim();
+            const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
+
+            const docUrl = document.getElementById('methodDocUrl').value.trim();
+            const status = document.getElementById('methodStatus').value;
+
+            const editId = document.getElementById('editMethodologyId').value;
+
+            if (!titleUk) {
+                alert(currentLang === 'es' ? "¡Ingrese el título de la metodología!" : "Будь ласка, введіть назву методики!");
+                return;
+            }
+
+            const newTitle = { uk: titleUk, es: titleEs };
+            const newDesc = { uk: descUk, es: descEs };
+
+            const groups = [
+                {
+                    title: { uk: 'Параметри методики', es: 'Parámetros' },
+                    isGeneral: false,
+                    params: tempParams
+                }
+            ];
+
+            if (editId) {
+                const idx = state.methodologies.findIndex(m => m.id === editId);
+                if (idx !== -1) {
+                    const wasArchived = state.methodologies[idx].isArchived || false;
+                    state.methodologies[idx] = { 
+                        id: editId, 
+                        title: newTitle, 
+                        description: newDesc, 
+                        docUrl: docUrl,
+                        status: status,
+                        groups: groups,
+                        isArchived: wasArchived
+                    };
+                }
+            } else {
+                state.methodologies.push({
+                    id: 'm_custom_' + Date.now(),
+                    title: newTitle,
+                    description: newDesc,
+                    docUrl: docUrl,
+                    status: status,
+                    groups: groups,
+                    isArchived: false
+                });
+            }
+
+            saveStateToLocal();
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+            closeMethodologyModal();
+            if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
+        }
+
+        function loadSettingsInputs() {
+            document.getElementById('cfgBinId').value = state.config.binId || '';
+            document.getElementById('cfgApiKey').value = state.config.apiKey || '';
+            updateSyncStatusUI();
+        }
+
+        function saveSettings() {
+            state.config.binId = document.getElementById('cfgBinId').value.trim();
+            state.config.apiKey = document.getElementById('cfgApiKey').value.trim();
+            saveStateToLocal();
+            alert(currentLang === 'es' ? "¡Configuración guardada!" : "Налаштування збережено!");
+            if (state.config.binId && state.config.apiKey) syncData();
+        }
+
+        function updateSyncStatusUI(status = 'local') {
+            const el = document.getElementById('syncStatus');
+            const dict = I18N[currentLang] || I18N.uk;
+
+            if (status === 'synced') {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px] font-medium">${dict.syncDone}</span>`;
+            } else if (status === 'syncing') {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px] font-medium">${dict.syncing}</span>`;
+            } else {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px] font-medium">Local</span>`;
+            }
+        }
+
+        function downloadBackup() {
+            const backupData = {
+                methodologies: state.methodologies,
+                measurements: state.measurements,
+                dictionary: state.dictionary,
+                config: state.config
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "mediciones_backup_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function restoreBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const dict = I18N[currentLang] || I18N.uk;
+            
+            if (!confirm(dict.msgRestoreConfirm)) {
+                event.target.value = ''; 
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.methodologies) state.methodologies = data.methodologies;
+                    if (data.measurements) state.measurements = data.measurements;
+                    if (data.dictionary) state.dictionary = data.dictionary;
+                    if (data.config) state.config = data.config;
+                    
+                    saveStateToLocal();
+                    
+                    if (state.config.binId && state.config.apiKey) {
+                        pushToJsonBin();
+                    }
+                    
+                    alert(dict.msgRestoreSuccess);
+                    window.location.reload();
+                } catch(err) {
+                    alert("Error: Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function syncData() {
+            if (!state.config.binId || !state.config.apiKey) return;
+            updateSyncStatusUI('syncing');
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
+                    headers: { 'X-Access-Key': state.config.apiKey }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.record) {
+                        if (data.record.measurements && Array.isArray(data.record.measurements)) {
+                            const combined = [...state.measurements];
+                            data.record.measurements.forEach(remoteRec => {
+                                if (!combined.some(localRec => localRec.id === remoteRec.id)) {
+                                    combined.push(remoteRec);
+                                }
+                            });
+                            state.measurements = combined;
+                        }
+                        if (data.record.methodologies && Array.isArray(data.record.methodologies) && data.record.methodologies.length > 0) {
+                            state.methodologies = data.record.methodologies;
+                        }
+                        if (data.record.dictionary && typeof data.record.dictionary === 'object' && Object.keys(data.record.dictionary).length > 0) {
+                            state.dictionary = data.record.dictionary;
+                        }
+                        saveStateToLocal();
+                        populateMethodologyDropdown();
+                        renderMethodologyCards();
+                        renderHistoryTable();
+                        updateSyncStatusUI('synced');
+                    }
+                }
+            } catch (e) {
+                console.error("JSONBin sync error:", e);
+                updateSyncStatusUI('local');
+            }
+        }
+
+        async function pushToJsonBin() {
+            if (!state.config.binId || !state.config.apiKey) return;
+            updateSyncStatusUI('syncing');
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': state.config.apiKey
+                    },
+                    body: JSON.stringify({
+                        methodologies: state.methodologies,
+                        measurements: state.measurements,
+                        dictionary: state.dictionary
+                    })
+                });
+                if (res.ok) {
+                    updateSyncStatusUI('synced');
+                }
+            } catch (e) {
+                console.error("JSONBin push error:", e);
+                updateSyncStatusUI('local');
+            }
+        }
+
+        async function testJsonBinConnection() {
+            const binId = document.getElementById('cfgBinId').value.trim();
+            const apiKey = document.getElementById('cfgApiKey').value.trim();
+
+            if (!binId || !apiKey) {
+                alert("Please fill BIN ID and Access Key");
+                return;
+            }
+
+            try {
+                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+                    headers: { 'X-Access-Key': apiKey }
+                });
+                if (res.ok) {
+                    alert(currentLang === 'es' ? "¡Conexión exitosa!" : "Успішне з'єднання!");
+                } else {
+                    alert(currentLang === 'es' ? "Error de conexión." : "Помилка з'єднання.");
+                }
+            } catch (e) {
+                alert(currentLang === 'es' ? "Error de red." : "Помилка мережі.");
+            }
+        }
+
+        function clearAllData() {
+            if (!isAdmin) {
+                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
+                return;
+            }
+            if (confirm(currentLang === 'es' ? "¿Eliminar todas las mediciones locales?" : "Ви дійсно бажаєте видалити всі локальні заміри?")) {
+                state.measurements = [];
+                saveStateToLocal();
+                renderHistoryTable();
+                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            }
         }
     </script>
 </body>
