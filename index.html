@@ -1702,29 +1702,16 @@
                 const methodologyRecords = groupData.records;
                 const m = groupData.methodObj;
 
-                // 1. ЗБИРАЄМО ВСІ УНІКАЛЬНІ param.id ІЗ АКТУАЛЬНОЇ МЕТОДИКИ ТА ІСТОРІЇ ЗАМІРІВ
-                const paramIdMap = new Map();
-
+                // ВИКОРИСТОВУЄМО АБО ЕТАЛОННУ МЕТОДИКУ, АБО КОРИСТУЄМОСЬ ПЕРШИМ ЗНАЙДЕНИМ ЗАПИСОМ ДЛЯ СТРУКТУРИ
+                let allParams = [];
                 if (m && m.groups) {
-                    m.groups.forEach(g => {
-                        (g.params || []).forEach(p => paramIdMap.set(p.id, p));
-                    });
+                    allParams = m.groups.flatMap(g => g.params || []);
                 } else if (m && m.params) {
-                    m.params.forEach(p => paramIdMap.set(p.id, p));
+                    allParams = m.params;
+                } else if (methodologyRecords.length > 0 && methodologyRecords[0].paramIdToValueMap) {
+                    // Якщо методики немає в списку, беремо ключі з першого записаного замару
+                    allParams = Object.keys(methodologyRecords[0].paramIdToValueMap).map(id => ({ id: id, label: id, type: 'decimal' }));
                 }
-
-                // Також скануємо всі записи на випадок, якщо якийсь параметр був у старих замірах
-                methodologyRecords.forEach(rec => {
-                    if (rec.paramIdToValueMap) {
-                        Object.keys(rec.paramIdToValueMap).forEach(pId => {
-                            if (!paramIdMap.has(pId)) {
-                                paramIdMap.set(pId, { id: pId, label: pId, type: 'decimal' });
-                            }
-                        });
-                    }
-                });
-
-                const allParams = Array.from(paramIdMap.values());
 
                 const headers = [
                     currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
@@ -1751,7 +1738,7 @@
                 const isCalcCol = [false, false, false];
                 const shareRules = {};
 
-                // ФОРМУЄМО ЕДИНУ ШАПКУ ТАБЛИЦІ
+                // ФОРМУЄМО ЕДИНУ ШАПКУ ТАБЛИЦІ НА ОСНОВІ ЕТАЛОННИХ ПАРАМЕТРІВ
                 allParams.forEach(p => {
                     const bilingualHeader = paramIdToBilingualHeader[p.id] || p.id;
                     fullHeaders.push(bilingualHeader);
@@ -1779,7 +1766,7 @@
 
                 const dataRows = [fullHeaders];
 
-                // ЗАПОВНЮЄМО РЯДКИ ЗА ІДЕНТИФІКАТОРОМ (paramIdToValueMap), ЩОБ ДАНІ ЗВОДИЛИСЬ В ОДНУ КОЛОНКУ НЕЗАЛЕЖНО ВІД МОВИ
+                // ЗАПОВНЮЄМО РЯДКИ З ВИКОРИСТАННЯМ ПЕРЕХРЕСНОГО ПОШУКУ ПО ТЕКСТАХ ТА ID
                 methodologyRecords.forEach(rec => {
                     const row = [
                         rec.timestamp,
@@ -1787,32 +1774,32 @@
                         rec.inspector
                     ];
 
-                    const getValByParamId = (pId) => {
-                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[pId] !== undefined) {
-                            return parseFloat(rec.paramIdToValueMap[pId]) || 0;
+                    const getValByParam = (p) => {
+                        // 1. Шукаємо за точним ID в paramIdToValueMap
+                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[p.id] !== undefined && rec.paramIdToValueMap[p.id] !== '-') {
+                            return rec.paramIdToValueMap[p.id];
                         }
+                        // 2. Шукаємо за українською назвою параметра
+                        const pUk = getLabelWithUnit(p, 'uk');
+                        if (rec.values && rec.values[pUk] !== undefined && rec.values[pUk] !== '-') {
+                            return rec.values[pUk];
+                        }
+                        // 3. Шукаємо за іспанською назвою параметра
+                        const pEs = getLabelWithUnit(p, 'es');
+                        if (rec.values && rec.values[pEs] !== undefined && rec.values[pEs] !== '-') {
+                            return rec.values[pEs];
+                        }
+                        // 4. Пошук по суфіксах/частинах ключа в values для старих записів
                         for (const [k, v] of Object.entries(rec.values || {})) {
-                            if (k.includes(pId)) return parseFloat(v) || 0;
+                            if (k.toLowerCase().includes(p.id.toLowerCase()) || (typeof p.label === 'object' && Object.values(p.label).some(l => l && k.toLowerCase().includes(l.toLowerCase())))) {
+                                if (v !== undefined && v !== '-') return v;
+                            }
                         }
-                        return 0;
+                        return '-';
                     };
 
                     allParams.forEach((p) => {
-                        let rawVal = '-';
-                        if (rec.paramIdToValueMap && rec.paramIdToValueMap[p.id] !== undefined) {
-                            rawVal = rec.paramIdToValueMap[p.id];
-                        } else if (rec.values) {
-                            // Фалбек для старих записів: шукаємо за будь-яким ключем у values, що містить назву параметра
-                            const pUk = typeof p.label === 'object' ? p.label.uk : p.label;
-                            const pEs = typeof p.label === 'object' ? p.label.es : p.label;
-                            for (const [k, v] of Object.entries(rec.values)) {
-                                if (k.includes(pUk) || k.includes(pEs)) {
-                                    rawVal = v;
-                                    break;
-                                }
-                            }
-                        }
-
+                        const rawVal = getValByParam(p);
                         const numVal = parseFloat(rawVal);
                         const isInt = integerParamIds.has(p.id);
 
@@ -1826,7 +1813,9 @@
                         if (ruleEntry) {
                             const rule = ruleEntry[1];
                             const valForShare = parseFloat(rawVal) || 0;
-                            let baseVal = getValByParamId(rule.baseParamId);
+                            
+                            const baseParamObj = allParams.find(x => x.id === rule.baseParamId);
+                            let baseVal = baseParamObj ? parseFloat(getValByParam(baseParamObj)) || 0 : 0;
 
                             if (baseVal === 0 && rec.values) {
                                 for (const v of Object.values(rec.values)) {
@@ -2742,7 +2731,7 @@
                     alert(currentLang === 'es' ? "¡Conexión exitosa!" : "Успішне з'єднання!");
                 } else {
                     alert(currentLang === 'es' ? "Error de conexión." : "Помилка з'єднання.");
-                    }
+                }
             } catch (e) {
                 alert(currentLang === 'es' ? "Error de red." : "Помилка мережі.");
             }
