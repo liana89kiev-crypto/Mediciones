@@ -673,7 +673,6 @@
             methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             dictionary: {},
-            // АВТОМАТИЧНО ВШИТІ КЛЮЧИ (Рішення 1)
             config: JSON.parse(localStorage.getItem('qm_config')) || { 
                 binId: '6a60ba54da38895dfe7f4ed1', 
                 apiKey: '$2a$10$m5vuxXDrQuaRGRsuXa0NQ.5xt8PVhS1Dqui4kah97g51lMAngg946' 
@@ -711,7 +710,6 @@
             loadSettingsInputs();
             checkAndRestoreDraft();
 
-            // АВТОМАТИЧНА ФОНОВА СИНХРОНІЗАЦІЯ ПРИ СТАРТІ (Рішення 3)
             if (state.config.binId && state.config.apiKey) {
                 await syncData();
             }
@@ -1727,7 +1725,13 @@
                 document.getElementById('methodDocUrl').value = m.docUrl || '';
                 document.getElementById('methodStatus').value = m.status || 'ready';
 
-                const allP = m.groups ? m.groups.flatMap(g => g.params) : (m.params || []);
+                // Надійне витягування параметрів з урахуванням різних можливих структур
+                let allP = [];
+                if (m.groups && Array.isArray(m.groups)) {
+                    allP = m.groups.flatMap(g => g.params || []);
+                } else if (m.params && Array.isArray(m.params)) {
+                    allP = m.params;
+                }
                 tempParams = JSON.parse(JSON.stringify(allP));
             } else {
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
