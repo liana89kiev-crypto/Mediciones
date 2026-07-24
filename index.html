@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mediciones SPA — Система замірів та зважування</title>
-    <!-- Dynamic Favicon (Scales Emoji) -->
+    <!-- Dynamic Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚖️</text></svg>">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,12 +26,12 @@
                 <span class="text-2xl text-blue-400"><i class="fa-solid fa-scale-balanced"></i></span>
                 <div>
                     <h1 class="text-base sm:text-lg font-bold leading-tight" id="appTitle">Mediciones SPA</h1>
-                    <p class="text-[11px] sm:text-xs text-slate-400" id="appSubtitle">Система замірів та зважування тушки</p>
+                    <p class="text-[11px] sm:text-xs text-slate-400" id="appSubtitle">Система замірів та зважування</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3 text-sm">
                 <!-- Кнопка Адмін-режиму -->
-                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5">
+                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5" title="Адмін-доступ">
                     <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
                     <span id="adminModeText">Оператор</span>
                 </button>
@@ -62,7 +62,7 @@
                 </button>
             </div>
         </div>
-        <!-- Navigation Tabs (Адаптивні для мобільних) -->
+        <!-- Navigation Tabs -->
         <div class="bg-slate-800 text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
             <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -79,7 +79,6 @@
         </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="flex-grow max-w-4xl w-full mx-auto p-3 sm:p-6">
 
         <!-- TAB 1: NEW MEASUREMENT -->
@@ -112,7 +111,6 @@
                     </div>
                 </div>
 
-                <!-- Dynamic Form Area -->
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
                     <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
                     <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-6">
@@ -146,18 +144,21 @@
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800" id="lblHistoryTitle">Історія занесених замірів</h2>
                         <p class="text-xs text-slate-500"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
-                    <div class="flex items-center space-x-2 w-full md:w-auto">
-                        <button onclick="openExportModal()" class="w-full md:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                        <div id="syncStatus" class="flex items-center space-x-1 text-slate-400 text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                            <span id="syncText">Локально</span>
+                        </div>
+                        <button onclick="openExportModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
                             <span id="btnExportAll">Експорт в Excel (.xlsx)</span>
                         </button>
-                        <button onclick="syncData()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
+                        <button onclick="syncData()" class="w-full sm:w-auto px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition flex items-center justify-center" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- Filters -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1" id="lblFilterMethod">Фільтр за методикою</label>
@@ -178,7 +179,6 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div class="overflow-x-auto border border-slate-200 rounded-lg">
                     <table class="w-full text-left text-sm text-slate-600">
                         <thead class="bg-slate-100 text-xs uppercase text-slate-700 font-semibold border-b border-slate-200">
@@ -258,7 +258,7 @@
 
     <!-- Modal 1: Creating/Editing Methodology -->
     <div id="methodologyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
             <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <h3 id="modalTitle" class="font-bold text-slate-800">Створити методику</h3>
                 <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-slate-600 text-lg">
@@ -269,7 +269,6 @@
             <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow">
                 <input type="hidden" id="editMethodologyId">
                 
-                <!-- Тримовна назва методики -->
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -279,7 +278,6 @@
                     </div>
                 </div>
 
-                <!-- Тримовна інструкція/опис -->
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -397,8 +395,8 @@
                 optTypeText: "Текст",
                 optTypeDate: "Дата",
                 optTypeSelect: "Список варіантів",
-                optTypeFormula: "🧮 Формула (Сума)",
-                lblUseShare: "Розраховувати частку %",
+                optTypeFormula: "🧮 Формула",
+                lblUseShare: "Рахувати % від:",
                 lblBaseParam: "База для %:",
                 lblNoBase: "-- Без розрахунку % --",
                 lblSettingsTitle: "Налаштування JSONBin.io & Синхронізації",
@@ -413,7 +411,7 @@
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
                 allMethodsOpt: "Всі методики",
                 adminOp: "Оператор",
-                adminAd: "Адміністратор",
+                adminAd: "Адмін",
                 adminPrompt: "Введіть пароль адміністратора:"
             },
             es: {
@@ -462,8 +460,8 @@
                 optTypeText: "Texto",
                 optTypeDate: "Fecha",
                 optTypeSelect: "Lista desplegable",
-                optTypeFormula: "🧮 Fórmula (Suma)",
-                lblUseShare: "Calcular porcentaje %",
+                optTypeFormula: "🧮 Fórmula",
+                lblUseShare: "Calcular % de:",
                 lblBaseParam: "Base para %:",
                 lblNoBase: "-- Sin cálculo de % --",
                 lblSettingsTitle: "Configuración de JSONBin.io y Sincronización",
@@ -478,7 +476,7 @@
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
                 allMethodsOpt: "Todas las metodologías",
                 adminOp: "Operador",
-                adminAd: "Administrador",
+                adminAd: "Admin",
                 adminPrompt: "Ingrese la contraseña de administrador:"
             },
             en: {
@@ -527,8 +525,8 @@
                 optTypeText: "Text",
                 optTypeDate: "Date",
                 optTypeSelect: "Dropdown",
-                optTypeFormula: "🧮 Formula (Sum)",
-                lblUseShare: "Calculate percentage %",
+                optTypeFormula: "🧮 Formula",
+                lblUseShare: "Calculate % of:",
                 lblBaseParam: "Base for %:",
                 lblNoBase: "-- No % calculation --",
                 lblSettingsTitle: "JSONBin.io Settings & Synchronization",
@@ -543,70 +541,54 @@
                 factories: ["Plant 1", "Plant 2", "Plant 3", "Plant 4", "Plant 5"],
                 allMethodsOpt: "All methodologies",
                 adminOp: "Operator",
-                adminAd: "Administrator",
+                adminAd: "Admin",
                 adminPrompt: "Enter administrator password:"
             }
         };
 
         const DEFAULT_METHODOLOGIES = [
             {
-                id: 'm_poultry_deboning_v9',
-                title: {
-                    uk: 'Замір розробки тушки (Аналіз анатомічних частин)',
-                    es: 'Control de despiece (Análisis de rendimiento)',
-                    en: 'Carcass deboning measurement (Anatomical parts analysis)'
-                },
-                description: {
-                    uk: 'Визначення маси тушки, її обвалювання та розрахунок виходу анатомічних частин, субпродуктів і втрат.',
-                    es: 'Determinación del peso de la canal, despiece y cálculo de rendimiento de partes y desperdicios.',
-                    en: 'Determination of carcass weight, deboning, and calculation of parts yield and losses.'
-                },
+                id: 'm_live_yield_v1',
+                title: { uk: 'Вихід від живка', es: 'Rendimiento de vivo', en: 'Live weight yield' },
+                description: { uk: 'Аналіз виходу продукції відносно живої ваги птиці', es: 'Análisis de rendimiento respecto al peso vivo', en: 'Yield analysis relative to live bird weight' },
                 groups: [
                     {
-                        title: { uk: '1. Загальна інформація', es: '1. Información general', en: '1. General information' },
+                        title: { uk: 'Показники', es: 'Parámetros', en: 'Parameters' },
+                        isGeneral: false,
+                        params: [
+                            { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha', en: 'Date' }, type: 'date', required: true, code: 'v1' },
+                            { id: 'ly_2', label: { uk: 'Жива вага (кг)', es: 'Peso vivo (kg)', en: 'Live weight (kg)' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'ly_3', label: { uk: 'Кількість голів', es: 'Cantidad de cabezas', en: 'Head count' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'ly_4', label: { uk: 'Вага після патрання (кг)', es: 'Peso canales (kg)', en: 'Eviscerated weight (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'ly_2', code: 'v4' },
+                            { id: 'ly_5', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)', en: 'Average carcass weight' }, type: 'formula', formulaStr: 'v4 / v3', code: 'v5' },
+                            { id: 'ly_6', label: { uk: 'Втрати (кг)', es: 'Pérdidas (kg)', en: 'Losses (kg)' }, type: 'formula', formulaStr: 'v2 - v4', useShare: true, baseParamId: 'ly_2', code: 'v6' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'm_poultry_deboning_v10',
+                title: { uk: 'Замір розробки тушки', es: 'Control de despiece', en: 'Carcass deboning measurement' },
+                description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes', en: 'Analysis of anatomical parts yield' },
+                groups: [
+                    {
+                        title: { uk: 'Загальні дані', es: 'Datos generales', en: 'General data' },
                         isGeneral: true,
                         params: [
-                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición', en: 'Measurement date' }, type: 'date', required: true },
-                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок у вибірці (шт)', es: 'Cantidad de canales (uds)', en: 'Sample carcass count (pcs)' }, type: 'decimal', required: true },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага тушок перед розрізанням (кг)', es: 'Peso total de canales (kg)', en: 'Total weight before cutting (kg)' }, type: 'decimal', required: true },
-                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага тушки (кг)', es: 'Peso medio de canal (kg)', en: 'Average carcass weight (kg)' }, type: 'decimal', required: false, calculated: true }
+                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición', en: 'Date' }, type: 'date', required: true, code: 'v1' },
+                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок (шт)', es: 'Cantidad (uds)', en: 'Count (pcs)' }, type: 'decimal', required: true, code: 'v2' },
+                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага (кг)', es: 'Peso total (kg)', en: 'Total weight (kg)' }, type: 'decimal', required: true, code: 'v3' },
+                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага (кг)', es: 'Peso medio (kg)', en: 'Avg weight (kg)' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' }
                         ]
                     },
                     {
-                        title: { uk: '2. Крило', es: '2. Ala', en: '2. Wing' },
+                        title: { uk: 'Частини', es: 'Partes', en: 'Parts' },
                         params: [
-                            { id: 'p_sub_wing_tip', label: { uk: 'Кисть крила (кг)', es: 'Punta de ala (kg)', en: 'Wing tip (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_wing_elbow', label: { uk: 'Лікоть (кг)', es: 'Alon (kg)', en: 'Wing flat / Mid-joint (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_wing_shoulder', label: { uk: 'Плече (кг)', es: 'Blanqueta (kg)', en: 'Drumette (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_wing_whole', label: { uk: 'Трифалангове крило (сума) (кг) [Авто]', es: 'Ala 3 falanges total (kg) [Auto]', en: 'Whole 3-joint wing (sum) (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_sub_wing_tip', 'p_wing_elbow', 'p_wing_shoulder'], useShare: true, baseParamId: 'p_total_weight_wog' }
-                        ]
-                    },
-                    {
-                        title: { uk: '3. Передня частина тушки', es: '3. Parte delantera (Pechuga)', en: '3. Front part (Breast)' },
-                        params: [
-                            { id: 'p_filet_large', label: { uk: 'Філе велике (кг)', es: 'Pechuga grande / Fillet (kg)', en: 'Breast fillet / Large fillet (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_filet_small', label: { uk: 'Філе мале (кг)', es: 'Solomillo chico / Tenderloin (kg)', en: 'Tenderloin / Inner fillet (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_sub_breast_frame', label: { uk: 'Грудний каркас (кг)', es: 'Carcasa de pechuga (kg)', en: 'Breast frame (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_sub_breast_skin', label: { uk: 'Шкіра грудки (кг)', es: 'Piel de pechuga (kg)', en: 'Breast skin (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_front_total', label: { uk: 'Сума передньої частини (кг) [Авто]', es: 'Total parte delantera (kg) [Auto]', en: 'Total front part (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_filet_large', 'p_filet_small', 'p_sub_breast_frame', 'p_sub_breast_skin'], useShare: true, baseParamId: 'p_total_weight_wog' }
-                        ]
-                    },
-                    {
-                        title: { uk: '4. Задня частина тушки', es: '4. Parte trasera (Cuarto trasero)', en: '4. Back part (Leg quarter)' },
-                        params: [
-                            { id: 'p_thigh_bone_in', label: { uk: 'Стегно (кг)', es: 'Contramuslo (kg)', en: 'Thigh (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_drumstick', label: { uk: 'Гомілка (кг)', es: 'Jamoncito (kg)', en: 'Drumstick (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_sub_saddle', label: { uk: 'Нижня частина спинки (кг)', es: 'Espalda (kg)', en: 'Saddle / Lower back (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_sub_tail', label: { uk: 'Гузка (кг)', es: 'Obispillo (kg)', en: 'Tail (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_back_total', label: { uk: 'Сума задньої частини тушки (кг) [Авто]', es: 'Total parte trasera (kg) [Auto]', en: 'Total back part (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_thigh_bone_in', 'p_drumstick', 'p_sub_saddle', 'p_sub_tail'], useShare: true, baseParamId: 'p_total_weight_wog' }
-                        ]
-                    },
-                    {
-                        title: { uk: '5. Технічні відходи та Втрати', es: '5. Desperdicios y Pérdidas', en: '5. Waste and Losses' },
-                        params: [
-                            { id: 'p_tech_losses', label: { uk: 'Технічні втрати / Втрати (кг)', es: 'Pérdida técnica (kg)', en: 'Technical losses (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_tech_waste_total', label: { uk: 'Технічні відходи (сума) (кг) [Авто]', es: 'Total desperdicios (kg) [Auto]', en: 'Total waste (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_sub_wing_tip', 'p_sub_saddle', 'p_sub_breast_frame', 'p_sub_breast_skin', 'p_sub_tail', 'p_tech_losses'], useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_notes', label: { uk: 'Примітки / Зауваження', es: 'Notas / Observaciones', en: 'Notes / Remarks' }, type: 'text', required: false }
+                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala', en: 'Wing' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
+                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga', en: 'Fillet' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
+                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Cuarto trasero', en: 'Leg quarter' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
+                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo', en: 'Saddle & Tail' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
+                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas', en: 'Losses' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
                         ]
                     }
                 ]
@@ -617,12 +599,24 @@
         let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
 
         let state = {
-            methodologies: JSON.parse(localStorage.getItem('qm_methodologies')) || DEFAULT_METHODOLOGIES,
+            methodologies: [],
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
 
-        localStorage.setItem('qm_methodologies', JSON.stringify(DEFAULT_METHODOLOGIES));
+        // Initialize methodologies: Merge stored user methods with DEFAULT ensuring defaults exist
+        const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies')) || [];
+        if (savedMethods.length === 0) {
+            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
+        } else {
+            state.methodologies = savedMethods;
+            // Add any missing defaults
+            DEFAULT_METHODOLOGIES.forEach(dm => {
+                if (!state.methodologies.find(sm => sm.id === dm.id)) {
+                    state.methodologies.push(dm);
+                }
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -669,8 +663,9 @@
 
         function applyLanguageUI() {
             const dict = I18N[currentLang] || I18N.uk;
-
-            document.getElementById('currentLangLabel').innerText = currentLang;
+            const langLabels = { uk: 'UA', es: 'ES', en: 'UK' };
+            document.getElementById('currentLangLabel').innerText = langLabels[currentLang] || 'UA';
+            
             document.getElementById('appSubtitle').innerText = dict.appSub;
             document.getElementById('navNewMeasure').innerText = dict.navNew;
             document.getElementById('navHistory').innerText = dict.navHistory;
@@ -801,29 +796,31 @@
             if (selectedFilterM) filterSelect.value = selectedFilterM;
         }
 
-        function evaluateExpression(str) {
-            if (!str) return 0;
-            const cleaned = String(str).replace(/,/g, '.').replace(/[^0-9.+-]/g, '');
-            if (!cleaned) return 0;
-
-            const parts = cleaned.split('+').map(p => p.trim()).filter(Boolean);
-            if (parts.length === 0) return 0;
-
-            let sum = 0;
-            for (let i = 0; i < Math.min(parts.length, 50); i++) {
-                const val = parseFloat(parts[i]);
-                if (!isNaN(val)) sum += val;
+        // Custom Safe Evaluator for formulas like v1+v2-v3*0.5
+        function safeEvaluate(expr, vars) {
+            if (!expr) return 0;
+            try {
+                let parsed = expr.toLowerCase();
+                const sortedVars = Object.keys(vars).sort((a,b) => b.length - a.length);
+                sortedVars.forEach(v => {
+                    const val = (vars[v] || 0).toString();
+                    parsed = parsed.split(v.toLowerCase()).join(val);
+                });
+                parsed = parsed.replace(/,/g, '.').replace(/[^0-9+\-*/().]/g, '');
+                if (!parsed) return 0;
+                const result = new Function('return ' + parsed)();
+                return isNaN(result) ? 0 : result;
+            } catch(e) {
+                return 0;
             }
-            return sum;
         }
 
         function handleFieldBlur(input) {
             if (input.readOnly || !input.value.trim()) return;
-
             const expr = input.value.trim();
-            if (expr.includes('+') || expr.includes(',')) {
-                const sum = evaluateExpression(expr);
-                input.value = sum > 0 ? sum.toFixed(3) : "";
+            if (expr.includes('+') || expr.includes(',') || expr.includes('-')) {
+                const sum = safeEvaluate(expr, {}); // evaluate simple math like 4+5
+                input.value = sum > 0 || sum < 0 ? sum.toFixed(3) : "";
             } else {
                 const val = parseFloat(expr.replace(',', '.'));
                 if (!isNaN(val)) {
@@ -863,54 +860,60 @@
                 const groupTitle = getI18nText(group.title);
                 groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
                 
+                // One column grid for fields
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
                 group.params.forEach(p => {
+                    p.code = p.code || 'v' + Math.floor(Math.random()*10000); // ensure code exists
+                    
                     const fieldWrapper = document.createElement('div');
                     const reqAttr = p.required ? 'required' : '';
                     const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
                     const paramLabel = getI18nText(p.label);
 
-                    const isFormulaOrCalc = p.type === 'formula' || p.calculated;
-                    const isReadOnly = isFormulaOrCalc 
-                        ? 'readonly bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' 
-                        : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
+                    const isReadOnly = p.type === 'formula';
+                    const bgClass = isReadOnly ? 'bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
-                    const showPercentBadge = p.useShare && !p.isBaseWeight;
+                    const showPercentBadge = p.useShare;
 
                     if (p.type === 'text') {
-                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="${dict.placeholderText}">`;
-                    } else if (p.type === 'decimal' || p.type === 'formula') {
-                        inputHtml = `
-                            <div class="relative flex items-center">
-                                <input type="text" name="${p.id}" id="${p.id}" data-param-id="${p.id}" ${reqAttr} ${isFormulaOrCalc ? 'readonly' : ''} 
-                                    oninput="calculateLiveFields()" 
-                                    onblur="handleFieldBlur(this)" 
-                                    class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
-                                    placeholder="${isFormulaOrCalc ? '0.000' : '4.75+2.12'}">
-                                ${showPercentBadge ? `
-                                    <span id="badge_pct_${p.id}" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
-                                        0.000 %
-                                    </span>
-                                ` : ''}
-                            </div>
-                        `;
+                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}" placeholder="${dict.placeholderText}">`;
                     } else if (p.type === 'date') {
                         const today = new Date().toISOString().split('T')[0];
-                        inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}">`;
+                        inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}">`;
                     } else if (p.type === 'select') {
                         const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
-                        inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white ${isReadOnly}">
+                        inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white ${bgClass}">
                             <option value="">-- Select --</option>
                             ${opts}
                         </select>`;
+                    } else {
+                        // Decimal or Formula
+                        inputHtml = `
+                            <div class="relative flex items-center w-full gap-2">
+                                <div class="relative flex-grow">
+                                    <input type="text" name="${p.id}" id="${p.id}" data-code="${p.code}" ${reqAttr} ${isReadOnly ? 'readonly' : ''} 
+                                        oninput="calculateLiveFields()" 
+                                        onblur="handleFieldBlur(this)" 
+                                        class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}" 
+                                        placeholder="${isReadOnly ? '0.000' : '4.75+2.12'}">
+                                </div>
+                                ${showPercentBadge ? `
+                                    <div class="shrink-0 w-20">
+                                        <span id="badge_pct_${p.id}" class="block w-full text-center text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-2 rounded-lg shadow-sm transition-all opacity-60">
+                                            0.000 %
+                                        </span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
                     }
 
                     fieldWrapper.innerHTML = `
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
-                            ${paramLabel} ${reqStar} ${isFormulaOrCalc ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1 flex justify-between">
+                            <span>${paramLabel} ${reqStar} ${isReadOnly ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}</span>
                         </label>
                         ${inputHtml}
                     `;
@@ -935,55 +938,50 @@
             if (!m || !m.groups) return;
 
             const allParams = m.groups.flatMap(g => g.params);
-            const paramValues = {};
+            const vars = {};
 
+            // Collect manual values
             allParams.forEach(p => {
-                if (p.type !== 'formula' && !p.calculated) {
+                if (p.type !== 'formula') {
                     const inputEl = document.getElementById(p.id);
-                    if (inputEl) {
-                        paramValues[p.id] = evaluateExpression(inputEl.value);
-                    }
+                    vars[p.code] = inputEl ? safeEvaluate(inputEl.value, {}) : 0;
+                } else {
+                    vars[p.code] = 0;
                 }
             });
 
-            allParams.forEach(p => {
-                if (p.type === 'formula' && Array.isArray(p.sumParamIds)) {
-                    let formulaSum = 0;
-                    p.sumParamIds.forEach(subId => {
-                        formulaSum += (paramValues[subId] || 0);
-                    });
-                    paramValues[p.id] = formulaSum;
-                    const inputEl = document.getElementById(p.id);
-                    if (inputEl) {
-                        inputEl.value = formulaSum > 0 ? formulaSum.toFixed(3) : "";
+            // Evaluate formulas (2 passes for nested)
+            for(let pass=0; pass<2; pass++) {
+                allParams.forEach(p => {
+                    if (p.type === 'formula' && p.formulaStr) {
+                        const result = safeEvaluate(p.formulaStr, vars);
+                        vars[p.code] = result;
+                        const inputEl = document.getElementById(p.id);
+                        if (inputEl) {
+                            inputEl.value = (result !== 0) ? result.toFixed(3) : "";
+                        }
                     }
-                }
-            });
-
-            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
-            const carcassCount = evaluateExpression(countValRaw);
-            const baseWeightParam = allParams.find(p => p.isBaseWeight) || allParams.find(p => p.id === 'p_total_weight_wog');
-            const totalWog = baseWeightParam ? (paramValues[baseWeightParam.id] || 0) : 0;
-
-            const avgInput = document.getElementById('p_avg_carcass_weight');
-            if (avgInput && totalWog > 0 && carcassCount > 0) {
-                avgInput.value = (totalWog / carcassCount).toFixed(3);
+                });
             }
 
+            // Calculate shares
             allParams.forEach(p => {
                 if (p.useShare && p.baseParamId) {
                     const badge = document.getElementById(`badge_pct_${p.id}`);
                     if (badge) {
-                        const val = paramValues[p.id] || 0;
-                        const baseVal = paramValues[p.baseParamId] || totalWog;
+                        const val = vars[p.code] || 0;
+                        const baseParam = allParams.find(x => x.id === p.baseParamId);
+                        const baseVal = baseParam ? (vars[baseParam.code] || 0) : 0;
 
                         if (baseVal > 0 && val > 0) {
                             const pct = ((val / baseVal) * 100).toFixed(3);
                             badge.innerText = `${pct} %`;
-                            badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm opacity-100";
+                            badge.classList.remove("opacity-60", "text-slate-400", "bg-slate-100", "border-slate-200");
+                            badge.classList.add("opacity-100", "text-emerald-800", "bg-emerald-100", "border-emerald-300");
                         } else {
                             badge.innerText = "0.000 %";
-                            badge.className = "absolute right-3 top-1/2 -translate-y-1/2 text-xs font-normal text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md transition-all opacity-60";
+                            badge.classList.remove("opacity-100", "text-emerald-800", "bg-emerald-100", "border-emerald-300");
+                            badge.classList.add("opacity-60", "text-slate-400", "bg-slate-100", "border-slate-200");
                         }
                     }
                 }
@@ -1072,9 +1070,9 @@
             const form = document.getElementById('measurementForm');
             const inputs = form.querySelectorAll('input[type="text"]');
             inputs.forEach(input => {
-                if (input.value.includes('+') || input.value.includes(',')) {
-                    const sum = evaluateExpression(input.value);
-                    input.value = sum > 0 ? sum.toFixed(3) : "";
+                if (input.value.includes('+') || input.value.includes(',') || input.value.includes('-')) {
+                    const sum = safeEvaluate(input.value, {});
+                    input.value = sum > 0 || sum < 0 ? sum.toFixed(3) : "";
                 }
             });
 
@@ -1232,10 +1230,10 @@
                         <td class="p-3">${valuesBadges}</td>
                         <td class="p-3 text-right whitespace-nowrap space-x-1">
                             <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="Редагувати">
-                                <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
+                                <i class="fa-solid fa-pen-to-square"></i>
                             </button>
                             <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition" title="XLSX">
-                                <i class="fa-solid fa-file-excel mr-1"></i>XLSX
+                                <i class="fa-solid fa-file-excel"></i>
                             </button>
                             ${deleteBtnHtml}
                         </td>
@@ -1335,15 +1333,21 @@
             const fullHeaders = [...headers];
             const isCalcCol = [false, false, false];
 
+            // Визначаємо, яким колонкам додати %, а яким ні
             paramKeys.forEach(pName => {
                 fullHeaders.push(pName);
-                const isAuto = pName.includes("[Авто]") || pName.includes("Середня вага") || pName.includes("Peso medio") || pName.includes("Average carcass");
+                
+                // Перевіряємо чи колонка містить теги формул/авто
+                const isAuto = pName.includes("[Авто]") || pName.includes("[Auto]") || pName.includes("Втрати") || pName.includes("Pérdidas") || pName.includes("Losses");
                 isCalcCol.push(isAuto);
 
-                if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                // Якщо це не загальна інфа і не дата - додаємо колонку %
+                if (!pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date") &&
                     !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
-                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
+                    !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") &&
+                    !pName.includes("Жива вага") && !pName.includes("Peso vivo") && !pName.includes("Live weight") &&
+                    !pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                    !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average weight")) {
                     
                     fullHeaders.push(`Частка % / % Participación / Share %\n(${pName})`);
                     isCalcCol.push(true);
@@ -1353,10 +1357,12 @@
             const dataRows = [fullHeaders];
 
             recordsArray.forEach(rec => {
-                let totalWog = 0;
+                // Визначаємо базову вагу для % в цьому записі (Жива вага або Загальна вага)
+                let baseWog = 0;
                 Object.entries(rec.values).forEach(([k, v]) => {
-                    if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight")) {
-                        totalWog = parseFloat(v) || 0;
+                    if (k.includes("Жива вага") || k.includes("Peso vivo") || k.includes("Live weight") ||
+                        k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Total weight")) {
+                        if (baseWog === 0) baseWog = parseFloat(v) || 0; 
                     }
                 });
 
@@ -1370,19 +1376,21 @@
                     const rawVal = rec.values[pName];
                     const numVal = parseFloat(rawVal);
 
-                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
+                    if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") && !pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date")) {
                         row.push(numVal);
                     } else {
                         row.push(rawVal || '-');
                     }
 
-                    if (!pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                    if (!pName.includes("Дата") && !pName.includes("Fecha") && !pName.includes("Date") &&
                         !pName.includes("Кількість") && !pName.includes("Cantidad") && !pName.includes("count") &&
-                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average carcass") &&
-                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Notes")) {
+                        !pName.includes("Примітки") && !pName.includes("Notas") && !pName.includes("Remarks") &&
+                        !pName.includes("Жива вага") && !pName.includes("Peso vivo") && !pName.includes("Live weight") &&
+                        !pName.includes("Загальна вага") && !pName.includes("Peso total") && !pName.includes("Total weight") &&
+                        !pName.includes("Середня вага") && !pName.includes("Peso medio") && !pName.includes("Average weight")) {
                         
-                        if (!isNaN(numVal) && totalWog > 0) {
-                            row.push(parseFloat(((numVal / totalWog) * 100).toFixed(3)) / 100);
+                        if (!isNaN(numVal) && baseWog > 0) {
+                            row.push(parseFloat(((numVal / baseWog) * 100).toFixed(3)) / 100);
                         } else {
                             row.push("-");
                         }
@@ -1530,7 +1538,7 @@
                 document.getElementById('methodDesc_en').value = "";
 
                 tempParams = [
-                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false }
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, code: 'v1' }
                 ];
             }
 
@@ -1546,44 +1554,59 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
+            // Generate codes if missing
+            tempParams.forEach((p, idx) => { p.code = p.code || 'v' + (idx + 1); });
+
             const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
 
             container.innerHTML = tempParams.map((p, idx) => {
                 const baseOptions = decimalParams.map(dp => 
-                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>${getI18nText(dp.label)}</option>`
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${getI18nText(dp.label)}</option>`
                 ).join('');
 
                 const optsCount = (p.options || []).length;
 
                 return `
-                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                        <div class="flex flex-col space-y-0.5">
-                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вгору"><i class="fa-solid fa-chevron-up"></i></button>
-                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Пересунути вниз"><i class="fa-solid fa-chevron-down"></i></button>
+                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3">
+                    <div class="flex items-start sm:items-center gap-2">
+                        <div class="flex flex-col space-y-0.5 mt-1 sm:mt-0">
+                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
-                        <input type="text" value="${getI18nText(p.label)}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
-                        <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white">
-                            <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
-                            <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
-                            <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
-                            <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
-                            <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
-                        </select>
-                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1">
+                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1 sm:mt-0">[${p.code}]</div>
+                        
+                        <div class="flex-grow flex flex-col sm:flex-row gap-2">
+                            <input type="text" value="${getI18nText(p.label)}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
+                            <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-32 shrink-0">
+                                <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
+                                <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
+                                <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
+                                <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
+                                <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1 mt-1 sm:mt-0 shrink-0">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
 
                     ${p.type === 'select' ? `
-                    <div class="pt-1 pl-6">
+                    <div class="pl-8 sm:pl-12">
                         <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded font-medium">
                             <i class="fa-solid fa-list mr-1"></i> Редагувати варіанти списку (${optsCount})
                         </button>
                     </div>
                     ` : ''}
 
-                    <div class="flex flex-wrap items-center gap-4 pt-1 pl-6 text-xs text-slate-600">
+                    ${p.type === 'formula' ? `
+                    <div class="pl-8 sm:pl-12">
+                        <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
+                        <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50 rounded p-1.5 text-xs font-mono">
+                    </div>
+                    ` : ''}
+
+                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600">
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
                             <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
@@ -1595,8 +1618,7 @@
                         </div>
                         ${p.useShare ? `
                         <div class="flex items-center space-x-1">
-                            <span>${dict.lblBaseParam}</span>
-                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded p-1 bg-white text-xs">
+                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded p-1 bg-white text-xs w-28 sm:w-auto">
                                 <option value="">${dict.lblNoBase}</option>
                                 ${baseOptions}
                             </select>
@@ -1635,10 +1657,14 @@
             if (newIdx < 0 || newIdx >= tempParams.length) return;
             const item = tempParams.splice(idx, 1)[0];
             tempParams.splice(newIdx, 0, item);
+            
+            // Re-index codes
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
         }
 
         function addParamRow() {
+            const nextCode = 'v' + (tempParams.length + 1);
             tempParams.push({
                 id: 'p_' + Date.now(),
                 label: { uk: 'Новий параметр', es: 'Nuevo parámetro', en: 'New Parameter' },
@@ -1646,13 +1672,15 @@
                 required: false,
                 isBaseWeight: false,
                 useShare: false,
-                baseParamId: ''
+                baseParamId: '',
+                code: nextCode
             });
             renderParamRows();
         }
 
         function removeParamRow(idx) {
             tempParams.splice(idx, 1);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
         }
 
@@ -1667,6 +1695,10 @@
         function updateParamType(idx, val) {
             tempParams[idx].type = val;
             renderParamRows();
+        }
+
+        function updateParamFormula(idx, val) {
+            tempParams[idx].formulaStr = val;
         }
 
         function updateBaseWeight(idx, isChecked) {
@@ -1741,7 +1773,7 @@
             renderMethodologyCards();
             closeMethodologyModal();
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            alert("Methodology saved successfully! / Методику збережено!");
+            alert("Methodology saved successfully!");
         }
 
         function deleteMethodology(id) {
