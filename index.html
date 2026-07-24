@@ -1702,22 +1702,29 @@
                 const methodologyRecords = groupData.records;
                 const m = groupData.methodObj;
 
-                // БЕРЕМО СТРУКТУРУ ПАРАМЕТРІВ БЕЗПОСЕРЕДНЬО З ЕТАЛОННОЇ МЕТОДИКИ
-                let allParams = [];
+                // 1. ЗБИРАЄМО ВСІ УНІКАЛЬНІ param.id ІЗ АКТУАЛЬНОЇ МЕТОДИКИ ТА ІСТОРІЇ ЗАМІРІВ
+                const paramIdMap = new Map();
+
                 if (m && m.groups) {
-                    allParams = m.groups.flatMap(g => g.params || []);
-                } else if (m && m.params) {
-                    allParams = m.params;
-                } else {
-                    // Якщо методику випадково видалено, відновлюємо унікальні параметри із записів
-                    const paramKeysMap = new Map();
-                    methodologyRecords.forEach(rec => {
-                        if (rec.paramIdToValueMap) {
-                            Object.keys(rec.paramIdToValueMap).forEach(pId => paramKeysMap.set(pId, pId));
-                        }
+                    m.groups.forEach(g => {
+                        (g.params || []).forEach(p => paramIdMap.set(p.id, p));
                     });
-                    allParams = Array.from(paramKeysMap.keys()).map(id => ({ id: id, label: id, type: 'decimal' }));
+                } else if (m && m.params) {
+                    m.params.forEach(p => paramIdMap.set(p.id, p));
                 }
+
+                // Також скануємо всі записи на випадок, якщо якийсь параметр був у старих замірах
+                methodologyRecords.forEach(rec => {
+                    if (rec.paramIdToValueMap) {
+                        Object.keys(rec.paramIdToValueMap).forEach(pId => {
+                            if (!paramIdMap.has(pId)) {
+                                paramIdMap.set(pId, { id: pId, label: pId, type: 'decimal' });
+                            }
+                        });
+                    }
+                });
+
+                const allParams = Array.from(paramIdMap.values());
 
                 const headers = [
                     currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
@@ -1744,7 +1751,7 @@
                 const isCalcCol = [false, false, false];
                 const shareRules = {};
 
-                // ФОРМУЄМО КОЛОНКИ СКРИПТУ ВИКЛЮЧНО ЗА ЕТАЛОННИМ ПОРЯДКОМ МЕТОДИКИ
+                // ФОРМУЄМО ЕДИНУ ШАПКУ ТАБЛИЦІ
                 allParams.forEach(p => {
                     const bilingualHeader = paramIdToBilingualHeader[p.id] || p.id;
                     fullHeaders.push(bilingualHeader);
@@ -1772,6 +1779,7 @@
 
                 const dataRows = [fullHeaders];
 
+                // ЗАПОВНЮЄМО РЯДКИ ЗА ІДЕНТИФІКАТОРОМ (paramIdToValueMap), ЩОБ ДАНІ ЗВОДИЛИСЬ В ОДНУ КОЛОНКУ НЕЗАЛЕЖНО ВІД МОВИ
                 methodologyRecords.forEach(rec => {
                     const row = [
                         rec.timestamp,
@@ -1793,9 +1801,16 @@
                         let rawVal = '-';
                         if (rec.paramIdToValueMap && rec.paramIdToValueMap[p.id] !== undefined) {
                             rawVal = rec.paramIdToValueMap[p.id];
-                        } else {
-                            const pLabel = getLabelWithUnit(p, currentLang);
-                            rawVal = rec.values ? (rec.values[pLabel] || '-') : '-';
+                        } else if (rec.values) {
+                            // Фалбек для старих записів: шукаємо за будь-яким ключем у values, що містить назву параметра
+                            const pUk = typeof p.label === 'object' ? p.label.uk : p.label;
+                            const pEs = typeof p.label === 'object' ? p.label.es : p.label;
+                            for (const [k, v] of Object.entries(rec.values)) {
+                                if (k.includes(pUk) || k.includes(pEs)) {
+                                    rawVal = v;
+                                    break;
+                                }
+                            }
                         }
 
                         const numVal = parseFloat(rawVal);
@@ -2727,7 +2742,7 @@
                     alert(currentLang === 'es' ? "¡Conexión exitosa!" : "Успішне з'єднання!");
                 } else {
                     alert(currentLang === 'es' ? "Error de conexión." : "Помилка з'єднання.");
-                }
+                    }
             } catch (e) {
                 alert(currentLang === 'es' ? "Error de red." : "Помилка мережі.");
             }
