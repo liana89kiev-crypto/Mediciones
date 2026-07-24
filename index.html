@@ -15,7 +15,7 @@
     <style>
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
         .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.08); }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
@@ -106,9 +106,9 @@
                 </div>
 
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-100 pt-6">
-                    <div id="methodologyDescription" class="mb-6 text-xs text-slate-600 italic bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 flex justify-between items-center shadow-sm">
-                        <span id="descTextContent">...</span>
-                        <a id="methodologyDocLink" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm transition">
+                    <div id="methodologyDescription" class="mb-6 text-xs text-slate-600 italic bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-sm">
+                        <span id="descTextContent" class="flex-grow">...</span>
+                        <a id="methodologyDocLink" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm transition shrink-0">
                             <i class="fa-solid fa-external-link-alt"></i> <span id="docLinkText">Інструкція / Таблиця</span>
                         </a>
                     </div>
@@ -216,7 +216,8 @@
                     </div>
                 </div>
 
-                <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- 13-дюймова адаптивна сітка для карток методик -->
+                <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
                 </div>
             </div>
         </section>
@@ -294,25 +295,28 @@
                     </div>
                 </div>
 
-                <div class="space-y-2 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
-                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція (UA / ES)</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
-                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
+                <!-- РОЗВЕДЕНІ ПОЛЯ: ОПИС ТА ІНСТРУКЦІЯ -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-2 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
+                        <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис методики (UA / ES)</label>
+                        <div class="grid grid-cols-1 gap-2">
+                            <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Опис (UA)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
+                            <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Descripción (ES)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
+                        </div>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="lblDocUrl">🔗 Посилання на док/таблицю (URL)</label>
-                        <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none bg-white shadow-sm">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="lblMethodStatusLabel">📊 Статус методики</label>
-                        <select id="methodStatus" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-semibold shadow-sm">
-                            <option value="ready" id="optStatusReady">🟢 Готова до використання</option>
-                            <option value="dev" id="optStatusDev">🟡 В розробці (прихована)</option>
-                        </select>
+                    
+                    <div class="space-y-2 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-2" id="lblDocUrl">🔗 Інструкція (URL на док/таблицю)</label>
+                            <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none bg-white shadow-sm">
+                        </div>
+                        <div class="mt-3">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="lblMethodStatusLabel">📊 Статус методики</label>
+                            <select id="methodStatus" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-semibold shadow-sm">
+                                <option value="ready" id="optStatusReady">🟢 Готова до використання</option>
+                                <option value="dev" id="optStatusDev">🟡 В розробці (прихована)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -489,7 +493,7 @@
                 modalCreateTitle: "Створити нову методику",
                 modalEditTitle: "Редагувати методику",
                 lblModalMethodTitle: "Назва методики (UA / ES)",
-                lblModalMethodDesc: "Опис / Інструкція (UA / ES)",
+                lblModalMethodDesc: "Опис методики (UA / ES)",
                 lblModalParams: "Параметри методики",
                 btnAddParamRow: "+ Додати параметр",
                 btnCancelModal: "Скасувати",
@@ -531,7 +535,7 @@
                 msgRestoreSuccess: "Резервну копію успішно відновлено! Сторінка буде перезавантажена.",
                 devBadgeText: "🟡 В розробці",
                 btnDictTerms: "Словник термінів",
-                lblDocUrl: "🔗 Посилання на док/таблицю (URL)",
+                lblDocUrl: "🔗 Інструкція (URL)",
                 lblMethodStatusLabel: "📊 Статус методики",
                 optStatusReady: "🟢 Готова до використання",
                 optStatusDev: "🟡 В розробці (прихована)",
@@ -596,7 +600,7 @@
                 modalCreateTitle: "Crear nueva metodología",
                 modalEditTitle: "Editar metodología",
                 lblModalMethodTitle: "Nombre de metodología (UA / ES)",
-                lblModalMethodDesc: "Descripción / Instrucción (UA / ES)",
+                lblModalMethodDesc: "Descripción de metodología (UA / ES)",
                 lblModalParams: "Parámetros de la metodología",
                 btnAddParamRow: "+ Añadir parámetro",
                 btnCancelModal: "Cancelar",
@@ -638,7 +642,7 @@
                 msgRestoreSuccess: "¡Copia de seguridad restaurada con éxito! La página se recargará.",
                 devBadgeText: "🟡 En desarrollo",
                 btnDictTerms: "Diccionario",
-                lblDocUrl: "🔗 Enlace a doc/tabla (URL)",
+                lblDocUrl: "🔗 Instrucción (URL)",
                 lblMethodStatusLabel: "📊 Estado de metodología",
                 optStatusReady: "🟢 Listo para usar",
                 optStatusDev: "🟡 En desarrollo (oculto)",
@@ -852,7 +856,7 @@
             document.getElementById('lblSettingsTitle').innerHTML = `<i class="fa-solid fa-database text-slate-600 mr-2.5"></i> ${dict.lblSettingsTitle}`;
             document.getElementById('lblSettingsSub').innerText = dict.lblSettingsSub;
             document.getElementById('btnTestConn').innerText = dict.btnTestConn;
-            document.getElementById('btnSaveSettings').innerText = dict.btnSaveSettings;
+            document.getElementById('btnSaveSettings').innerText = dict.saveSettings || dict.btnSaveSettings;
             document.getElementById('lblDangerZone').innerText = dict.lblDangerZone;
             document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
 
@@ -1516,7 +1520,6 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
-        // ПОВНИЙ УНІФІКОВАНИЙ ЕКСПОРТ В EXCEL (Різні методики на різні листи, однакові об'єднуються, цілі числа без знаків, правильні частки)
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
@@ -1715,6 +1718,7 @@
             XLSX.writeFile(workbook, filename);
         }
 
+        // РЕКВІЗИТИ КАРТОК МЕТОДИК У КОНСТРУКТОРІ: ТІЛЬКИ НАЗВА ТА ОПИС (БЕЗ ІНСТРУКЦІЇ)
         function renderMethodologyCards() {
             const container = document.getElementById('methodologyList');
             const dict = I18N[currentLang] || I18N.uk;
@@ -1726,7 +1730,7 @@
                 return list.map(m => {
                     const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
                     const mTitle = getI18nText(m.title);
-                    const mDesc = getI18nText(m.description);
+                    const mDesc = getI18nText(m.description); // Тільки опис, інструкція не виводиться тут
                     const isDev = m.status === 'dev';
 
                     const actions = isArchived ? `
@@ -1870,7 +1874,6 @@
             document.getElementById('methodologyModal').classList.add('hidden');
         }
 
-        // КОЛЕКЦІЯ ВСІХ УНІКАЛЬНИХ ПАРАМЕТРІВ З УСІХ МЕТОДИК (ДЛЯ АВТОКОМПЛІТУ)
         function getAllExistingParams() {
             const map = new Map();
             state.methodologies.forEach(m => {
@@ -1909,7 +1912,6 @@
                 const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
                 const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
 
-                // Генерація унікального ID для datalist автокомпліту
                 const datalistId = `pool_list_${idx}`;
                 const datalistOptions = existingParamsPool.map(poolItem => {
                     const pUk = typeof poolItem.label === 'object' ? poolItem.label.uk : poolItem.label;
@@ -2017,7 +2019,6 @@
             `;}).join('');
         }
 
-        // АВТОКОМПЛІТ ПРИ ВИБОРІ З ІСНУЮЧИХ ПАРАМЕТРІВ
         function checkParamAutocomplete(idx, val) {
             const cleanVal = val.trim().toLowerCase();
             const pool = getAllExistingParams();
@@ -2037,20 +2038,17 @@
             }
         }
 
-        // ДУБЛЮВАННЯ ПАРАМЕТРА (Створює ідентичний, кидає в кінець і переходить на нього)
         function duplicateParamRow(idx) {
             const sourceParam = tempParams[idx];
-            // Глибока копія об'єкта параметра
             const clonedParam = JSON.parse(JSON.stringify(sourceParam));
             clonedParam.id = 'p_' + Date.now();
             clonedParam.code = 'v' + (tempParams.length + 1);
-            clonedParam.isBaseWeight = false; // Уникаємо дублювання базової ваги
+            clonedParam.isBaseWeight = false;
 
             tempParams.push(clonedParam);
             tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
 
-            // Плавний перехід до нового (останнього) параметра
             setTimeout(() => {
                 const newIdx = tempParams.length - 1;
                 const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
