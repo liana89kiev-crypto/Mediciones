@@ -30,13 +30,11 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3 text-sm">
-                <!-- Кнопка Адмін-режиму -->
                 <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5" title="Адмін-доступ">
                     <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
                     <span id="adminModeText">Оператор</span>
                 </button>
 
-                <!-- Перемикач мови -->
                 <div class="relative">
                     <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold">
                         <i class="fa-solid fa-globe text-blue-400 text-base"></i>
@@ -62,7 +60,6 @@
                 </button>
             </div>
         </div>
-        <!-- Navigation Tabs -->
         <div class="bg-slate-800 text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
             <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -100,7 +97,6 @@
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblFactory">Оператор / Фабрика</label>
                         <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <!-- Populated by JS -->
                         </select>
                     </div>
                     <div>
@@ -191,7 +187,6 @@
                             </tr>
                         </thead>
                         <tbody id="historyTableBody" class="divide-y divide-slate-200 bg-white">
-                            <!-- Dynamic rows -->
                         </tbody>
                     </table>
                 </div>
@@ -213,7 +208,6 @@
                 </div>
 
                 <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Cards will be dynamically inserted here -->
                 </div>
             </div>
         </section>
@@ -266,24 +260,24 @@
                 </button>
             </div>
             
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow">
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow bg-white">
                 <input type="hidden" id="editMethodologyId">
                 
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
-                        <input type="text" id="methodTitle_en" placeholder="🇬🇧 Title (EN)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <input type="text" id="methodTitle_en" placeholder="🇬🇧 Title (EN)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                     </div>
                 </div>
 
                 <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція</label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        <textarea id="methodDesc_en" rows="2" placeholder="🇬🇧 Instruction (EN)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
+                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
+                        <textarea id="methodDesc_en" rows="2" placeholder="🇬🇧 Instruction (EN)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
                     </div>
                 </div>
 
@@ -348,7 +342,25 @@
 
     <!-- Application JavaScript Code -->
     <script>
-        // Функція для захисту від XSS атак
+        // ВБУДОВАНИЙ ГАЛУЗЕВИЙ СЛОВНИК (Ви можете легко додавати нові слова сюди)
+        const POULTRY_DICT = {
+            "жива вага": { es: "Peso vivo", en: "Live weight" },
+            "живок": { es: "Pollo vivo", en: "Live bird" },
+            "крило": { es: "Ala", en: "Wing" },
+            "філе": { es: "Pechuga", en: "Fillet" },
+            "гомілка": { es: "Jamoncito", en: "Drumstick" },
+            "стегно": { es: "Contramuslo", en: "Thigh" },
+            "окорочок": { es: "Cuarto trasero", en: "Leg quarter" },
+            "спинка": { es: "Espalda", en: "Saddle" },
+            "гузка": { es: "Obispillo", en: "Tail" },
+            "втрати": { es: "Pérdidas", en: "Losses" },
+            "технічні втрати": { es: "Pérdidas técnicas", en: "Tech losses" },
+            "кількість": { es: "Cantidad", en: "Count" },
+            "загальна вага": { es: "Peso total", en: "Total weight" },
+            "середня вага": { es: "Peso medio", en: "Average weight" },
+            "дата": { es: "Fecha", en: "Date" }
+        };
+
         function escapeHTML(str) {
             if (str === null || str === undefined) return '';
             return String(str)
@@ -756,7 +768,7 @@
                 switchTab('new-measure');
             } else {
                 const pwd = prompt(dict.adminPrompt);
-                // Захищена перевірка пароля: pwd + "_secret" у Base64 має співпадати з "YWRtaW4yMDI2X3NlY3JldA=="
+                // Base64 + Secret: admin2026_secret
                 if (pwd !== null && btoa(pwd + "_secret") === "YWRtaW4yMDI2X3NlY3JldA==") {
                     isAdmin = true;
                     localStorage.setItem('qm_is_admin', 'true');
@@ -1562,25 +1574,36 @@
 
                 return `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3">
-                    <div class="flex items-start sm:items-center gap-2">
-                        <div class="flex flex-col space-y-0.5 mt-1 sm:mt-0">
+                    <div class="flex items-start gap-2">
+                        <div class="flex flex-col space-y-0.5 mt-1">
                             <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
                             <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
-                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1 sm:mt-0">[${p.code}]</div>
+                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1">[${p.code}]</div>
                         
-                        <div class="flex-grow flex flex-col sm:flex-row gap-2">
-                            <input type="text" value="${escapeHTML(getI18nText(p.label))}" onchange="updateParamLabel(${idx}, this.value)" placeholder="${dict.lblModalParams}" class="flex-grow border border-slate-300 rounded p-1.5 text-xs">
-                            <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-32 shrink-0">
-                                <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
-                                <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
-                                <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
-                                <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
-                                <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
-                            </select>
+                        <div class="flex-grow flex flex-col gap-2">
+                            <!-- Блок назви з трьома мовами та автозаповненням -->
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(p.label.uk || p.label)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="flex-grow border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(p.label.es || '')}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
+                                <input type="text" id="p_label_en_${idx}" value="${escapeHTML(p.label.en || '')}" onchange="updateParamLabelLang(${idx}, 'en', this.value)" placeholder="🇬🇧 Переклад (EN)" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
+                            </div>
+                            <!-- Кінець блоку назв -->
+                            
+                            <div class="pt-2">
+                                <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-48 shadow-sm">
+                                    <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
+                                    <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
+                                    <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
+                                    <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
+                                    <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
+                                </select>
+                            </div>
                         </div>
                         
-                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1 mt-1 sm:mt-0 shrink-0">
+                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1 mt-1 shrink-0">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
@@ -1624,6 +1647,42 @@
             `;}).join('');
         }
 
+        // Логіка оновлення назви параметру та автозаповнення зі словника
+        function updateParamLabelLang(idx, lang, val) {
+            if (typeof tempParams[idx].label !== 'object') {
+                const old = tempParams[idx].label;
+                tempParams[idx].label = { uk: old, es: old, en: old };
+            }
+            tempParams[idx].label[lang] = val;
+
+            // Якщо ми щойно ввели слово українською, шукаємо у словнику
+            if (lang === 'uk' && val.trim() !== '') {
+                autoFillFromDict(idx, val);
+            }
+        }
+
+        function autoFillFromDict(idx, term) {
+            const esInput = document.getElementById(`p_label_es_${idx}`);
+            const enInput = document.getElementById(`p_label_en_${idx}`);
+            const cleanTerm = term.trim().toLowerCase();
+
+            // Перевіряємо, чи є таке слово (або частина слова) у нашому словнику
+            for (const [key, translations] of Object.entries(POULTRY_DICT)) {
+                if (cleanTerm.includes(key) || key.includes(cleanTerm)) {
+                    // Заповнюємо тільки якщо поля ще порожні
+                    if (!esInput.value) {
+                        esInput.value = translations.es;
+                        tempParams[idx].label.es = translations.es;
+                    }
+                    if (!enInput.value) {
+                        enInput.value = translations.en;
+                        tempParams[idx].label.en = translations.en;
+                    }
+                    break;
+                }
+            }
+        }
+
         function openOptionsModal(idx) {
             editingOptionIdx = idx;
             const currentOpts = tempParams[idx].options || [];
@@ -1659,7 +1718,7 @@
             const nextCode = 'v' + (tempParams.length + 1);
             tempParams.push({
                 id: 'p_' + Date.now(),
-                label: { uk: 'Новий параметр', es: 'Nuevo parámetro', en: 'New Parameter' },
+                label: { uk: '', es: '', en: '' },
                 type: 'decimal',
                 required: false,
                 isBaseWeight: false,
@@ -1674,14 +1733,6 @@
             tempParams.splice(idx, 1);
             tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
-        }
-
-        function updateParamLabel(idx, val) {
-            if (typeof tempParams[idx].label === 'object') {
-                tempParams[idx].label[currentLang] = val;
-            } else {
-                tempParams[idx].label = { uk: val, es: val, en: val };
-            }
         }
 
         function updateParamType(idx, val) {
