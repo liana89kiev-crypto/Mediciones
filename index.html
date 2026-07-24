@@ -25,25 +25,20 @@
             <div class="flex items-center space-x-3">
                 <span class="text-2xl text-blue-400"><i class="fa-solid fa-scale-balanced"></i></span>
                 <div>
-                    <h1 class="text-lg font-bold leading-tight" id="appTitle">Mediciones SPA</h1>
-                    <p class="text-xs text-slate-400" id="appSubtitle">Система замірів та зважування тушки</p>
+                    <h1 class="text-base sm:text-lg font-bold leading-tight" id="appTitle">Mediciones SPA</h1>
+                    <p class="text-[11px] sm:text-xs text-slate-400" id="appSubtitle">Система замірів та зважування тушки</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-3 text-sm">
-                <div id="syncStatus" class="flex items-center space-x-1 text-slate-400 text-xs bg-slate-800 px-3 py-1.5 rounded-full">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
-                    <span id="syncText">Локально</span>
-                </div>
-                
+            <div class="flex items-center space-x-2 sm:space-x-3 text-sm">
                 <!-- Кнопка Адмін-режиму -->
-                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5" title="Адмін-доступ">
+                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5">
                     <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
                     <span id="adminModeText">Оператор</span>
                 </button>
 
                 <!-- Перемикач мови -->
                 <div class="relative">
-                    <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold" title="Мова / Language / Idioma">
+                    <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold">
                         <i class="fa-solid fa-globe text-blue-400 text-base"></i>
                         <span id="currentLangLabel" class="uppercase">UA</span>
                         <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
@@ -51,16 +46,13 @@
                     
                     <div id="langMenu" class="hidden absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-xl border border-slate-200 py-1 text-slate-800 z-50 text-xs">
                         <button onclick="changeLang('uk')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
-                            <span>🇺🇦</span>
-                            <span class="font-medium">Українська</span>
+                            <span>🇺🇦</span><span class="font-medium">Українська</span>
                         </button>
                         <button onclick="changeLang('es')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
-                            <span>🇪🇸</span>
-                            <span class="font-medium">Español</span>
+                            <span>🇪🇸</span><span class="font-medium">Español</span>
                         </button>
                         <button onclick="changeLang('en')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
-                            <span>🇬🇧</span>
-                            <span class="font-medium">English</span>
+                            <span>🇬🇧</span><span class="font-medium">English</span>
                         </button>
                     </div>
                 </div>
@@ -70,17 +62,17 @@
                 </button>
             </div>
         </div>
-        <!-- Navigation Tabs -->
-        <div class="bg-slate-800 text-slate-300 text-sm flex justify-center space-x-8 border-t border-slate-700">
-            <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-2">
+        <!-- Navigation Tabs (Адаптивні для мобільних) -->
+        <div class="bg-slate-800 text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
+            <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span id="navNewMeasure">Новий замір</span>
             </button>
-            <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 flex items-center space-x-2">
+            <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
                 <i class="fa-solid fa-table-list"></i>
                 <span id="navHistory">Історія та Експорт</span>
             </button>
-            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-2 hidden">
+            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap hidden">
                 <i class="fa-solid fa-sliders"></i>
                 <span id="navConstructor">Конструктор</span>
             </button>
@@ -88,21 +80,24 @@
     </header>
 
     <!-- Main Content Container -->
-    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6">
+    <main class="flex-grow max-w-4xl w-full mx-auto p-3 sm:p-6">
 
         <!-- TAB 1: NEW MEASUREMENT -->
         <section id="sec-new-measure" class="space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold flex items-center text-slate-800" id="lblFormTitle">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                    <h2 class="text-lg sm:text-xl font-bold flex items-center text-slate-800" id="lblFormTitle">
                         <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру
                     </h2>
+                    <span id="editingBadge" class="hidden text-xs bg-amber-500 text-white px-3 py-1 rounded-full font-bold flex items-center">
+                        <i class="fa-solid fa-pen mr-1"></i> Редагування запису
+                    </span>
                     <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
                         <i class="fa-solid fa-floppy-disk mr-1"></i> <span id="lblDraftSaved">Черновик збережено</span>
                     </span>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblFactory">Оператор / Фабрика</label>
                         <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
@@ -121,13 +116,14 @@
                 <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
                     <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200"></div>
                     <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-6">
+                        <input type="hidden" id="editingRecordId" value="">
                         <div id="dynamicFields" class="space-y-6"></div>
                         
-                        <div class="pt-4 flex justify-end space-x-3 border-t border-slate-200">
-                            <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                        <div class="pt-4 flex flex-wrap justify-end gap-3 border-t border-slate-200">
+                            <button type="button" onclick="resetForm()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
                                 <span id="btnReset">Очистити</span>
                             </button>
-                            <button type="submit" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center space-x-2">
+                            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span id="btnSave">Зберегти результати</span>
                             </button>
@@ -144,25 +140,25 @@
 
         <!-- TAB 2: HISTORY & EXCEL EXPORT -->
         <section id="sec-history" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800" id="lblHistoryTitle">Історія занесених замірів</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800" id="lblHistoryTitle">Історія занесених замірів</h2>
                         <p class="text-xs text-slate-500"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
                     <div class="flex items-center space-x-2 w-full md:w-auto">
-                        <button onclick="exportToExcelFiltered()" class="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                        <button onclick="openExportModal()" class="w-full md:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
-                            <span id="btnExportAll">Експорт усіх (.xlsx)</span>
+                            <span id="btnExportAll">Експорт в Excel (.xlsx)</span>
                         </button>
-                        <button onclick="syncData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
+                        <button onclick="syncData()" class="px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1" id="lblFilterMethod">Фільтр за методикою</label>
                         <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
@@ -204,13 +200,13 @@
 
         <!-- TAB 3: METHODOLOGIES CONSTRUCTOR -->
         <section id="sec-methodologies" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                <div class="flex justify-between items-center mb-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800" id="lblConstructorTitle">Управління методиками</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800" id="lblConstructorTitle">Управління методиками</h2>
                         <p class="text-xs text-slate-500" id="lblConstructorSub">Створюйте та редагуйте методики замірів</p>
                     </div>
-                    <button onclick="openMethodologyModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center space-x-2">
+                    <button onclick="openMethodologyModal()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-plus"></i>
                         <span id="btnNewMethod">Нова методика</span>
                     </button>
@@ -224,8 +220,8 @@
 
         <!-- TAB 4: SETTINGS (JSONBIN.IO) -->
         <section id="sec-settings" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto">
-                <h2 class="text-xl font-bold mb-4 text-slate-800 flex items-center" id="lblSettingsTitle">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 max-w-2xl mx-auto">
+                <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-800 flex items-center" id="lblSettingsTitle">
                     <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io & Синхронізації
                 </h2>
                 <p class="text-xs text-slate-500 mb-6" id="lblSettingsSub">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.</p>
@@ -260,31 +256,43 @@
 
     </main>
 
-    <!-- Modal for Creating/Editing Methodology -->
-    <div id="methodologyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+    <!-- Modal 1: Creating/Editing Methodology -->
+    <div id="methodologyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <h3 id="modalTitle" class="font-bold text-slate-800">Створити методику</h3>
                 <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-slate-600 text-lg">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
-            <div class="p-6 overflow-y-auto space-y-4 flex-grow">
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow">
                 <input type="hidden" id="editMethodologyId">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblModalMethodTitle">Назва методики</label>
-                    <input type="text" id="methodTitle" placeholder="Замір параметрів..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                
+                <!-- Тримовна назва методики -->
+                <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="methodTitle_en" placeholder="🇬🇧 Title (EN)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblModalMethodDesc">Опис / Інструкція</label>
-                    <textarea id="methodDesc" rows="2" placeholder="Вказівки..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+
+                <!-- Тримовна інструкція/опис -->
+                <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="methodDesc_en" rows="2" placeholder="🇬🇧 Instruction (EN)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
                 </div>
 
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-semibold text-slate-600 uppercase" id="lblModalParams">Параметри методики</label>
-                        <button type="button" onclick="addParamRow()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded" id="btnAddParamRow">
+                        <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalParams">Параметри методики</label>
+                        <button type="button" onclick="addParamRow()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded border border-blue-200 transition" id="btnAddParamRow">
                             + Додати параметр
                         </button>
                     </div>
@@ -294,9 +302,48 @@
                 </div>
             </div>
 
-            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
+            <div class="px-4 sm:px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
                 <button onclick="closeMethodologyModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-100" id="btnCancelModal">Скасувати</button>
                 <button onclick="saveMethodology()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow" id="btnSaveModal">Зберегти методику</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Custom Dropdown Options Modal -->
+    <div id="optionsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md p-5 space-y-4">
+            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2">Редагування варіантів списку</h3>
+            <p class="text-xs text-slate-500">Вкажіть варіанти вибору (по одному на кожен рядок):</p>
+            <textarea id="optionsTextArea" rows="5" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeOptionsModal()" class="px-3 py-1.5 border border-slate-300 rounded text-xs">Скасувати</button>
+                <button onclick="saveOptionsFromModal()" class="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold">Зберегти варіанти</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Selective Excel Export Modal -->
+    <div id="exportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-5 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800 text-sm">Вибір замірів для експорту в Excel</h3>
+                <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-4 overflow-y-auto space-y-3 flex-grow">
+                <div class="flex justify-between items-center text-xs pb-2 border-b">
+                    <button onclick="toggleSelectAllExport(true)" class="text-blue-600 hover:underline font-semibold">Вибрати всі</button>
+                    <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline">Зняти виділення</button>
+                </div>
+                <div id="exportCheckboxesList" class="space-y-2 divide-y divide-slate-100">
+                    <!-- Dynamic checkboxes -->
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+                <span class="text-xs text-slate-500">Вибрано: <strong id="selectedExportCount">0</strong></span>
+                <button onclick="executeSelectedExport()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>Завантажити XLSX</span>
+                </button>
             </div>
         </div>
     </div>
@@ -306,7 +353,6 @@
         const I18N = {
             uk: {
                 appSub: "Система замірів та зважування тушки",
-                syncLocal: "Локально",
                 syncDone: "Синхронізовано",
                 syncing: "Синхронізація...",
                 navNew: "Новий замір",
@@ -322,7 +368,7 @@
                 lblSelectPrompt: "Будь ласка, оберіть методику зі списку вище для початку внесення даних.",
                 lblHistoryTitle: "Історія занесених замірів",
                 lblTotalRecords: "Знайдено записів",
-                btnExportAll: "Експорт усіх (.xlsx)",
+                btnExportAll: "Експорт в Excel (.xlsx)",
                 lblFilterMethod: "Фільтр за методикою",
                 lblFilterSearch: "Пошук",
                 lblFilterSort: "Сортування",
@@ -341,8 +387,8 @@
                 lblParamsBadge: "параметрів",
                 modalCreateTitle: "Створити нову методику",
                 modalEditTitle: "Редагувати методику",
-                lblModalMethodTitle: "Назва методики",
-                lblModalMethodDesc: "Опис / Інструкція",
+                lblModalMethodTitle: "Назва методики (UA / ES / EN)",
+                lblModalMethodDesc: "Опис / Інструкція (UA / ES / EN)",
                 lblModalParams: "Параметри методики",
                 btnAddParamRow: "+ Додати параметр",
                 btnCancelModal: "Скасувати",
@@ -351,6 +397,7 @@
                 optTypeText: "Текст",
                 optTypeDate: "Дата",
                 optTypeSelect: "Список варіантів",
+                optTypeFormula: "🧮 Формула (Сума)",
                 lblUseShare: "Розраховувати частку %",
                 lblBaseParam: "База для %:",
                 lblNoBase: "-- Без розрахунку % --",
@@ -371,7 +418,6 @@
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
-                syncLocal: "Local",
                 syncDone: "Sincronizado",
                 syncing: "Sincronizando...",
                 navNew: "Nueva medición",
@@ -387,7 +433,7 @@
                 lblSelectPrompt: "Por favor, seleccione una metodología arriba para comenzar a ingresar datos.",
                 lblHistoryTitle: "Historial de mediciones",
                 lblTotalRecords: "Registros encontrados",
-                btnExportAll: "Exportar filtrados (.xlsx)",
+                btnExportAll: "Exportar a Excel (.xlsx)",
                 lblFilterMethod: "Filtrar por metodología",
                 lblFilterSearch: "Buscar",
                 lblFilterSort: "Ordenar",
@@ -406,8 +452,8 @@
                 lblParamsBadge: "parámetros",
                 modalCreateTitle: "Crear nueva metodología",
                 modalEditTitle: "Editar metodología",
-                lblModalMethodTitle: "Nombre de la metodología",
-                lblModalMethodDesc: "Descripción / Instrucción",
+                lblModalMethodTitle: "Nombre de metodología (UA / ES / EN)",
+                lblModalMethodDesc: "Descripción / Instrucción (UA / ES / EN)",
                 lblModalParams: "Parámetros de la metodología",
                 btnAddParamRow: "+ Añadir parámetro",
                 btnCancelModal: "Cancelar",
@@ -416,6 +462,7 @@
                 optTypeText: "Texto",
                 optTypeDate: "Fecha",
                 optTypeSelect: "Lista desplegable",
+                optTypeFormula: "🧮 Fórmula (Suma)",
                 lblUseShare: "Calcular porcentaje %",
                 lblBaseParam: "Base para %:",
                 lblNoBase: "-- Sin cálculo de % --",
@@ -436,7 +483,6 @@
             },
             en: {
                 appSub: "Carcass measurement & weighing system",
-                syncLocal: "Local",
                 syncDone: "Synced",
                 syncing: "Syncing...",
                 navNew: "New measurement",
@@ -452,7 +498,7 @@
                 lblSelectPrompt: "Please select a methodology from the list above to start data entry.",
                 lblHistoryTitle: "Measurement history",
                 lblTotalRecords: "Records found",
-                btnExportAll: "Export filtered (.xlsx)",
+                btnExportAll: "Export to Excel (.xlsx)",
                 lblFilterMethod: "Filter by methodology",
                 lblFilterSearch: "Search",
                 lblFilterSort: "Sort",
@@ -471,8 +517,8 @@
                 lblParamsBadge: "params",
                 modalCreateTitle: "Create new methodology",
                 modalEditTitle: "Edit methodology",
-                lblModalMethodTitle: "Methodology title",
-                lblModalMethodDesc: "Description / Instructions",
+                lblModalMethodTitle: "Methodology title (UA / ES / EN)",
+                lblModalMethodDesc: "Description / Instructions (UA / ES / EN)",
                 lblModalParams: "Methodology parameters",
                 btnAddParamRow: "+ Add parameter",
                 btnCancelModal: "Cancel",
@@ -481,6 +527,7 @@
                 optTypeText: "Text",
                 optTypeDate: "Date",
                 optTypeSelect: "Dropdown",
+                optTypeFormula: "🧮 Formula (Sum)",
                 lblUseShare: "Calculate percentage %",
                 lblBaseParam: "Base for %:",
                 lblNoBase: "-- No % calculation --",
@@ -531,7 +578,7 @@
                             { id: 'p_sub_wing_tip', label: { uk: 'Кисть крила (кг)', es: 'Punta de ala (kg)', en: 'Wing tip (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_wing_elbow', label: { uk: 'Лікоть (кг)', es: 'Alon (kg)', en: 'Wing flat / Mid-joint (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_wing_shoulder', label: { uk: 'Плече (кг)', es: 'Blanqueta (kg)', en: 'Drumette (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_wing_whole', label: { uk: 'Трифалангове крило (сума) (кг) [Авто]', es: 'Ala 3 falanges total (kg) [Auto]', en: 'Whole 3-joint wing (sum) (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
+                            { id: 'p_wing_whole', label: { uk: 'Трифалангове крило (сума) (кг) [Авто]', es: 'Ala 3 falanges total (kg) [Auto]', en: 'Whole 3-joint wing (sum) (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_sub_wing_tip', 'p_wing_elbow', 'p_wing_shoulder'], useShare: true, baseParamId: 'p_total_weight_wog' }
                         ]
                     },
                     {
@@ -541,7 +588,7 @@
                             { id: 'p_filet_small', label: { uk: 'Філе мале (кг)', es: 'Solomillo chico / Tenderloin (kg)', en: 'Tenderloin / Inner fillet (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_sub_breast_frame', label: { uk: 'Грудний каркас (кг)', es: 'Carcasa de pechuga (kg)', en: 'Breast frame (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_sub_breast_skin', label: { uk: 'Шкіра грудки (кг)', es: 'Piel de pechuga (kg)', en: 'Breast skin (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_front_total', label: { uk: 'Сума передньої частини (кг) [Авто]', es: 'Total parte delantera (kg) [Auto]', en: 'Total front part (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
+                            { id: 'p_front_total', label: { uk: 'Сума передньої частини (кг) [Авто]', es: 'Total parte delantera (kg) [Auto]', en: 'Total front part (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_filet_large', 'p_filet_small', 'p_sub_breast_frame', 'p_sub_breast_skin'], useShare: true, baseParamId: 'p_total_weight_wog' }
                         ]
                     },
                     {
@@ -551,14 +598,14 @@
                             { id: 'p_drumstick', label: { uk: 'Гомілка (кг)', es: 'Jamoncito (kg)', en: 'Drumstick (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_sub_saddle', label: { uk: 'Нижня частина спинки (кг)', es: 'Espalda (kg)', en: 'Saddle / Lower back (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_sub_tail', label: { uk: 'Гузка (кг)', es: 'Obispillo (kg)', en: 'Tail (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_back_total', label: { uk: 'Сума задньої частини тушки (кг) [Авто]', es: 'Total parte trasera (kg) [Auto]', en: 'Total back part (kg) [Auto]' }, type: 'decimal', required: false, calculated: true }
+                            { id: 'p_back_total', label: { uk: 'Сума задньої частини тушки (кг) [Авто]', es: 'Total parte trasera (kg) [Auto]', en: 'Total back part (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_thigh_bone_in', 'p_drumstick', 'p_sub_saddle', 'p_sub_tail'], useShare: true, baseParamId: 'p_total_weight_wog' }
                         ]
                     },
                     {
                         title: { uk: '5. Технічні відходи та Втрати', es: '5. Desperdicios y Pérdidas', en: '5. Waste and Losses' },
                         params: [
                             { id: 'p_tech_losses', label: { uk: 'Технічні втрати / Втрати (кг)', es: 'Pérdida técnica (kg)', en: 'Technical losses (kg)' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog' },
-                            { id: 'p_tech_waste_total', label: { uk: 'Технічні відходи (сума) (кг) [Авто]', es: 'Total desperdicios (kg) [Auto]', en: 'Total waste (kg) [Auto]' }, type: 'decimal', required: false, calculated: true },
+                            { id: 'p_tech_waste_total', label: { uk: 'Технічні відходи (сума) (кг) [Авто]', es: 'Total desperdicios (kg) [Auto]', en: 'Total waste (kg) [Auto]' }, type: 'formula', sumParamIds: ['p_sub_wing_tip', 'p_sub_saddle', 'p_sub_breast_frame', 'p_sub_breast_skin', 'p_sub_tail', 'p_tech_losses'], useShare: true, baseParamId: 'p_total_weight_wog' },
                             { id: 'p_notes', label: { uk: 'Примітки / Зауваження', es: 'Notas / Observaciones', en: 'Notes / Remarks' }, type: 'text', required: false }
                         ]
                     }
@@ -574,6 +621,8 @@
             measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
             config: JSON.parse(localStorage.getItem('qm_config')) || { binId: '', apiKey: '' }
         };
+
+        localStorage.setItem('qm_methodologies', JSON.stringify(DEFAULT_METHODOLOGIES));
 
         document.addEventListener('DOMContentLoaded', () => {
             initApp();
@@ -814,7 +863,6 @@
                 const groupTitle = getI18nText(group.title);
                 groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
                 
-                // Рядки в один стовпчик для зручності введення розгорнутих формул
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
@@ -824,23 +872,24 @@
                     const reqStar = p.required ? '<span class="text-red-500">*</span>' : '';
                     const paramLabel = getI18nText(p.label);
 
-                    const isReadOnly = p.calculated 
+                    const isFormulaOrCalc = p.type === 'formula' || p.calculated;
+                    const isReadOnly = isFormulaOrCalc 
                         ? 'readonly bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' 
                         : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
-                    const showPercentBadge = p.type === 'decimal' && !p.calculated && p.useShare;
+                    const showPercentBadge = p.useShare && !p.isBaseWeight;
 
                     if (p.type === 'text') {
-                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="${dict.placeholderText}">`;
-                    } else if (p.type === 'decimal') {
+                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly}" placeholder="${dict.placeholderText}">`;
+                    } else if (p.type === 'decimal' || p.type === 'formula') {
                         inputHtml = `
                             <div class="relative flex items-center">
-                                <input type="text" name="${p.id}" id="${p.id}" data-param-id="${p.id}" ${reqAttr} ${p.calculated ? 'readonly' : ''} 
+                                <input type="text" name="${p.id}" id="${p.id}" data-param-id="${p.id}" ${reqAttr} ${isFormulaOrCalc ? 'readonly' : ''} 
                                     oninput="calculateLiveFields()" 
                                     onblur="handleFieldBlur(this)" 
                                     class="w-full border rounded-lg p-2.5 text-sm outline-none ${isReadOnly} ${showPercentBadge ? 'pr-24' : ''}" 
-                                    placeholder="${p.calculated ? '0.000' : '4.75+2.12'}">
+                                    placeholder="${isFormulaOrCalc ? '0.000' : '4.75+2.12'}">
                                 ${showPercentBadge ? `
                                     <span id="badge_pct_${p.id}" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-1 rounded-md transition-all shadow-sm">
                                         0.000 %
@@ -861,7 +910,7 @@
 
                     fieldWrapper.innerHTML = `
                         <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">
-                            ${paramLabel} ${reqStar} ${p.calculated ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}
+                            ${paramLabel} ${reqStar} ${isFormulaOrCalc ? '<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 auto)</span>' : ''}
                         </label>
                         ${inputHtml}
                     `;
@@ -886,21 +935,33 @@
             if (!m || !m.groups) return;
 
             const allParams = m.groups.flatMap(g => g.params);
-
-            // Спочатку рахуємо звичайні суми або середні, якщо це потрібно
-            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
-            const carcassCount = evaluateExpression(countValRaw);
-
-            // Вираховуємо значення для всіх полів
             const paramValues = {};
+
             allParams.forEach(p => {
-                const inputEl = document.getElementById(p.id);
-                if (inputEl) {
-                    paramValues[p.id] = evaluateExpression(inputEl.value);
+                if (p.type !== 'formula' && !p.calculated) {
+                    const inputEl = document.getElementById(p.id);
+                    if (inputEl) {
+                        paramValues[p.id] = evaluateExpression(inputEl.value);
+                    }
                 }
             });
 
-            // Автоматичний розрахунок середньої ваги тушки (якщо є такий параметр)
+            allParams.forEach(p => {
+                if (p.type === 'formula' && Array.isArray(p.sumParamIds)) {
+                    let formulaSum = 0;
+                    p.sumParamIds.forEach(subId => {
+                        formulaSum += (paramValues[subId] || 0);
+                    });
+                    paramValues[p.id] = formulaSum;
+                    const inputEl = document.getElementById(p.id);
+                    if (inputEl) {
+                        inputEl.value = formulaSum > 0 ? formulaSum.toFixed(3) : "";
+                    }
+                }
+            });
+
+            const countValRaw = document.getElementById('p_carcass_count')?.value || "";
+            const carcassCount = evaluateExpression(countValRaw);
             const baseWeightParam = allParams.find(p => p.isBaseWeight) || allParams.find(p => p.id === 'p_total_weight_wog');
             const totalWog = baseWeightParam ? (paramValues[baseWeightParam.id] || 0) : 0;
 
@@ -909,9 +970,8 @@
                 avgInput.value = (totalWog / carcassCount).toFixed(3);
             }
 
-            // Розрахунок часток % для кожного параметра на основі його обраної бази
             allParams.forEach(p => {
-                if (p.type === 'decimal' && !p.calculated && p.useShare && p.baseParamId) {
+                if (p.useShare && p.baseParamId) {
                     const badge = document.getElementById(`badge_pct_${p.id}`);
                     if (badge) {
                         const val = paramValues[p.id] || 0;
@@ -1027,7 +1087,7 @@
 
             allParams.forEach(p => {
                 let val = formData.get(p.id);
-                if (p.type === 'decimal' && val !== null && val !== '') {
+                if ((p.type === 'decimal' || p.type === 'formula') && val !== null && val !== '') {
                     val = parseFloat(val).toFixed(3);
                 }
                 const pLabelStr = getI18nText(p.label);
@@ -1035,20 +1095,31 @@
             });
 
             const now = new Date();
-            // Формат дати без часу (РРРР-ММ-ДД)
             const dateOnly = now.toISOString().split('T')[0];
+            const editingId = document.getElementById('editingRecordId').value;
 
-            const newRecord = {
-                id: 'rec_' + Date.now(),
-                timestamp: dateOnly,
-                rawDate: now.toISOString(),
-                methodologyId: m.id,
-                methodologyTitle: getI18nText(m.title),
-                inspector: inspector,
-                values: values
-            };
+            if (editingId) {
+                const recordIdx = state.measurements.findIndex(r => r.id === editingId);
+                if (recordIdx !== -1) {
+                    state.measurements[recordIdx].inspector = inspector;
+                    state.measurements[recordIdx].values = values;
+                    state.measurements[recordIdx].timestamp = dateOnly;
+                }
+                document.getElementById('editingRecordId').value = "";
+                document.getElementById('editingBadge').classList.add('hidden');
+            } else {
+                const newRecord = {
+                    id: 'rec_' + Date.now(),
+                    timestamp: dateOnly,
+                    rawDate: now.toISOString(),
+                    methodologyId: m.id,
+                    methodologyTitle: getI18nText(m.title),
+                    inspector: inspector,
+                    values: values
+                };
+                state.measurements.unshift(newRecord);
+            }
 
-            state.measurements.unshift(newRecord);
             saveStateToLocal();
             renderHistoryTable();
             resetForm();
@@ -1060,9 +1131,40 @@
             }
         }
 
+        function editMeasurementRecord(id) {
+            const rec = state.measurements.find(r => r.id === id);
+            if (!rec) return;
+
+            if (confirm("Ви дійсно бажаєте відредагувати та продовжити цей замір? / ¿Desea editar esta medición?")) {
+                switchTab('new-measure');
+                document.getElementById('inspectorName').value = rec.inspector;
+                document.getElementById('methodologySelect').value = rec.methodologyId;
+                renderMeasurementForm();
+
+                document.getElementById('editingRecordId').value = rec.id;
+                document.getElementById('editingBadge').classList.remove('hidden');
+
+                const m = state.methodologies.find(x => x.id === rec.methodologyId);
+                if (m) {
+                    const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
+                    allParams.forEach(p => {
+                        const pLabel = getI18nText(p.label);
+                        const val = rec.values[pLabel];
+                        const inputEl = document.getElementById(p.id);
+                        if (inputEl && val && val !== '-') {
+                            inputEl.value = val;
+                        }
+                    });
+                    calculateLiveFields();
+                }
+            }
+        }
+
         function resetForm() {
             document.getElementById('measurementForm').reset();
             document.getElementById('inspectorName').value = "";
+            document.getElementById('editingRecordId').value = "";
+            document.getElementById('editingBadge').classList.add('hidden');
             clearDraft();
             calculateLiveFields();
         }
@@ -1128,8 +1230,11 @@
                         <td class="p-3 font-semibold text-slate-800">${rec.methodologyTitle}</td>
                         <td class="p-3 text-xs font-semibold text-blue-700">${rec.inspector}</td>
                         <td class="p-3">${valuesBadges}</td>
-                        <td class="p-3 text-right whitespace-nowrap">
-                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded mr-1 transition" title="XLSX">
+                        <td class="p-3 text-right whitespace-nowrap space-x-1">
+                            <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="Редагувати">
+                                <i class="fa-solid fa-pen-to-square mr-1"></i>Edit
+                            </button>
+                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition" title="XLSX">
                                 <i class="fa-solid fa-file-excel mr-1"></i>XLSX
                             </button>
                             ${deleteBtnHtml}
@@ -1152,20 +1257,63 @@
             }
         }
 
-        function exportToExcelSingle(id) {
-            const rec = state.measurements.find(x => x.id === id);
-            if (!rec) return;
-
-            generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
-        }
-
-        function exportToExcelFiltered() {
+        function openExportModal() {
             const filtered = getFilteredMeasurements();
             if (filtered.length === 0) {
                 alert("Немає даних для експорту!");
                 return;
             }
-            generateExcelFile(filtered, `Mediciones_Filtered_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+            const container = document.getElementById('exportCheckboxesList');
+            container.innerHTML = filtered.map(rec => `
+                <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
+                    <label class="flex items-center space-x-2 text-xs cursor-pointer flex-grow">
+                        <input type="checkbox" name="exportRec" value="${rec.id}" checked onchange="updateSelectedExportCount()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                        <span class="font-mono text-slate-500">${rec.timestamp}</span>
+                        <strong class="text-slate-800">${rec.inspector}</strong>
+                        <span class="text-slate-500 truncate max-w-[200px]">(${rec.methodologyTitle})</span>
+                    </label>
+                </div>
+            `).join('');
+
+            updateSelectedExportCount();
+            document.getElementById('exportModal').classList.remove('hidden');
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        function toggleSelectAllExport(status) {
+            const checkboxes = document.querySelectorAll('input[name="exportRec"]');
+            checkboxes.forEach(cb => cb.checked = status);
+            updateSelectedExportCount();
+        }
+
+        function updateSelectedExportCount() {
+            const selected = document.querySelectorAll('input[name="exportRec"]:checked');
+            document.getElementById('selectedExportCount').innerText = selected.length;
+        }
+
+        function executeSelectedExport() {
+            const selectedBoxes = document.querySelectorAll('input[name="exportRec"]:checked');
+            const selectedIds = Array.from(selectedBoxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert("Оберіть хоча б один замір!");
+                return;
+            }
+
+            const recordsToExport = state.measurements.filter(r => selectedIds.includes(r.id));
+            generateExcelFile(recordsToExport, `Mediciones_${new Date().toISOString().split('T')[0]}.xlsx`);
+            closeExportModal();
+        }
+
+        function exportToExcelSingle(id) {
+            const rec = state.measurements.find(x => x.id === id);
+            if (!rec) return;
+
+            generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
         function generateExcelFile(recordsArray, filename) {
@@ -1345,6 +1493,7 @@
         }
 
         let tempParams = [];
+        let editingOptionIdx = null;
 
         function openMethodologyModal(methodId = null) {
             if (!isAdmin) {
@@ -1359,15 +1508,27 @@
                 const m = state.methodologies.find(x => x.id === methodId);
                 document.getElementById('modalTitle').innerText = dict.modalEditTitle;
                 document.getElementById('editMethodologyId').value = m.id;
-                document.getElementById('methodTitle').value = getI18nText(m.title);
-                document.getElementById('methodDesc').value = getI18nText(m.description);
+                
+                document.getElementById('methodTitle_uk').value = typeof m.title === 'object' ? (m.title.uk || '') : m.title;
+                document.getElementById('methodTitle_es').value = typeof m.title === 'object' ? (m.title.es || '') : m.title;
+                document.getElementById('methodTitle_en').value = typeof m.title === 'object' ? (m.title.en || '') : m.title;
+
+                document.getElementById('methodDesc_uk').value = typeof m.description === 'object' ? (m.description.uk || '') : m.description;
+                document.getElementById('methodDesc_es').value = typeof m.description === 'object' ? (m.description.es || '') : m.description;
+                document.getElementById('methodDesc_en').value = typeof m.description === 'object' ? (m.description.en || '') : m.description;
+
                 const allP = m.groups ? m.groups.flatMap(g => g.params) : m.params;
                 tempParams = JSON.parse(JSON.stringify(allP));
             } else {
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
                 document.getElementById('editMethodologyId').value = "";
-                document.getElementById('methodTitle').value = "";
-                document.getElementById('methodDesc').value = "";
+                document.getElementById('methodTitle_uk').value = "";
+                document.getElementById('methodTitle_es').value = "";
+                document.getElementById('methodTitle_en').value = "";
+                document.getElementById('methodDesc_uk').value = "";
+                document.getElementById('methodDesc_es').value = "";
+                document.getElementById('methodDesc_en').value = "";
+
                 tempParams = [
                     { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total', en: 'Total weight' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false }
                 ];
@@ -1385,13 +1546,14 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            // Список усіх числових параметрів, які можна обрати як базу для відсотків
-            const decimalParams = tempParams.filter(p => p.type === 'decimal');
+            const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
 
             container.innerHTML = tempParams.map((p, idx) => {
                 const baseOptions = decimalParams.map(dp => 
                     `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>${getI18nText(dp.label)}</option>`
                 ).join('');
+
+                const optsCount = (p.options || []).length;
 
                 return `
                 <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-2">
@@ -1406,17 +1568,27 @@
                             <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
                             <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
                             <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
+                            <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
                         </select>
                         <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1">
                             <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
+
+                    ${p.type === 'select' ? `
+                    <div class="pt-1 pl-6">
+                        <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded font-medium">
+                            <i class="fa-solid fa-list mr-1"></i> Редагувати варіанти списку (${optsCount})
+                        </button>
+                    </div>
+                    ` : ''}
+
                     <div class="flex flex-wrap items-center gap-4 pt-1 pl-6 text-xs text-slate-600">
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
                             <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
                         </div>
-                        ${p.type === 'decimal' && !p.calculated ? `
+                        ${p.type === 'decimal' || p.type === 'formula' ? `
                         <div class="flex items-center space-x-1.5">
                             <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)">
                             <label for="share_${idx}" class="font-medium">${dict.lblUseShare}</label>
@@ -1434,6 +1606,28 @@
                     </div>
                 </div>
             `;}).join('');
+        }
+
+        function openOptionsModal(idx) {
+            editingOptionIdx = idx;
+            const currentOpts = tempParams[idx].options || [];
+            document.getElementById('optionsTextArea').value = currentOpts.join('\n');
+            document.getElementById('optionsModal').classList.remove('hidden');
+        }
+
+        function closeOptionsModal() {
+            document.getElementById('optionsModal').classList.add('hidden');
+            editingOptionIdx = null;
+        }
+
+        function saveOptionsFromModal() {
+            if (editingOptionIdx !== null) {
+                const text = document.getElementById('optionsTextArea').value;
+                const opts = text.split('\n').map(s => s.trim()).filter(Boolean);
+                tempParams[editingOptionIdx].options = opts;
+                renderParamRows();
+            }
+            closeOptionsModal();
         }
 
         function moveParam(idx, direction) {
@@ -1485,7 +1679,6 @@
         function updateUseShare(idx, isChecked) {
             tempParams[idx].useShare = isChecked;
             if (isChecked && !tempParams[idx].baseParamId) {
-                // Автоматично вибираємо першу базову вагу як дефолтну
                 const firstBase = tempParams.find(p => p.isBaseWeight) || tempParams.find(p => p.type === 'decimal');
                 if (firstBase) tempParams[idx].baseParamId = firstBase.id;
             }
@@ -1498,17 +1691,23 @@
 
         function saveMethodology() {
             if (!isAdmin) return;
-            const titleInput = document.getElementById('methodTitle').value.trim();
-            const descInput = document.getElementById('methodDesc').value.trim();
+            const titleUk = document.getElementById('methodTitle_uk').value.trim();
+            const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
+            const titleEn = document.getElementById('methodTitle_en').value.trim() || titleUk;
+
+            const descUk = document.getElementById('methodDesc_uk').value.trim();
+            const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
+            const descEn = document.getElementById('methodDesc_en').value.trim() || descUk;
+
             const editId = document.getElementById('editMethodologyId').value;
 
-            if (!titleInput) {
-                alert("Please enter title! / Введіть назву!");
+            if (!titleUk) {
+                alert("Будь ласка, введіть назву методики!");
                 return;
             }
 
-            const newTitle = { uk: titleInput, es: titleInput, en: titleInput };
-            const newDesc = { uk: descInput, es: descInput, en: descInput };
+            const newTitle = { uk: titleUk, es: titleEs, en: titleEn };
+            const newDesc = { uk: descUk, es: descEs, en: descEn };
 
             const groups = [
                 {
@@ -1582,11 +1781,11 @@
             const dict = I18N[currentLang] || I18N.uk;
 
             if (status === 'synced') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span><span>${dict.syncDone}</span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>`;
             } else if (status === 'syncing') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span><span>${dict.syncing}</span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span>`;
             } else {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span><span>${dict.syncLocal}</span>`;
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>`;
             }
         }
 
