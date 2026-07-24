@@ -13,60 +13,61 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
         .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
     </style>
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
     <!-- Header / Navbar -->
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <span class="text-2xl text-blue-400"><i class="fa-solid fa-scale-balanced"></i></span>
+                <span class="text-3xl text-blue-400 bg-slate-800 p-2 rounded-xl border border-slate-700 shadow-inner"><i class="fa-solid fa-scale-balanced"></i></span>
                 <div>
-                    <h1 class="text-base sm:text-lg font-bold leading-tight" id="appTitle">Mediciones SPA</h1>
+                    <h1 class="text-base sm:text-lg font-bold tracking-wide leading-tight" id="appTitle">Mediciones SPA</h1>
                     <p class="text-[11px] sm:text-xs text-slate-400" id="appSubtitle">Система замірів та зважування</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3 text-sm">
-                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition text-xs font-semibold flex items-center space-x-1.5" title="Адмін-доступ">
+                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 shadow-sm" title="Адмін-доступ">
                     <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
                     <span id="adminModeText">Оператор</span>
                 </button>
 
                 <div class="relative">
-                    <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg transition flex items-center space-x-1 text-xs font-semibold">
-                        <i class="fa-solid fa-globe text-blue-400 text-base"></i>
+                    <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition flex items-center space-x-1.5 text-xs font-semibold border border-slate-700 shadow-sm">
+                        <i class="fa-solid fa-globe text-blue-400 text-sm"></i>
                         <span id="currentLangLabel" class="uppercase">UA</span>
                         <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
                     </button>
                     
-                    <div id="langMenu" class="hidden absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-xl border border-slate-200 py-1 text-slate-800 z-50 text-xs">
-                        <button onclick="changeLang('uk')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
+                    <div id="langMenu" class="hidden absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-2xl border border-slate-200 py-1 text-slate-800 z-50 text-xs">
+                        <button onclick="changeLang('uk')" class="w-full text-left px-3 py-2.5 hover:bg-slate-100 flex items-center space-x-2">
                             <span>🇺🇦</span><span class="font-medium">Українська</span>
                         </button>
-                        <button onclick="changeLang('es')" class="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center space-x-2">
+                        <button onclick="changeLang('es')" class="w-full text-left px-3 py-2.5 hover:bg-slate-100 flex items-center space-x-2">
                             <span>🇪🇸</span><span class="font-medium">Español</span>
                         </button>
                     </div>
                 </div>
 
-                <button onclick="switchTab('settings')" class="p-2 hover:bg-slate-800 rounded-lg transition text-slate-400 hover:text-white" title="API Settings">
+                <button onclick="switchTab('settings')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition text-slate-400 hover:text-white border border-slate-700 shadow-sm" title="API Settings">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </div>
-        <div class="bg-slate-800 text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
-            <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
+        <div class="bg-slate-800/90 backdrop-blur text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
+            <button onclick="switchTab('new-measure')" id="tab-new-measure" class="tab-btn active py-3 px-3 flex items-center space-x-2 whitespace-nowrap transition">
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span id="navNewMeasure">Новий замір</span>
             </button>
-            <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap">
+            <button onclick="switchTab('history')" id="tab-history" class="tab-btn py-3 px-3 flex items-center space-x-2 whitespace-nowrap transition">
                 <i class="fa-solid fa-table-list"></i>
                 <span id="navHistory">Історія та Експорт</span>
             </button>
-            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-2 flex items-center space-x-1.5 whitespace-nowrap hidden">
+            <button onclick="switchTab('methodologies')" id="tab-methodologies" class="tab-btn py-3 px-3 flex items-center space-x-2 whitespace-nowrap hidden transition">
                 <i class="fa-solid fa-sliders"></i>
                 <span id="navConstructor">Конструктор</span>
             </button>
@@ -77,37 +78,37 @@
 
         <!-- TAB 1: NEW MEASUREMENT -->
         <section id="sec-new-measure" class="space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+            <div class="bg-white rounded-2xl card-shadow border border-slate-200/80 p-5 sm:p-8">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-6 border-b border-slate-100 pb-4">
                     <h2 class="text-lg sm:text-xl font-bold flex items-center text-slate-800" id="lblFormTitle">
-                        <i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> Проведення заміру
+                        <i class="fa-solid fa-scale-balanced text-blue-600 mr-2.5"></i> Проведення заміру
                     </h2>
-                    <span id="editingBadge" class="hidden text-xs bg-amber-500 text-white px-3 py-1 rounded-full font-bold flex items-center">
-                        <i class="fa-solid fa-pen mr-1"></i> <span id="editingBadgeText">Редагування запису</span>
+                    <span id="editingBadge" class="hidden text-xs bg-amber-500 text-white px-3.5 py-1.5 rounded-full font-bold flex items-center shadow-sm">
+                        <i class="fa-solid fa-pen mr-1.5"></i> <span id="editingBadgeText">Редагування запису</span>
                     </span>
-                    <span id="draftIndicator" class="hidden text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium flex items-center">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> <span id="lblDraftSaved">Черновик збережено</span>
+                    <span id="draftIndicator" class="hidden text-xs bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-full font-medium flex items-center">
+                        <i class="fa-solid fa-floppy-disk mr-1.5 text-amber-600"></i> <span id="lblDraftSaved">Черновик збережено</span>
                     </span>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-6">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblFactory">Оператор / Фабрика</label>
-                        <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" id="lblFactory">Оператор / Фабрика</label>
+                        <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50 transition">
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1" id="lblMethodology">Оберіть методику</label>
-                        <select id="methodologySelect" onchange="renderMeasurementForm()" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" id="lblMethodology">Оберіть методику</label>
+                        <select id="methodologySelect" onchange="renderMeasurementForm()" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50 transition">
                             <option value="">-- Оберіть методику --</option>
                         </select>
                     </div>
                 </div>
 
-                <div id="dynamicFormContainer" class="hidden border-t border-slate-200 pt-6">
-                    <div id="methodologyDescription" class="mb-4 text-xs text-slate-500 italic bg-slate-50 p-3 rounded-lg border border-slate-200 flex justify-between items-center">
+                <div id="dynamicFormContainer" class="hidden border-t border-slate-100 pt-6">
+                    <div id="methodologyDescription" class="mb-6 text-xs text-slate-600 italic bg-blue-50/50 p-3.5 rounded-xl border border-blue-100 flex justify-between items-center shadow-sm">
                         <span id="descTextContent">...</span>
-                        <a id="methodologyDocLink" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800 font-semibold text-xs flex items-center gap-1 bg-white px-2 py-1 rounded border border-blue-200 shadow-sm">
+                        <a id="methodologyDocLink" href="#" target="_blank" class="hidden text-blue-600 hover:text-blue-800 font-bold text-xs flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm transition">
                             <i class="fa-solid fa-external-link-alt"></i> <span id="docLinkText">Інструкція / Таблиця</span>
                         </a>
                     </div>
@@ -115,11 +116,11 @@
                         <input type="hidden" id="editingRecordId" value="">
                         <div id="dynamicFields" class="space-y-6"></div>
                         
-                        <div class="pt-4 flex flex-wrap justify-end gap-3 border-t border-slate-200">
-                            <button type="button" onclick="resetForm()" class="w-full sm:w-auto px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 transition">
+                        <div class="pt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100">
+                            <button type="button" onclick="resetForm()" class="w-full sm:w-auto px-6 py-3 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition shadow-sm">
                                 <span id="btnReset">Очистити</span>
                             </button>
-                            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                            <button type="submit" class="w-full sm:w-auto px-7 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span id="btnSave">Зберегти результати</span>
                             </button>
@@ -127,65 +128,65 @@
                     </form>
                 </div>
 
-                <div id="noMethodologySelected" class="text-center py-12 text-slate-400">
-                    <i class="fa-solid fa-hand-pointer text-4xl mb-3 block"></i>
-                    <span id="lblSelectPrompt">Будь ласка, оберіть методику зі списку вище для початку внесення даних.</span>
+                <div id="noMethodologySelected" class="text-center py-16 text-slate-400 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                    <i class="fa-solid fa-hand-pointer text-4xl mb-3 block text-slate-300"></i>
+                    <span class="text-sm font-medium" id="lblSelectPrompt">Будь ласка, оберіть методику зі списку вище для початку внесення даних.</span>
                 </div>
             </div>
         </section>
 
         <!-- TAB 2: HISTORY & EXCEL EXPORT -->
         <section id="sec-history" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div class="bg-white rounded-2xl card-shadow border border-slate-200/80 p-5 sm:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800" id="lblHistoryTitle">Історія занесених замірів</h2>
-                        <p class="text-xs text-slate-500"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
+                        <p class="text-xs text-slate-500 mt-0.5"><span id="lblTotalRecords">Знайдено записів</span>: <span id="recordCount" class="font-bold text-slate-700">0</span></p>
                     </div>
-                    <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
-                        <div id="syncStatus" class="flex items-center space-x-1 text-slate-400 text-xs bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg">
-                            <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                    <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+                        <div id="syncStatus" class="flex items-center space-x-1.5 text-slate-500 text-xs bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
                             <span id="syncText">Локально</span>
                         </div>
-                        <button onclick="openExportModal()" class="w-full sm:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                        <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-file-excel"></i>
                             <span id="btnExportAll">Експорт в Excel (.xlsx)</span>
                         </button>
-                        <button onclick="syncData()" class="w-full sm:w-auto px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition flex items-center justify-center" title="Синхронізувати">
+                        <button onclick="syncData()" class="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center justify-center border border-slate-200 shadow-sm" title="Синхронізувати">
                             <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-inner">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1" id="lblFilterMethod">Фільтр за методикою</label>
-                        <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase" id="lblFilterMethod">Фільтр за методикою</label>
+                        <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="ALL">Всі методики</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1" id="lblFilterSearch">Пошук</label>
-                        <input type="text" id="filterSearch" oninput="renderHistoryTable()" placeholder="Введіть для пошуку..." class="w-full border border-slate-300 rounded p-1.5 text-xs">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase" id="lblFilterSearch">Пошук</label>
+                        <input type="text" id="filterSearch" oninput="renderHistoryTable()" placeholder="Введіть для пошуку..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1" id="lblFilterSort">Сортування</label>
-                        <select id="filterSort" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded p-1.5 text-xs bg-white">
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase" id="lblFilterSort">Сортування</label>
+                        <select id="filterSort" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="DESC">Спочатку нові</option>
                             <option value="ASC">Спочатку старі</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm">
                     <table class="w-full text-left text-sm text-slate-600">
-                        <thead class="bg-slate-100 text-xs uppercase text-slate-700 font-semibold border-b border-slate-200">
+                        <thead class="bg-slate-100/80 text-xs uppercase text-slate-700 font-bold border-b border-slate-200">
                             <tr>
-                                <th class="p-3" id="thDate">Дата</th>
-                                <th class="p-3" id="thMethod">Методика</th>
-                                <th class="p-3" id="thFactory">Фабрика</th>
-                                <th class="p-3" id="thResults">Результати</th>
-                                <th class="p-3 text-right" id="thActions">Дії</th>
+                                <th class="p-3.5" id="thDate">Дата</th>
+                                <th class="p-3.5" id="thMethod">Методика</th>
+                                <th class="p-3.5" id="thFactory">Фабрика</th>
+                                <th class="p-3.5" id="thResults">Результати</th>
+                                <th class="p-3.5 text-right" id="thActions">Дії</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody" class="divide-y divide-slate-200 bg-white">
@@ -197,73 +198,73 @@
 
         <!-- TAB 3: METHODOLOGIES CONSTRUCTOR -->
         <section id="sec-methodologies" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div class="bg-white rounded-2xl card-shadow border border-slate-200/80 p-5 sm:p-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-100 pb-4">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800" id="lblConstructorTitle">Управління методиками</h2>
-                        <p class="text-xs text-slate-500" id="lblConstructorSub">Створюйте та редагуйте методики замірів</p>
+                        <p class="text-xs text-slate-500 mt-0.5" id="lblConstructorSub">Створюйте та редагуйте методики замірів</p>
                     </div>
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button onclick="openDictionaryModal()" class="w-full sm:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-lg text-sm font-semibold shadow-sm transition flex items-center justify-center space-x-2">
+                    <div class="flex gap-2.5 w-full sm:w-auto">
+                        <button onclick="openDictionaryModal()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl text-sm font-semibold shadow-sm transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-book"></i>
                             <span id="btnDictTerms">Словник термінів</span>
                         </button>
-                        <button onclick="openMethodologyModal()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow transition flex items-center justify-center space-x-2">
+                        <button onclick="openMethodologyModal()" class="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-plus"></i>
                             <span id="btnNewMethod">Нова методика</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 </div>
             </div>
         </section>
 
         <!-- TAB 4: SETTINGS & BACKUP -->
         <section id="sec-settings" class="hidden space-y-6">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 max-w-2xl mx-auto">
-                <h2 class="text-lg sm:text-xl font-bold mb-4 text-slate-800 flex items-center" id="lblSettingsTitle">
-                    <i class="fa-solid fa-database text-slate-600 mr-2"></i> Налаштування JSONBin.io
+            <div class="bg-white rounded-2xl card-shadow border border-slate-200/80 p-5 sm:p-8 max-w-2xl mx-auto">
+                <h2 class="text-lg sm:text-xl font-bold mb-2 text-slate-800 flex items-center" id="lblSettingsTitle">
+                    <i class="fa-solid fa-database text-slate-600 mr-2.5"></i> Налаштування JSONBin.io
                 </h2>
                 <p class="text-xs text-slate-500 mb-6" id="lblSettingsSub">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.</p>
 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin BIN ID</label>
-                        <input type="text" id="cfgBinId" placeholder="64a8b...123" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">JSONBin BIN ID</label>
+                        <input type="text" id="cfgBinId" placeholder="64a8b...123" class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">JSONBin Access Key (X-Access-Key)</label>
-                        <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">JSONBin Access Key (X-Access-Key)</label>
+                        <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
                     </div>
                     <div class="pt-2 flex justify-between items-center">
-                        <button onclick="testJsonBinConnection()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50" id="btnTestConn">
+                        <button onclick="testJsonBinConnection()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 shadow-sm transition" id="btnTestConn">
                             Тест з'єднання
                         </button>
-                        <button onclick="saveSettings()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow" id="btnSaveSettings">
+                        <button onclick="saveSettings()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition" id="btnSaveSettings">
                             Зберегти
                         </button>
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-slate-200">
-                    <h3 class="text-sm font-bold text-blue-600 mb-2" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1"></i> Резервне копіювання (Backup)</h3>
-                    <p class="text-xs text-slate-500 mb-3" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
-                    <div class="flex gap-2">
-                        <button onclick="downloadBackup()" class="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-semibold transition">
-                            <i class="fa-solid fa-download mr-1"></i> <span id="btnBackupText">Завантажити копію</span>
+                <div class="mt-8 pt-6 border-t border-slate-100">
+                    <h3 class="text-sm font-bold text-blue-600 mb-1.5" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1.5"></i> Резервне копіювання (Backup)</h3>
+                    <p class="text-xs text-slate-500 mb-4" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
+                    <div class="flex flex-wrap gap-2.5">
+                        <button onclick="downloadBackup()" class="px-4.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-semibold transition shadow-sm">
+                            <i class="fa-solid fa-download mr-1.5"></i> <span id="btnBackupText">Завантажити копію</span>
                         </button>
                         <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreBackup(event)">
-                        <button onclick="document.getElementById('restoreFile').click()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition border border-slate-300">
-                            <i class="fa-solid fa-upload mr-1"></i> <span id="btnRestoreText">Відновити з копії</span>
+                        <button onclick="document.getElementById('restoreFile').click()" class="px-4.5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold transition border border-slate-300 shadow-sm">
+                            <i class="fa-solid fa-upload mr-1.5"></i> <span id="btnRestoreText">Відновити з копії</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="mt-8 pt-6 border-t border-slate-200">
+                <div class="mt-8 pt-6 border-t border-slate-100">
                     <h3 class="text-sm font-bold text-red-600 mb-2" id="lblDangerZone">Небезпечна зона</h3>
-                    <button onclick="clearAllData()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold transition" id="btnClearLocal">
+                    <button onclick="clearAllData()" class="px-4.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-semibold transition shadow-sm" id="btnClearLocal">
                         Очистити всі локальні дані замірів
                     </button>
                 </div>
@@ -273,42 +274,42 @@
     </main>
 
     <!-- Modal 1: Creating/Editing Methodology -->
-    <div id="methodologyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
-            <div class="px-4 sm:px-6 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                <h3 id="modalTitle" class="font-bold text-slate-800">Створити методику</h3>
-                <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+    <div id="methodologyModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="px-5 sm:px-7 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
+                <h3 id="modalTitle" class="font-bold text-slate-800 text-base">Створити методику</h3>
+                <button onclick="closeMethodologyModal()" class="text-slate-400 hover:text-slate-600 text-lg w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-200/60 transition">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
-            <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-grow bg-white">
+            <div class="p-5 sm:p-7 overflow-y-auto space-y-5 flex-grow bg-white">
                 <input type="hidden" id="editMethodologyId">
                 
-                <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="space-y-2 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodTitle">Назва методики (UA / ES)</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <input type="text" id="methodTitle_uk" placeholder="🇺🇦 Назва (UA)" class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm">
+                        <input type="text" id="methodTitle_es" placeholder="🇪🇸 Título (ES)" class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm">
                     </div>
                 </div>
 
-                <div class="space-y-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="space-y-2 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
                     <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalMethodDesc">Опис / Інструкція (UA / ES)</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
-                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white"></textarea>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <textarea id="methodDesc_uk" rows="2" placeholder="🇺🇦 Інструкція (UA)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
+                        <textarea id="methodDesc_es" rows="2" placeholder="🇪🇸 Instrucción (ES)..." class="border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"></textarea>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-sm">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" id="lblDocUrl">🔗 Посилання на док/таблицю (URL)</label>
-                        <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded p-2 text-xs outline-none bg-white">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="lblDocUrl">🔗 Посилання на док/таблицю (URL)</label>
+                        <input type="url" id="methodDocUrl" placeholder="https://docs.google.com/..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none bg-white shadow-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1" id="lblMethodStatusLabel">📊 Статус методики</label>
-                        <select id="methodStatus" class="w-full border border-slate-300 rounded p-2 text-xs bg-white font-semibold">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" id="lblMethodStatusLabel">📊 Статус методики</label>
+                        <select id="methodStatus" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-semibold shadow-sm">
                             <option value="ready" id="optStatusReady">🟢 Готова до використання</option>
                             <option value="dev" id="optStatusDev">🟡 В розробці (прихована)</option>
                         </select>
@@ -316,55 +317,55 @@
                 </div>
 
                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-xs font-bold text-slate-700 uppercase" id="lblModalParams">Параметри методики</label>
-                        <button type="button" onclick="addParamRow()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-3 py-1.5 rounded border border-blue-200 transition" id="btnAddParamRow">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Параметри методики</label>
+                        <button type="button" onclick="addParamRow()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-4 py-2 rounded-xl border border-blue-200 transition shadow-sm" id="btnAddParamRow">
                             + Додати параметр
                         </button>
                     </div>
-                    <div id="paramRowsContainer" class="space-y-3">
+                    <div id="paramRowsContainer" class="space-y-3.5">
                     </div>
                 </div>
             </div>
 
-            <div class="px-4 sm:px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex justify-end space-x-3">
-                <button onclick="closeMethodologyModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-100" id="btnCancelModal">Скасувати</button>
-                <button onclick="saveMethodology()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold shadow" id="btnSaveModal">Зберегти методику</button>
+            <div class="px-5 sm:px-7 py-4 border-t border-slate-200 bg-slate-50/80 flex justify-end space-x-3">
+                <button onclick="closeMethodologyModal()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-100 shadow-sm transition" id="btnCancelModal">Скасувати</button>
+                <button onclick="saveMethodology()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition" id="btnSaveModal">Зберегти методику</button>
             </div>
         </div>
     </div>
 
     <!-- Modal 2: Custom Dropdown Options Modal -->
-    <div id="optionsModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md p-5 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2" id="lblOptsModalTitle">Редагування варіантів списку</h3>
+    <div id="optionsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-6 space-y-4">
+            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2.5" id="lblOptsModalTitle">Редагування варіантів списку</h3>
             <p class="text-xs text-slate-500" id="lblOptsModalSub">Вкажіть варіанти вибору (по одному на кожен рядок):</p>
-            <textarea id="optionsTextArea" rows="5" class="w-full border border-slate-300 rounded-lg p-2 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono"></textarea>
-            <div class="flex justify-end space-x-2">
-                <button onclick="closeOptionsModal()" class="px-3 py-1.5 border border-slate-300 rounded text-xs" id="btnOptsCancel">Скасувати</button>
-                <button onclick="saveOptionsFromModal()" class="px-4 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold" id="btnOptsSave">Зберегти варіанти</button>
+            <textarea id="optionsTextArea" rows="5" class="w-full border border-slate-300 rounded-xl p-3 text-xs outline-none focus:ring-2 focus:ring-blue-500 font-mono shadow-inner"></textarea>
+            <div class="flex justify-end space-x-2.5 pt-2">
+                <button onclick="closeOptionsModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold shadow-sm" id="btnOptsCancel">Скасувати</button>
+                <button onclick="saveOptionsFromModal()" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold shadow-md" id="btnOptsSave">Зберегти варіанти</button>
             </div>
         </div>
     </div>
 
     <!-- Modal 3: Selective Excel Export Modal -->
-    <div id="exportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="px-5 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+    <div id="exportModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
                 <h3 class="font-bold text-slate-800 text-sm" id="lblExportModalTitle">Вибір замірів для експорту в Excel</h3>
                 <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="p-4 overflow-y-auto space-y-3 flex-grow">
-                <div class="flex justify-between items-center text-xs pb-2 border-b">
+            <div class="p-5 overflow-y-auto space-y-3 flex-grow">
+                <div class="flex justify-between items-center text-xs pb-2 border-b border-slate-100">
                     <button onclick="toggleSelectAllExport(true)" class="text-blue-600 hover:underline font-semibold" id="lblSelectAll">Вибрати всі</button>
-                    <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline" id="lblDeselectAll">Зняти виділення</button>
+                    <button onclick="toggleSelectAllExport(false)" class="text-slate-500 hover:underline font-medium" id="lblDeselectAll">Зняти виділення</button>
                 </div>
                 <div id="exportCheckboxesList" class="space-y-2 divide-y divide-slate-100">
                 </div>
             </div>
-            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center">
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/80 flex justify-between items-center">
                 <span class="text-xs text-slate-500" id="lblSelectedCountText">Вибрано: <strong id="selectedExportCount">0</strong></span>
-                <button onclick="executeSelectedExport()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg shadow flex items-center space-x-1.5">
+                <button onclick="executeSelectedExport()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-md flex items-center space-x-2 transition">
                     <i class="fa-solid fa-file-excel"></i>
                     <span id="lblDownloadXlsxBtn">Завантажити XLSX</span>
                 </button>
@@ -373,9 +374,9 @@
     </div>
 
     <!-- Modal 4: Dictionary Editor -->
-    <div id="dictionaryModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
-            <div class="px-5 py-3.5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+    <div id="dictionaryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
                 <div>
                     <h3 class="font-bold text-slate-800 text-sm" id="lblDictTitle"><i class="fa-solid fa-book text-blue-600 mr-2"></i> Галузевий словник термінів</h3>
                     <p class="text-[10px] text-slate-500" id="lblDictSub">Використовується для автоперекладу параметрів</p>
@@ -383,21 +384,21 @@
                 <button onclick="closeDictionaryModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
             </div>
             
-            <div class="p-4 overflow-y-auto flex-grow bg-white">
+            <div class="p-5 overflow-y-auto flex-grow bg-white">
                 <div class="flex justify-between items-center mb-3">
                     <span class="text-xs font-bold text-slate-700 uppercase" id="lblDictPairsHeader">Список пар (UA - ES)</span>
-                    <button onclick="addDictionaryRow()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded text-xs font-bold transition" id="btnAddDictWord">
+                    <button onclick="addDictionaryRow()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition shadow-sm" id="btnAddDictWord">
                         + Додати слово
                     </button>
                 </div>
                 
-                <div id="dictionaryRowsContainer" class="space-y-2">
+                <div id="dictionaryRowsContainer" class="space-y-2.5">
                 </div>
             </div>
             
-            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex justify-end space-x-2">
-                <button onclick="closeDictionaryModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg text-xs font-medium" id="btnDictCancel">Скасувати</button>
-                <button onclick="saveDictionary()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow" id="btnDictSave">Зберегти словник</button>
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/80 flex justify-end space-x-2.5">
+                <button onclick="closeDictionaryModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold shadow-sm" id="btnDictCancel">Скасувати</button>
+                <button onclick="saveDictionary()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md" id="btnDictSave">Зберегти словник</button>
             </div>
         </div>
     </div>
@@ -815,7 +816,7 @@
             document.getElementById('navNewMeasure').innerText = dict.navNew;
             document.getElementById('navHistory').innerText = dict.navHistory;
             document.getElementById('navConstructor').innerText = dict.navConstructor;
-            document.getElementById('lblFormTitle').innerHTML = `<i class="fa-solid fa-scale-balanced text-blue-600 mr-2"></i> ${dict.lblFormTitle}`;
+            document.getElementById('lblFormTitle').innerHTML = `<i class="fa-solid fa-scale-balanced text-blue-600 mr-2.5"></i> ${dict.lblFormTitle}`;
             document.getElementById('lblDraftSaved').innerText = dict.lblDraftSaved;
             document.getElementById('lblFactory').innerText = dict.lblFactory;
             document.getElementById('lblMethodology').innerText = dict.lblMethodology;
@@ -848,7 +849,7 @@
             document.getElementById('btnCancelModal').innerText = dict.btnCancelModal;
             document.getElementById('btnSaveModal').innerText = dict.btnSaveModal;
 
-            document.getElementById('lblSettingsTitle').innerHTML = `<i class="fa-solid fa-database text-slate-600 mr-2"></i> ${dict.lblSettingsTitle}`;
+            document.getElementById('lblSettingsTitle').innerHTML = `<i class="fa-solid fa-database text-slate-600 mr-2.5"></i> ${dict.lblSettingsTitle}`;
             document.getElementById('lblSettingsSub').innerText = dict.lblSettingsSub;
             document.getElementById('btnTestConn').innerText = dict.btnTestConn;
             document.getElementById('btnSaveSettings').innerText = dict.btnSaveSettings;
@@ -856,7 +857,7 @@
             document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
 
             document.getElementById('editingBadgeText').innerText = dict.editingBadge;
-            document.getElementById('lblBackupTitle').innerHTML = `<i class="fa-solid fa-shield-halved mr-1"></i> ${dict.lblBackupTitle}`;
+            document.getElementById('lblBackupTitle').innerHTML = `<i class="fa-solid fa-shield-halved mr-1.5"></i> ${dict.lblBackupTitle}`;
             document.getElementById('lblBackupDesc').innerText = dict.lblBackupDesc;
             document.getElementById('btnBackupText').innerText = dict.btnBackup;
             document.getElementById('btnRestoreText').innerText = dict.btnRestore;
@@ -1050,10 +1051,10 @@
 
             groups.forEach(group => {
                 const groupBlock = document.createElement('div');
-                groupBlock.className = 'bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4';
+                groupBlock.className = 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm';
                 
                 const groupTitle = getI18nText(group.title);
-                groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200 pb-2">${groupTitle}</h3>`;
+                groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
                 
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
@@ -1067,35 +1068,35 @@
                     const paramLabel = getLabelWithUnit(p, currentLang);
 
                     const isReadOnly = p.type === 'formula';
-                    const bgClass = isReadOnly ? 'bg-blue-100/80 border-blue-400 font-bold text-blue-900 cursor-not-allowed shadow-inner' : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
+                    const bgClass = isReadOnly ? 'bg-blue-50/80 border-blue-300 font-bold text-blue-900 cursor-not-allowed shadow-inner' : 'bg-white border-slate-300 focus:ring-2 focus:ring-blue-500';
 
                     let inputHtml = '';
                     const showPercentBadge = p.useShare;
 
                     if (p.type === 'text') {
-                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}" placeholder="${dict.placeholderText}">`;
+                        inputHtml = `<input type="text" name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-xl p-3 text-sm outline-none ${bgClass} shadow-sm" placeholder="${dict.placeholderText}">`;
                     } else if (p.type === 'date') {
                         const today = new Date().toISOString().split('T')[0];
-                        inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}">`;
+                        inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-xl p-3 text-sm outline-none ${bgClass} shadow-sm">`;
                     } else if (p.type === 'select') {
                         const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
-                        inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white ${bgClass}">
+                        inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-xl p-3 text-sm outline-none bg-white ${bgClass} shadow-sm">
                             <option value="">-- Select --</option>
                             ${opts}
                         </select>`;
                     } else {
                         inputHtml = `
-                            <div class="relative flex items-center w-full gap-2">
+                            <div class="relative flex items-center w-full gap-2.5">
                                 <div class="relative flex-grow">
                                     <input type="text" name="${p.id}" id="${p.id}" data-code="${p.code}" ${reqAttr} ${isReadOnly ? 'readonly' : ''} 
                                         oninput="calculateLiveFields()" 
                                         onblur="handleFieldBlur(this, ${p.isInteger ? 'true' : 'false'})" 
-                                        class="w-full border rounded-lg p-2.5 text-sm outline-none ${bgClass}" 
+                                        class="w-full border rounded-xl p-3 text-sm outline-none ${bgClass} shadow-sm" 
                                         placeholder="${isReadOnly ? '0.000' : '4.75+2.12'}">
                                 </div>
                                 ${showPercentBadge ? `
-                                    <div class="shrink-0 w-20">
-                                        <span id="badge_pct_${p.id}" class="block w-full text-center text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-2 rounded-lg shadow-sm transition-all opacity-60">
+                                    <div class="shrink-0 w-24">
+                                        <span id="badge_pct_${p.id}" class="block w-full text-center text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-3 rounded-xl shadow-sm transition-all opacity-60">
                                             0.000 %
                                         </span>
                                     </div>
@@ -1105,7 +1106,7 @@
                     }
 
                     fieldWrapper.innerHTML = `
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1 flex justify-between">
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1.5 flex justify-between">
                             <span>${escapeHTML(paramLabel)} ${reqStar} ${isReadOnly ? `<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 ${dict.autoText})</span>` : ''}</span>
                         </label>
                         ${inputHtml}
@@ -1170,12 +1171,12 @@
                         if (baseVal > 0 && val > 0) {
                             const pct = ((val / baseVal) * 100).toFixed(3);
                             badge.innerText = `${pct} %`;
-                            badge.classList.remove("opacity-60", "text-slate-400", "bg-slate-100", "border-slate-200");
-                            badge.classList.add("opacity-100", "text-emerald-800", "bg-emerald-100", "border-emerald-300");
+                            badge.classList.remove("opacity-60", "text-slate-400", "bg-slate-50", "border-slate-200");
+                            badge.classList.add("opacity-100", "text-emerald-800", "bg-emerald-50", "border-emerald-300");
                         } else {
                             badge.innerText = "0.000 %";
-                            badge.classList.remove("opacity-100", "text-emerald-800", "bg-emerald-100", "border-emerald-300");
-                            badge.classList.add("opacity-60", "text-slate-400", "bg-slate-100", "border-slate-200");
+                            badge.classList.remove("opacity-100", "text-emerald-800", "bg-emerald-50", "border-emerald-300");
+                            badge.classList.add("opacity-60", "text-slate-400", "bg-slate-50", "border-slate-200");
                         }
                     }
                 }
@@ -1402,19 +1403,19 @@
 
             if (filtered.length === 0) {
                 const noRecText = currentLang === 'es' ? 'No se encontraron registros' : 'Записів не знайдено';
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400">${noRecText}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400 font-medium">${noRecText}</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = filtered.map(rec => {
                 const valuesBadges = Object.entries(rec.values).map(([k, v]) => `
-                    <span class="inline-block bg-slate-100 border border-slate-200 text-slate-700 text-xs px-2 py-0.5 rounded mr-1 mb-1">
+                    <span class="inline-block bg-slate-100 border border-slate-200/80 text-slate-700 text-xs px-2.5 py-1 rounded-lg mr-1.5 mb-1.5 shadow-xs">
                         <strong class="text-slate-500">${escapeHTML(k)}:</strong> ${escapeHTML(v)}
                     </span>
                 `).join('');
 
                 const deleteBtnHtml = isAdmin ? `
-                    <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1" title="Delete">
+                    <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1.5 hover:bg-red-50 rounded-lg transition" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 ` : '';
@@ -1423,16 +1424,16 @@
                 const xlsxTooltip = currentLang === 'es' ? 'Exportar XLSX' : 'XLSX';
 
                 return `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
-                        <td class="p-3 font-semibold text-slate-800">${escapeHTML(rec.methodologyTitle)}</td>
-                        <td class="p-3 text-xs font-semibold text-blue-700">${escapeHTML(rec.inspector)}</td>
-                        <td class="p-3">${valuesBadges}</td>
-                        <td class="p-3 text-right whitespace-nowrap space-x-1">
-                            <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-semibold rounded transition" title="${editTooltip}">
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="p-3.5 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
+                        <td class="p-3.5 font-bold text-slate-800">${escapeHTML(rec.methodologyTitle)}</td>
+                        <td class="p-3.5 text-xs font-bold text-blue-700">${escapeHTML(rec.inspector)}</td>
+                        <td class="p-3.5">${valuesBadges}</td>
+                        <td class="p-3.5 text-right whitespace-nowrap space-x-1.5">
+                            <button onclick="editMeasurementRecord('${rec.id}')" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-semibold rounded-xl transition shadow-xs" title="${editTooltip}">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition" title="${xlsxTooltip}">
+                            <button onclick="exportToExcelSingle('${rec.id}')" class="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-xl transition shadow-xs" title="${xlsxTooltip}">
                                 <i class="fa-solid fa-file-excel"></i>
                             </button>
                             ${deleteBtnHtml}
@@ -1465,9 +1466,9 @@
 
             const container = document.getElementById('exportCheckboxesList');
             container.innerHTML = filtered.map(rec => `
-                <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded">
-                    <label class="flex items-center space-x-2 text-xs cursor-pointer flex-grow">
-                        <input type="checkbox" name="exportRec" value="${rec.id}" checked onchange="updateSelectedExportCount()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 rounded-xl transition">
+                    <label class="flex items-center space-x-2.5 text-xs cursor-pointer flex-grow">
+                        <input type="checkbox" name="exportRec" value="${rec.id}" checked onchange="updateSelectedExportCount()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4">
                         <span class="font-mono text-slate-500">${rec.timestamp}</span>
                         <strong class="text-slate-800">${escapeHTML(rec.inspector)}</strong>
                         <span class="text-slate-500 truncate max-w-[200px]">(${escapeHTML(rec.methodologyTitle)})</span>
@@ -1515,13 +1516,12 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
-        // РОЗУМНИЙ ЕКСПОРТ В EXCEL: Однакові методики об'єднуються на одному листі, різні — на окремих листах. Цілі числа без знаків, частки підтягуються.
+        // ПОВНИЙ УНІФІКОВАНИЙ ЕКСПОРТ В EXCEL (Різні методики на різні листи, однакові об'єднуються, цілі числа без знаків, правильні частки)
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
             const groupsByMethod = {};
             recordsArray.forEach(rec => {
-                // Використовуємо канонічний ключ групування: якщо назви схожі або це той самий ID методики
                 const m = state.methodologies.find(x => x.id === rec.methodologyId);
                 const canonicalKey = m ? m.id : rec.methodologyTitle;
                 
@@ -1551,7 +1551,6 @@
                 const shareParamLabels = new Set();
                 
                 allParams.forEach(p => {
-                    // Збираємо мітки і для поточної мови, і для інших мов, щоб об'єднати UA та ES вивантаження в один набір колонок
                     ['uk', 'es'].forEach(lang => {
                         const lbl = getLabelWithUnit(p, lang);
                         if (p.isInteger) integerParamLabels.add(lbl);
@@ -1731,27 +1730,27 @@
                     const isDev = m.status === 'dev';
 
                     const actions = isArchived ? `
-                        <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash-arrow-up mr-1"></i>${dict.btnRestoreMethod}</button>
-                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-semibold rounded transition"><i class="fa-solid fa-trash mr-1"></i>${dict.btnDeletePermanent}</button>
+                        <button onclick="restoreMethodology('${m.id}')" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-trash-arrow-up mr-1.5"></i>${dict.btnRestoreMethod}</button>
+                        <button onclick="deleteMethodology('${m.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-trash mr-1.5"></i>${dict.btnDeletePermanent}</button>
                     ` : `
-                        <button onclick="openMethodologyModal('${m.id}')" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-pen mr-1"></i>${dict.btnEdit}</button>
-                        <button onclick="archiveMethodology('${m.id}')" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded transition"><i class="fa-solid fa-box-archive mr-1"></i>${dict.btnArchive}</button>
+                        <button onclick="openMethodologyModal('${m.id}')" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-pen mr-1.5"></i>${dict.btnEdit}</button>
+                        <button onclick="archiveMethodology('${m.id}')" class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 text-xs font-semibold rounded-xl transition shadow-xs"><i class="fa-solid fa-box-archive mr-1.5"></i>${dict.btnArchive}</button>
                     `;
 
                     return `
-                    <div class="border ${isArchived ? 'border-dashed border-slate-300 bg-slate-100' : 'border-slate-200 bg-slate-50'} rounded-xl p-5 flex flex-col justify-between hover:shadow-md transition">
+                    <div class="border ${isArchived ? 'border-dashed border-slate-300 bg-slate-100/70' : 'border-slate-200/80 bg-white'} rounded-2xl p-5 card-shadow flex flex-col justify-between transition hover:border-slate-300">
                         <div>
-                            <div class="flex justify-between items-start mb-2">
+                            <div class="flex justify-between items-start mb-2.5">
                                 <div class="flex items-center gap-2">
                                     <h3 class="font-bold ${isArchived ? 'text-slate-500' : 'text-slate-800'} text-base">${escapeHTML(mTitle)}</h3>
-                                    ${isDev ? `<span class="text-[10px] bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.5 rounded font-bold">${dict.devBadgeText}</span>` : ''}
+                                    ${isDev ? `<span class="text-[10px] bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-bold shadow-xs">${dict.devBadgeText}</span>` : ''}
                                 </div>
-                                <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-100 text-blue-700'} font-semibold px-2 py-0.5 rounded">${paramCount} ${dict.lblParamsBadge}</span>
+                                <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-50 text-blue-700 border border-blue-100'} font-bold px-2.5 py-1 rounded-xl shadow-xs">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
-                            <p class="text-xs text-slate-500 mb-4">${escapeHTML(mDesc) || '...'}</p>
-                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:underline inline-flex items-center gap-1 mb-3"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
+                            <p class="text-xs text-slate-500 mb-4 leading-relaxed">${escapeHTML(mDesc) || '...'}</p>
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-xl border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
                         </div>
-                        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200">
+                        <div class="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
                             ${actions}
                         </div>
                     </div>
@@ -1762,12 +1761,12 @@
             let html = '';
             
             if (active.length > 0) {
-                html += `<div class="col-span-1 md:col-span-2 mb-2"><h3 class="text-sm font-bold text-slate-700 uppercase">${dict.lblActiveMethods}</h3></div>`;
+                html += `<div class="col-span-1 md:col-span-2 mb-1"><h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">${dict.lblActiveMethods}</h3></div>`;
                 html += renderCards(active, false);
             }
             
             if (archived.length > 0) {
-                html += `<div class="col-span-1 md:col-span-2 mt-6 mb-2 border-t border-slate-200 pt-4"><h3 class="text-sm font-bold text-slate-500 uppercase">${dict.lblArchivedMethods}</h3></div>`;
+                html += `<div class="col-span-1 md:col-span-2 mt-6 mb-1 border-t border-slate-100 pt-4"><h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">${dict.lblArchivedMethods}</h3></div>`;
                 html += renderCards(archived, true);
             }
 
@@ -1871,12 +1870,33 @@
             document.getElementById('methodologyModal').classList.add('hidden');
         }
 
+        // КОЛЕКЦІЯ ВСІХ УНІКАЛЬНИХ ПАРАМЕТРІВ З УСІХ МЕТОДИК (ДЛЯ АВТОКОМПЛІТУ)
+        function getAllExistingParams() {
+            const map = new Map();
+            state.methodologies.forEach(m => {
+                const params = m.groups ? m.groups.flatMap(g => g.params || []) : (m.params || []);
+                params.forEach(p => {
+                    const ukName = typeof p.label === 'object' ? (p.label.uk || '') : p.label;
+                    if (ukName && !map.has(ukName.toLowerCase())) {
+                        map.set(ukName.toLowerCase(), {
+                            label: p.label,
+                            unit: p.unit,
+                            type: p.type,
+                            isInteger: p.isInteger || false
+                        });
+                    }
+                });
+            });
+            return Array.from(map.values());
+        }
+
         function renderParamRows() {
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
             tempParams.forEach((p, idx) => { p.code = p.code || 'v' + (idx + 1); });
             const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
+            const existingParamsPool = getAllExistingParams();
 
             container.innerHTML = tempParams.map((p, idx) => {
                 const baseOptions = decimalParams.map(dp => 
@@ -1889,24 +1909,36 @@
                 const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
                 const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
 
+                // Генерація унікального ID для datalist автокомпліту
+                const datalistId = `pool_list_${idx}`;
+                const datalistOptions = existingParamsPool.map(poolItem => {
+                    const pUk = typeof poolItem.label === 'object' ? poolItem.label.uk : poolItem.label;
+                    return `<option value="${escapeHTML(pUk)}"></option>`;
+                }).join('');
+
                 return `
-                <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col gap-3" id="paramRowBlock_${idx}">
-                    <div class="flex items-start gap-2">
+                <div class="p-4 border border-slate-200/80 rounded-2xl bg-slate-50/70 flex flex-col gap-3.5 shadow-xs transition hover:border-slate-300" id="paramRowBlock_${idx}">
+                    <div class="flex items-start gap-2.5">
                         <div class="flex flex-col space-y-0.5 mt-1">
-                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
-                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs px-1" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
                         </div>
-                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-1.5 py-1 rounded border border-blue-200 shrink-0 mt-1">[${p.code}]</div>
+                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-2 py-1 rounded-lg border border-blue-200 shrink-0 mt-1 shadow-2xs">[${p.code}]</div>
                         
-                        <div class="flex-grow flex flex-col gap-2">
-                            <div class="flex flex-col sm:flex-row gap-2">
-                                <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(labelUk)}" onchange="updateParamLabelLang(${idx}, 'uk', this.value)" placeholder="🇺🇦 Назва (UA)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm">
-                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white shadow-sm text-slate-500 focus:text-slate-800">
+                        <div class="flex-grow flex flex-col gap-2.5">
+                            <div class="flex flex-col sm:flex-row gap-2.5">
+                                <div class="w-full sm:w-1/2 relative">
+                                    <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(labelUk)}" list="${datalistId}" oninput="updateParamLabelLang(${idx}, 'uk', this.value)" onchange="checkParamAutocomplete(${idx}, this.value)" placeholder="🇺🇦 Назва (UA) — почніть вводити..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <datalist id="${datalistId}">
+                                        ${datalistOptions}
+                                    </datalist>
+                                </div>
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm text-slate-600 focus:text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
 
-                            <div class="flex flex-col sm:flex-row items-center gap-2 bg-slate-100 p-2 rounded border border-slate-200">
+                            <div class="flex flex-col sm:flex-row items-center gap-2.5 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/80 shadow-inner">
                                 <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
-                                <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded p-1 text-[11px] bg-white w-full sm:w-40">
+                                <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white w-full sm:w-40 shadow-sm outline-none">
                                     <option value="">${dict.optTemplate}</option>
                                     <option value="kg">кг / kg</option>
                                     <option value="pcs">шт / unidades</option>
@@ -1917,12 +1949,12 @@
                                     <option value="min">хв / min</option>
                                     <option value="custom">✏️ Своя / Manual</option>
                                 </select>
-                                <input type="text" id="unit_uk_${idx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
-                                <input type="text" id="unit_es_${idx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded p-1 text-[11px] bg-white">
+                                <input type="text" id="unit_uk_${idx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                                <input type="text" id="unit_es_${idx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
                             </div>
                             
-                            <div class="flex gap-2">
-                                <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded p-1.5 text-xs bg-white w-full sm:w-48 shadow-sm">
+                            <div class="flex gap-2.5">
+                                <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded-xl p-2 text-xs bg-white w-full sm:w-48 shadow-sm outline-none">
                                     <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
                                     <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
                                     <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
@@ -1932,43 +1964,48 @@
                             </div>
                         </div>
                         
-                        <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1 mt-1 shrink-0">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <div class="flex flex-col gap-1 shrink-0 mt-1">
+                            <button type="button" onclick="duplicateParamRow(${idx})" class="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition" title="Дублювати параметр">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition" title="Видалити параметр">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
 
                     ${p.type === 'select' ? `
-                    <div class="pl-8 sm:pl-12 mt-2">
-                        <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-2.5 py-1 rounded font-medium">
-                            <i class="fa-solid fa-list mr-1"></i> Редагувати варіанти списку (${optsCount})
+                    <div class="pl-8 sm:pl-12 mt-1">
+                        <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200/80 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-medium shadow-2xs transition">
+                            <i class="fa-solid fa-list mr-1.5"></i> Редагувати варіанти списку (${optsCount})
                         </button>
                     </div>
                     ` : ''}
 
                     ${p.type === 'formula' ? `
-                    <div class="pl-8 sm:pl-12 mt-2">
+                    <div class="pl-8 sm:pl-12 mt-1">
                         <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
-                        <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50 rounded p-1.5 text-xs font-mono">
+                        <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
                     </div>
                     ` : ''}
 
-                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-2">
-                        <div class="flex items-center space-x-1.5">
-                            <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)">
-                            <label for="base_${idx}" class="font-medium">${dict.lblIsBaseWeight}</label>
+                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-1">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)" class="rounded text-blue-600 w-4 h-4">
+                            <label for="base_${idx}" class="font-medium cursor-pointer">${dict.lblIsBaseWeight}</label>
                         </div>
-                        <div class="flex items-center space-x-1.5">
-                            <input type="checkbox" id="int_${idx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${idx}, this.checked)">
-                            <label for="int_${idx}" class="font-medium text-amber-700 font-semibold">${dict.lblIsInteger}</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="int_${idx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${idx}, this.checked)" class="rounded text-amber-600 w-4 h-4">
+                            <label for="int_${idx}" class="font-medium text-amber-800 font-semibold cursor-pointer">${dict.lblIsInteger}</label>
                         </div>
                         ${p.type === 'decimal' || p.type === 'formula' ? `
-                        <div class="flex items-center space-x-1.5">
-                            <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)">
-                            <label for="share_${idx}" class="font-medium">${dict.lblUseShare}</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)" class="rounded text-emerald-600 w-4 h-4">
+                            <label for="share_${idx}" class="font-medium cursor-pointer">${dict.lblUseShare}</label>
                         </div>
                         ${p.useShare ? `
-                        <div class="flex items-center space-x-1">
-                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded p-1 bg-white text-xs w-28 sm:w-auto">
+                        <div class="flex items-center space-x-1.5">
+                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 bg-white text-xs w-32 sm:w-auto shadow-sm outline-none">
                                 <option value="">${dict.lblNoBase}</option>
                                 ${baseOptions}
                             </select>
@@ -1978,6 +2015,52 @@
                     </div>
                 </div>
             `;}).join('');
+        }
+
+        // АВТОКОМПЛІТ ПРИ ВИБОРІ З ІСНУЮЧИХ ПАРАМЕТРІВ
+        function checkParamAutocomplete(idx, val) {
+            const cleanVal = val.trim().toLowerCase();
+            const pool = getAllExistingParams();
+            const found = pool.find(item => {
+                const pUk = typeof item.label === 'object' ? item.label.uk : item.label;
+                return pUk && pUk.toLowerCase() === cleanVal;
+            });
+
+            if (found) {
+                tempParams[idx].label = found.label;
+                tempParams[idx].unit = found.unit;
+                tempParams[idx].type = found.type;
+                tempParams[idx].isInteger = found.isInteger;
+                renderParamRows();
+            } else {
+                updateParamLabelLang(idx, 'uk', val);
+            }
+        }
+
+        // ДУБЛЮВАННЯ ПАРАМЕТРА (Створює ідентичний, кидає в кінець і переходить на нього)
+        function duplicateParamRow(idx) {
+            const sourceParam = tempParams[idx];
+            // Глибока копія об'єкта параметра
+            const clonedParam = JSON.parse(JSON.stringify(sourceParam));
+            clonedParam.id = 'p_' + Date.now();
+            clonedParam.code = 'v' + (tempParams.length + 1);
+            clonedParam.isBaseWeight = false; // Уникаємо дублювання базової ваги
+
+            tempParams.push(clonedParam);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+
+            // Плавний перехід до нового (останнього) параметра
+            setTimeout(() => {
+                const newIdx = tempParams.length - 1;
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
+                if (newRow && ukInput) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ukInput.focus();
+                    ukInput.select();
+                }
+            }, 50);
         }
 
         function updateParamLabelLang(idx, lang, val) {
@@ -2091,10 +2174,10 @@
             }
 
             container.innerHTML = tempDictArray.map((item, idx) => `
-                <div class="flex items-center gap-2">
-                    <input type="text" value="${escapeHTML(item.uk)}" onchange="updateDictWord(${idx}, 'uk', this.value)" placeholder="Слово українською" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white">
-                    <input type="text" value="${escapeHTML(item.es)}" onchange="updateDictWord(${idx}, 'es', this.value)" placeholder="Переклад (ES)" class="w-1/2 border border-slate-300 rounded p-1.5 text-xs bg-white">
-                    <button onclick="removeDictionaryRow(${idx})" class="text-red-500 hover:text-red-700 p-1 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <input type="text" value="${escapeHTML(item.uk)}" onchange="updateDictWord(${idx}, 'uk', this.value)" placeholder="Слово українською" class="w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none">
+                    <input type="text" value="${escapeHTML(item.es)}" onchange="updateDictWord(${idx}, 'es', this.value)" placeholder="Переклад (ES)" class="w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none">
+                    <button onclick="removeDictionaryRow(${idx})" class="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-xl transition shrink-0">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -2310,11 +2393,11 @@
             const dict = I18N[currentLang] || I18N.uk;
 
             if (status === 'synced') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px]">${dict.syncDone}</span>`;
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px] font-medium">${dict.syncDone}</span>`;
             } else if (status === 'syncing') {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px]">${dict.syncing}</span>`;
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px] font-medium">${dict.syncing}</span>`;
             } else {
-                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px]">Local</span>`;
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px] font-medium">Local</span>`;
             }
         }
 
