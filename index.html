@@ -1515,54 +1515,48 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
-        // РОЗУМНИЙ ЕКСПОРТ В EXCEL ЗГІДНО З ПРАВИЛАМИ (Різні методики на різні листи, однакові об'єднуються, цілі числа без знаків, частки)
+        // РОЗУМНИЙ ЕКСПОРТ В EXCEL: Однакові методики об'єднуються на одному листі, різні — на окремих листах. Цілі числа без знаків, частки підтягуються.
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
-            // Групуємо записи за методикою (використовуємо канонічну назву базової мови або ID, щоб об'єднати UA та ES вивантаження однакових методик)
             const groupsByMethod = {};
             recordsArray.forEach(rec => {
-                const mId = rec.methodologyId || 'general';
-                if (!groupsByMethod[mId]) {
-                    groupsByMethod[mId] = {
-                        title: rec.methodologyTitle,
+                // Використовуємо канонічний ключ групування: якщо назви схожі або це той самий ID методики
+                const m = state.methodologies.find(x => x.id === rec.methodologyId);
+                const canonicalKey = m ? m.id : rec.methodologyTitle;
+                
+                if (!groupsByMethod[canonicalKey]) {
+                    groupsByMethod[canonicalKey] = {
+                        methodObj: m,
+                        title: m ? getI18nText(m.title) : rec.methodologyTitle,
                         records: []
                     };
                 }
-                groupsByMethod[mId].records.push(rec);
+                groupsByMethod[canonicalKey].records.push(rec);
             });
 
-            // Для кожної методики створюємо окремий аркуш (Sheet)
-            Object.entries(groupsByMethod).forEach(([mId, groupData]) => {
+            Object.entries(groupsByMethod).forEach(([canonicalKey, groupData]) => {
                 const methodologyRecords = groupData.records;
-                
-                // Знаходимо саму методику в конфігурації
-                const m = state.methodologies.find(x => x.id === mId) || {
-                    groups: [{
-                        params: Object.keys(methodologyRecords[0]?.values || {}).map((k, idx) => ({
-                            id: 'p_' + idx,
-                            label: k,
-                            type: 'decimal'
-                        }))
-                    }]
-                };
+                const m = groupData.methodObj;
 
-                const allParams = m.groups ? m.groups.flatMap(g => g.params || []) : (m.params || []);
+                const allParams = m && m.groups ? m.groups.flatMap(g => g.params || []) : (m && m.params ? m.params : []);
 
                 const headers = [
                     currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
                     currentLang === 'es' ? "Metodología\nMetodología" : "Методика\nMetodología",
-                    currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nPlanta"
+                    currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nФабрика"
                 ];
 
-                // Визначаємо які параметри є цілими числами
                 const integerParamLabels = new Set();
                 const shareParamLabels = new Set();
                 
                 allParams.forEach(p => {
-                    const pLabel = getLabelWithUnit(p, currentLang);
-                    if (p.isInteger) integerParamLabels.add(pLabel);
-                    if (p.useShare) shareParamLabels.add(pLabel);
+                    // Збираємо мітки і для поточної мови, і для інших мов, щоб об'єднати UA та ES вивантаження в один набір колонок
+                    ['uk', 'es'].forEach(lang => {
+                        const lbl = getLabelWithUnit(p, lang);
+                        if (p.isInteger) integerParamLabels.add(lbl);
+                        if (p.useShare) shareParamLabels.add(lbl);
+                    });
                 });
 
                 const paramKeys = [];
@@ -1595,12 +1589,16 @@
 
                 methodologyRecords.forEach(rec => {
                     let baseValForRecord = 0;
-                    allParams.forEach(p => {
-                        if (p.isBaseWeight) {
-                            const pLab = getLabelWithUnit(p, currentLang);
-                            baseValForRecord = parseFloat(rec.values[pLab]) || 0;
-                        }
-                    });
+                    if (m && m.groups) {
+                        m.groups.forEach(g => {
+                            g.params.forEach(p => {
+                                if (p.isBaseWeight) {
+                                    const pLab = getLabelWithUnit(p, currentLang);
+                                    baseValForRecord = parseFloat(rec.values[pLab]) || 0;
+                                }
+                            });
+                        });
+                    }
                     if (baseValForRecord === 0) {
                         Object.entries(rec.values).forEach(([k, v]) => {
                             if (k.includes("Загальна вага") || k.includes("Peso total") || k.includes("Жива вага") || k.includes("Peso vivo")) {
@@ -1685,7 +1683,7 @@
                         const cell = worksheet[cellAddress];
 
                         if (typeof cell.v === 'number') {
-                            if (isCalcCol[C] && String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación")) {
+                            if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
                                 cell.z = '0.000%';
                             } else if (isIntegerCol[C]) {
                                 cell.z = '0';
@@ -1709,8 +1707,7 @@
                 worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
                 worksheet['!rows'] = [{ hpt: 48 }];
 
-                // Назва листа в Excel (очищаємо від заборонених символів Excel)
-                let sheetName = getI18nText(m.title) || "Medición";
+                let sheetName = groupData.title || "Medición";
                 sheetName = sheetName.replace(/[\*\?\/\\\[\]:]/g, "").substring(0, 31);
 
                 XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
@@ -2291,7 +2288,7 @@
             renderMethodologyCards();
             closeMethodologyModal();
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            alert("Methodology saved successfully!");
+            alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
         }
 
         function loadSettingsInputs() {
