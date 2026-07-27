@@ -345,15 +345,14 @@
                     </div>
                 </div>
 
-                <div class="border-t border-slate-200 pt-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Розділи та параметри методики</label>
-                        <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-md flex items-center gap-2" id="btnAddGroup">
-                            <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ (етап) зверху</span>
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Параметри методики</label>
+                        <button type="button" onclick="addParamRow()" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold px-4 py-2 rounded-xl border border-blue-200 transition shadow-sm" id="btnAddParamRow">
+                            + Додати параметр
                         </button>
                     </div>
-
-                    <div id="paramRowsContainer" class="space-y-6">
+                    <div id="paramRowsContainer" class="space-y-3.5">
                     </div>
                 </div>
             </div>
@@ -520,13 +519,8 @@
                 modalEditTitle: "Редагувати методику",
                 lblModalMethodTitle: "Назва методики (UA / ES)",
                 lblModalMethodDesc: "Опис методики (UA / ES)",
-                lblModalParams: "Розділи та параметри методики",
-                btnAddGroup: "+ Додати розділ (етап) зверху",
-                lblGroupTitle: "Назва розділу (етапу) (UA / ES)",
-                btnRemoveGroup: "Видалити розділ",
-                btnAddParamRow: "+ Додати параметр до цього розділу",
-                btnAddExistingParam: "➕ Перенести сюди існуючий параметр:",
-                optSelectExisting: "-- Обрати існуючий параметр --",
+                lblModalParams: "Параметри методики",
+                btnAddParamRow: "+ Додати параметр",
                 btnCancelModal: "Скасувати",
                 btnSaveModal: "Зберегти методику",
                 optTypeDecimal: "Число (0.000)",
@@ -547,8 +541,6 @@
                 msgSaved: "Замір успішно збережено!",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
-                msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр з методики?",
-                msgRemoveGroupConfirm: "Видалити цей розділ? Усі параметри з нього автоматично перенесуться в інший розділ.",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
                 allMethodsOpt: "Всі методики",
                 adminOp: "Оператор",
@@ -639,13 +631,8 @@
                 modalEditTitle: "Editar metodología",
                 lblModalMethodTitle: "Nombre de metodología (UA / ES)",
                 lblModalMethodDesc: "Descripción de metodología (UA / ES)",
-                lblModalParams: "Secciones y parámetros",
-                btnAddGroup: "+ Añadir sección (etapa) arriba",
-                lblGroupTitle: "Nombre de sección (UA / ES)",
-                btnRemoveGroup: "Eliminar sección",
-                btnAddParamRow: "+ Añadir nuevo parámetro",
-                btnAddExistingParam: "➕ Mover parámetro existente a esta sección:",
-                optSelectExisting: "-- Seleccionar parámetro existente --",
+                lblModalParams: "Parámetros de la metodología",
+                btnAddParamRow: "+ Añadir parámetro",
                 btnCancelModal: "Cancelar",
                 btnSaveModal: "Guardar metodología",
                 optTypeDecimal: "Número (0.000)",
@@ -666,8 +653,6 @@
                 msgSaved: "¡Medición guardada con éxito!",
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 msgResetConfirm: "¿Realmente desea limpiar el formulario? Se perderán todos los datos ingresados.",
-                msgRemoveParamConfirm: "¿Realmente desea eliminar este parámetro?",
-                msgRemoveGroupConfirm: "¿Eliminar esta sección? Todos sus parámetros se moverán a otra sección.",
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
                 allMethodsOpt: "Todas las metodologías",
                 adminOp: "Operador",
@@ -725,7 +710,6 @@
                 updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
-                        id: 'g1',
                         title: { uk: 'Показники', es: 'Parámetros' },
                         params: [
                             { id: 'ly_1', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
@@ -748,7 +732,6 @@
                 updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
-                        id: 'g2',
                         title: { uk: 'Частини', es: 'Partes' },
                         params: [
                             { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
@@ -774,7 +757,6 @@
                 updatedAt: new Date(0).toISOString(),
                 groups: [
                     {
-                        id: 'g3',
                         title: { uk: 'Показники', es: 'Parámetros' },
                         params: [
                             { id: 'w_date', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
@@ -1008,7 +990,7 @@
             document.getElementById('lblModalMethodTitle').innerText = dict.lblModalMethodTitle;
             document.getElementById('lblModalMethodDesc').innerText = dict.lblModalMethodDesc;
             document.getElementById('lblModalParams').innerText = dict.lblModalParams;
-            document.getElementById('btnAddGroupText').innerText = dict.btnAddGroup;
+            document.getElementById('btnAddParamRow').innerText = dict.btnAddParamRow;
             document.getElementById('btnCancelModal').innerText = dict.btnCancelModal;
             document.getElementById('btnSaveModal').innerText = dict.btnSaveModal;
 
@@ -1218,20 +1200,16 @@
             const groups = m.groups || [{ title: 'Parameters', params: m.params || [] }];
 
             groups.forEach(group => {
-                const groupTitle = getI18nText(group.title);
-                const hasGroupTitle = groupTitle && groupTitle.trim() !== '';
-
                 const groupBlock = document.createElement('div');
-                groupBlock.className = hasGroupTitle ? 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4' : 'space-y-4 mb-4';
+                groupBlock.className = 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm';
                 
-                if (hasGroupTitle) {
-                    groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
-                }
+                const groupTitle = getI18nText(group.title);
+                groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
                 
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
 
-                (group.params || []).forEach(p => {
+                group.params.forEach(p => {
                     p.code = p.code || 'v' + Math.floor(Math.random()*10000); 
                     
                     const fieldWrapper = document.createElement('div');
@@ -1303,7 +1281,7 @@
             const m = state.methodologies.find(x => x.id === methodId);
             if (!m || !m.groups) return;
 
-            const allParams = m.groups.flatMap(g => g.params || []);
+            const allParams = m.groups.flatMap(g => g.params);
             const vars = {};
 
             allParams.forEach(p => {
@@ -1456,7 +1434,7 @@
             const values = {};
             const paramIdToValueMap = {};
 
-            const allParams = m.groups ? m.groups.flatMap(g => g.params || []) : m.params;
+            const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
 
             allParams.forEach(p => {
                 let val = formData.get(p.id);
@@ -1527,7 +1505,7 @@
 
                 const m = state.methodologies.find(x => x.id === rec.methodologyId);
                 if (m) {
-                    const allParams = m.groups ? m.groups.flatMap(g => g.params || []) : m.params;
+                    const allParams = m.groups ? m.groups.flatMap(g => g.params) : m.params;
                     allParams.forEach(p => {
                         const inputEl = document.getElementById(p.id);
                         if (!inputEl) return;
@@ -1962,7 +1940,7 @@
 
             const renderCards = (list, isArchived) => {
                 return list.map(m => {
-                    const paramCount = m.groups ? m.groups.flatMap(g => g.params || []).length : (m.params || []).length;
+                    const paramCount = m.groups ? m.groups.flatMap(g => g.params).length : (m.params || []).length;
                     const mTitle = getI18nText(m.title);
                     const mDesc = getI18nText(m.description);
                     const isDev = m.status === 'dev';
@@ -1986,7 +1964,7 @@
                                 <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-50 text-blue-700 border border-blue-100'} font-bold px-2.5 py-1 rounded-xl shadow-xs">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
                             <p class="text-xs text-slate-500 mb-4 leading-relaxed">${escapeHTML(mDesc) || '...'}</p>
-                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-lg border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-xl border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
                         </div>
                         <div class="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
                             ${actions}
@@ -2011,9 +1989,8 @@
             container.innerHTML = html || `<div class="col-span-1 md:col-span-2 text-slate-400 text-sm">...</div>`;
         }
 
-        let tempGroups = [];
-        let editingOptionGIdx = null;
-        let editingOptionPIdx = null;
+        let tempParams = [];
+        let editingOptionIdx = null;
 
         function archiveMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
@@ -2066,7 +2043,7 @@
             }
             const modal = document.getElementById('methodologyModal');
             const dict = I18N[currentLang] || I18N.uk;
-            tempGroups = [];
+            tempParams = [];
 
             if (methodId) {
                 const m = state.methodologies.find(x => x.id === methodId);
@@ -2084,16 +2061,13 @@
                 document.getElementById('methodDocUrl').value = m.docUrl || '';
                 document.getElementById('methodStatus').value = m.status || 'ready';
 
-                if (m.groups && Array.isArray(m.groups) && m.groups.length > 0) {
-                    tempGroups = JSON.parse(JSON.stringify(m.groups));
-                    tempGroups.forEach(g => { if(!g.id) g.id = 'g_' + Date.now() + Math.floor(Math.random()*1000); });
+                let allP = [];
+                if (m.groups && Array.isArray(m.groups)) {
+                    allP = m.groups.flatMap(g => g.params || []);
                 } else if (m.params && Array.isArray(m.params)) {
-                    tempGroups = [{
-                        id: 'g_' + Date.now(),
-                        title: { uk: 'Показники', es: 'Parámetros' },
-                        params: JSON.parse(JSON.stringify(m.params))
-                    }];
+                    allP = m.params;
                 }
+                tempParams = JSON.parse(JSON.stringify(allP));
             } else {
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
                 document.getElementById('editMethodologyId').value = "";
@@ -2104,13 +2078,9 @@
                 document.getElementById('methodDocUrl').value = "";
                 document.getElementById('methodStatus').value = "ready";
 
-                tempGroups = [{
-                    id: 'g_' + Date.now(),
-                    title: { uk: 'Етап 1', es: 'Etapa 1' },
-                    params: [
-                        { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
-                    ]
-                }];
+                tempParams = [
+                    { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
+                ];
             }
 
             renderParamRows();
@@ -2140,294 +2110,133 @@
             return Array.from(map.values());
         }
 
-        function addGroup() {
-            // Додаємо новий розділ ЗВЕРХУ ПІСЛЯ ІСНУЮЧИХ (або другим, якщо перший — головний)
-            // Або просто у самий початок масиву, але перед цим маємо переконатися, що логічно додано нагору
-            tempGroups.unshift({
-                id: 'g_' + Date.now(),
-                title: { uk: `Новий розділ`, es: `Nueva sección` },
-                params: []
-            });
-            renderParamRows();
-            
-            setTimeout(() => {
-                const container = document.getElementById('paramRowsContainer');
-                if (container) container.scrollTop = 0;
-            }, 50);
-        }
-
-        function removeGroup(gIdx) {
-            const dict = I18N[currentLang] || I18N.uk;
-            if (confirm(dict.msgRemoveGroupConfirm)) {
-                const removedGroup = tempGroups.splice(gIdx, 1)[0];
-                if (removedGroup && removedGroup.params && removedGroup.params.length > 0) {
-                    if (tempGroups.length === 0) {
-                        tempGroups.push({
-                            id: 'g_' + Date.now(),
-                            title: { uk: 'Без категорії', es: 'Sin categoría' },
-                            params: []
-                        });
-                    }
-                    tempGroups[0].params.push(...removedGroup.params);
-                }
-                renderParamRows();
-            }
-        }
-
-        function updateGroupTitle(gIdx, lang, val) {
-            if (!tempGroups[gIdx].title) tempGroups[gIdx].title = {uk:'', es:''};
-            if (typeof tempGroups[gIdx].title === 'string') {
-                tempGroups[gIdx].title = { uk: tempGroups[gIdx].title, es: tempGroups[gIdx].title };
-            }
-            tempGroups[gIdx].title[lang] = val;
-        }
-
-        function addExistingParamToGroup(targetGIdx, paramId) {
-            if (!paramId) return;
-            let foundParam = null;
-            let sourceGIdx = -1;
-            let sourcePIdx = -1;
-
-            tempGroups.forEach((g, gi) => {
-                (g.params || []).forEach((p, pi) => {
-                    if (p.id === paramId) {
-                        foundParam = p;
-                        sourceGIdx = gi;
-                        sourcePIdx = pi;
-                    }
-                });
-            });
-
-            if (foundParam && sourceGIdx !== targetGIdx) {
-                tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
-                if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
-                tempGroups[targetGIdx].params.push(foundParam);
-                renderParamRows();
-            }
-        }
-
-        // --- АВТОМАТИЧНЕ ОНОВЛЕННЯ КОДІВ ТА ФОРМУЛ (КАСКАДНЕ ОНОВЛЕННЯ) ---
-        function updateParamCode(gIdx, pIdx, newCode) {
-            const cleanNewCode = newCode.trim().toLowerCase();
-            if (!cleanNewCode) return;
-
-            const oldCode = tempGroups[gIdx].params[pIdx].code;
-            if (oldCode === cleanNewCode) return;
-
-            // Перевіряємо чи такий код вже є у методиці
-            let exists = false;
-            tempGroups.forEach(g => {
-                (g.params || []).forEach(p => {
-                    if (p.code.toLowerCase() === cleanNewCode) exists = true;
-                });
-            });
-
-            if (exists) {
-                alert(currentLang === 'es' ? "¡Este código de variable ya existe!" : "Такий код змінної вже існує у цій методиці!");
-                renderParamRows();
-                return;
-            }
-
-            // Оновлюємо код параметра
-            tempGroups[gIdx].params[pIdx].code = cleanNewCode;
-
-            // АВТОМАТИЧНО ОНОВЛЮЄМО ЦІ КОДИ У ВСІХ ФОРМУЛАХ ТА БАЗАХ ПО ВСІЙ МЕТОДИЦІ
-            tempGroups.forEach(g => {
-                (g.params || []).forEach(p => {
-                    if (p.type === 'formula' && p.formulaStr) {
-                        // Замінюємо oldCode на cleanNewCode у формулі (враховуючи межі слів або пробіли)
-                        const regex = new RegExp(`\\b${oldCode}\\b`, 'gi');
-                        p.formulaStr = p.formulaStr.replace(regex, cleanNewCode);
-                    }
-                });
-            });
-
-            renderParamRows();
-        }
-
         function renderParamRows() {
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            const allCurrentParamsInMethod = tempGroups.flatMap(g => g.params || []);
-            const allDecimalParams = tempGroups.flatMap(g => (g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula'));
+            tempParams.forEach((p, idx) => { p.code = p.code || 'v' + (idx + 1); });
+            const decimalParams = tempParams.filter(p => p.type === 'decimal' || p.type === 'formula');
             const existingParamsPool = getAllExistingParams();
 
-            container.innerHTML = tempGroups.map((group, gIdx) => {
-                const groupTitleUk = typeof group.title === 'object' ? (group.title.uk || '') : (group.title || '');
-                const groupTitleEs = typeof group.title === 'object' ? (group.title.es || '') : '';
+            container.innerHTML = tempParams.map((p, idx) => {
+                const baseOptions = decimalParams.map(dp => 
+                    `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`
+                ).join('');
 
-                const otherParamsOptions = allCurrentParamsInMethod
-                    .filter(p => !(group.params || []).some(gp => gp.id === p.id))
-                    .map(p => `<option value="${p.id}">${escapeHTML(getLabelWithUnit(p, currentLang))} [${p.code}]</option>`)
-                    .join('');
+                const optsCount = (p.options || []).length;
+                const uUk = (p.unit && typeof p.unit === 'object') ? (p.unit.uk || '') : (p.unit || '');
+                const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
+                const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
+                const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
 
-                const paramsHtml = (group.params || []).map((p, pIdx) => {
-                    const baseOptions = allDecimalParams.map(dp => 
-                        `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`
-                    ).join('');
-
-                    const optsCount = (p.options || []).length;
-                    const uUk = (p.unit && typeof p.unit === 'object') ? (p.unit.uk || '') : (p.unit || '');
-                    const uEs = (p.unit && typeof p.unit === 'object') ? (p.unit.es || '') : '';
-                    const labelUk = (p.label && typeof p.label === 'object') ? (p.label.uk || '') : (p.label || '');
-                    const labelEs = (p.label && typeof p.label === 'object') ? (p.label.es || '') : '';
-
-                    const datalistId = `pool_list_${gIdx}_${pIdx}`;
-                    const datalistOptions = existingParamsPool.map(poolItem => {
-                        const pUk = typeof poolItem.label === 'object' ? poolItem.label.uk : poolItem.label;
-                        return `<option value="${escapeHTML(pUk)}"></option>`;
-                    }).join('');
-
-                    return `
-                    <div class="p-4 border border-slate-200/80 rounded-2xl bg-white flex flex-col gap-3.5 shadow-xs transition hover:border-slate-300" id="paramRowBlock_${gIdx}_${pIdx}">
-                        <div class="flex items-start gap-2.5">
-                            <div class="flex flex-col space-y-0.5 mt-1">
-                                <button type="button" onclick="moveParam(${gIdx}, ${pIdx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
-                                <button type="button" onclick="moveParam(${gIdx}, ${pIdx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
-                            </div>
-                            
-                            <!-- РЕДАГУВАННЯ КОДУ ЗМІННОЇ (v1, v2...) -->
-                            <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-0.5 shrink-0 mt-1 shadow-2xs">
-                                <span class="text-[10px] text-indigo-700 font-bold mr-1">Код:</span>
-                                <input type="text" value="${escapeHTML(p.code)}" onchange="updateParamCode(${gIdx}, ${pIdx}, this.value)" class="w-12 text-xs font-mono font-bold text-indigo-900 bg-transparent outline-none border-b border-indigo-300 focus:border-indigo-600 text-center">
-                            </div>
-                            
-                            <div class="flex-grow flex flex-col gap-2.5">
-                                <div class="flex flex-col sm:flex-row gap-2.5">
-                                    <div class="w-full sm:w-1/2 relative">
-                                        <input type="text" id="p_label_uk_${gIdx}_${pIdx}" value="${escapeHTML(labelUk)}" list="${datalistId}" oninput="updateParamLabelLang(${gIdx}, ${pIdx}, 'uk', this.value)" onchange="checkParamAutocomplete(${gIdx}, ${pIdx}, this.value)" placeholder="🇺🇦 Назва (UA) — почніть вводити..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50 shadow-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                                        <datalist id="${datalistId}">
-                                            ${datalistOptions}
-                                        </datalist>
-                                    </div>
-                                    <input type="text" id="p_label_es_${gIdx}_${pIdx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${gIdx}, ${pIdx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-slate-50 shadow-sm text-slate-600 focus:text-slate-900 outline-none focus:ring-2 focus:ring-indigo-500">
-                                </div>
-
-                                <div class="flex flex-col sm:flex-row items-center gap-2.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 shadow-inner">
-                                    <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
-                                    <select onchange="applyUnitPreset(${gIdx}, ${pIdx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white w-full sm:w-40 shadow-sm outline-none">
-                                        <option value="">${dict.optTemplate}</option>
-                                        <option value="kg">кг / kg</option>
-                                        <option value="pcs">шт / unidades</option>
-                                        <option value="g">г / g</option>
-                                        <option value="pct">% / %</option>
-                                        <option value="heads">гол. / cabezas</option>
-                                        <option value="speed">гол/год / cabezas/hora</option>
-                                        <option value="min">хв / min</option>
-                                        <option value="custom">✏️ Своя / Manual</option>
-                                    </select>
-                                    <input type="text" id="unit_uk_${gIdx}_${pIdx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${gIdx}, ${pIdx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
-                                    <input type="text" id="unit_es_${gIdx}_${pIdx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${gIdx}, ${pIdx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
-                                </div>
-                                
-                                <div class="flex gap-2.5">
-                                    <select onchange="updateParamType(${gIdx}, ${pIdx}, this.value)" class="border border-slate-300 rounded-xl p-2 text-xs bg-slate-50 w-full sm:w-48 shadow-sm outline-none">
-                                        <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
-                                        <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
-                                        <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
-                                        <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
-                                        <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="flex flex-col gap-1 shrink-0 mt-1">
-                                <button type="button" onclick="duplicateParamRow(${gIdx}, ${pIdx})" class="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition" title="Дублювати параметр">
-                                    <i class="fa-solid fa-copy"></i>
-                                </button>
-                                <button type="button" onclick="removeParamRow(${gIdx}, ${pIdx})" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition" title="Видалити параметр">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        ${p.type === 'select' ? `
-                        <div class="pl-8 sm:pl-12 mt-1">
-                            <button type="button" onclick="openOptionsModal(${gIdx}, ${pIdx})" class="text-xs bg-slate-200/80 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-medium shadow-2xs transition">
-                                <i class="fa-solid fa-list mr-1.5"></i> Редагувати варіанти списку (${optsCount})
-                            </button>
-                        </div>
-                        ` : ''}
-
-                        ${p.type === 'formula' ? `
-                        <div class="pl-8 sm:pl-12 mt-1">
-                            <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
-                            <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${gIdx}, ${pIdx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-indigo-300 bg-indigo-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
-                        </div>
-                        ` : ''}
-
-                        <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-1">
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="base_${gIdx}_${pIdx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${gIdx}, ${pIdx}, this.checked)" class="rounded text-indigo-600 w-4 h-4">
-                                <label for="base_${gIdx}_${pIdx}" class="font-medium cursor-pointer">${dict.lblIsBaseWeight}</label>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="int_${gIdx}_${pIdx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${gIdx}, ${pIdx}, this.checked)" class="rounded text-amber-600 w-4 h-4">
-                                <label for="int_${gIdx}_${pIdx}" class="font-medium text-amber-800 font-semibold cursor-pointer">${dict.lblIsInteger}</label>
-                            </div>
-                            ${p.type === 'decimal' || p.type === 'formula' ? `
-                            <div class="flex items-center space-x-2">
-                                <input type="checkbox" id="share_${gIdx}_${pIdx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${gIdx}, ${pIdx}, this.checked)" class="rounded text-emerald-600 w-4 h-4">
-                                <label for="share_${gIdx}_${pIdx}" class="font-medium cursor-pointer">${dict.lblUseShare}</label>
-                            </div>
-                            ${p.useShare ? `
-                            <div class="flex items-center space-x-1.5">
-                                <select onchange="updateBaseParamId(${gIdx}, ${pIdx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 bg-slate-50 text-xs w-32 sm:w-auto shadow-sm outline-none">
-                                    <option value="">${dict.lblNoBase}</option>
-                                    ${baseOptions}
-                                </select>
-                            </div>
-                            ` : ''}
-                            ` : ''}
-                        </div>
-                    </div>
-                    `;
+                const datalistId = `pool_list_${idx}`;
+                const datalistOptions = existingParamsPool.map(poolItem => {
+                    const pUk = typeof poolItem.label === 'object' ? poolItem.label.uk : poolItem.label;
+                    return `<option value="${escapeHTML(pUk)}"></option>`;
                 }).join('');
 
                 return `
-                <div class="p-5 bg-slate-100/90 border border-slate-200 rounded-2xl shadow-sm space-y-4 mb-6 relative">
-                    <div class="flex justify-between items-start gap-4">
-                        <div class="flex-grow flex flex-col sm:flex-row gap-3">
-                            <div class="w-full sm:w-1/2">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">${dict.lblGroupTitle}</label>
-                                <input type="text" value="${escapeHTML(groupTitleUk)}" oninput="updateGroupTitle(${gIdx}, 'uk', this.value)" placeholder="🇺🇦 Назва розділу (необов'язково)" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                <div class="p-4 border border-slate-200/80 rounded-2xl bg-slate-50/70 flex flex-col gap-3.5 shadow-xs transition hover:border-slate-300" id="paramRowBlock_${idx}">
+                    <div class="flex items-start gap-2.5">
+                        <div class="flex flex-col space-y-0.5 mt-1">
+                            <button type="button" onclick="moveParam(${idx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button type="button" onclick="moveParam(${idx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
+                        <div class="bg-blue-100 text-blue-800 font-mono text-[10px] px-2 py-1 rounded-lg border border-blue-200 shrink-0 mt-1 shadow-2xs">[${p.code}]</div>
+                        
+                        <div class="flex-grow flex flex-col gap-2.5">
+                            <div class="flex flex-col sm:flex-row gap-2.5">
+                                <div class="w-full sm:w-1/2 relative">
+                                    <input type="text" id="p_label_uk_${idx}" value="${escapeHTML(labelUk)}" list="${datalistId}" oninput="updateParamLabelLang(${idx}, 'uk', this.value)" onchange="checkParamAutocomplete(${idx}, this.value)" placeholder="🇺🇦 Назва (UA) — почніть вводити..." class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                    <datalist id="${datalistId}">
+                                        ${datalistOptions}
+                                    </datalist>
+                                </div>
+                                <input type="text" id="p_label_es_${idx}" value="${escapeHTML(labelEs)}" onchange="updateParamLabelLang(${idx}, 'es', this.value)" placeholder="🇪🇸 Переклад (ES)" class="w-full sm:w-1/2 border border-slate-300 rounded-xl p-2.5 text-xs bg-white shadow-sm text-slate-600 focus:text-slate-900 outline-none focus:ring-2 focus:ring-blue-500">
                             </div>
-                            <div class="w-full sm:w-1/2">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">&nbsp;</label>
-                                <input type="text" value="${escapeHTML(groupTitleEs)}" oninput="updateGroupTitle(${gIdx}, 'es', this.value)" placeholder="🇪🇸 Nombre de sección (opcional)" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+
+                            <div class="flex flex-col sm:flex-row items-center gap-2.5 bg-slate-100/80 p-2.5 rounded-xl border border-slate-200/80 shadow-inner">
+                                <span class="text-[10px] font-bold text-slate-600 uppercase shrink-0">${dict.lblUnit}</span>
+                                <select onchange="applyUnitPreset(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white w-full sm:w-40 shadow-sm outline-none">
+                                    <option value="">${dict.optTemplate}</option>
+                                    <option value="kg">кг / kg</option>
+                                    <option value="pcs">шт / unidades</option>
+                                    <option value="g">г / g</option>
+                                    <option value="pct">% / %</option>
+                                    <option value="heads">гол. / cabezas</option>
+                                    <option value="speed">гол/год / cabezas/hora</option>
+                                    <option value="min">хв / min</option>
+                                    <option value="custom">✏️ Своя / Manual</option>
+                                </select>
+                                <input type="text" id="unit_uk_${idx}" value="${escapeHTML(uUk)}" onchange="updateParamUnit(${idx}, 'uk', this.value)" placeholder="🇺🇦 Од. (UA)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                                <input type="text" id="unit_es_${idx}" value="${escapeHTML(uEs)}" onchange="updateParamUnit(${idx}, 'es', this.value)" placeholder="🇪🇸 Од. (ES)" class="w-full sm:w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                            </div>
+                            
+                            <div class="flex gap-2.5">
+                                <select onchange="updateParamType(${idx}, this.value)" class="border border-slate-300 rounded-xl p-2 text-xs bg-white w-full sm:w-48 shadow-sm outline-none">
+                                    <option value="decimal" ${p.type === 'decimal' ? 'selected' : ''}>${dict.optTypeDecimal}</option>
+                                    <option value="text" ${p.type === 'text' ? 'selected' : ''}>${dict.optTypeText}</option>
+                                    <option value="date" ${p.type === 'date' ? 'selected' : ''}>${dict.optTypeDate}</option>
+                                    <option value="select" ${p.type === 'select' ? 'selected' : ''}>${dict.optTypeSelect}</option>
+                                    <option value="formula" ${p.type === 'formula' ? 'selected' : ''}>${dict.optTypeFormula}</option>
+                                </select>
                             </div>
                         </div>
-                        <button type="button" onclick="removeGroup(${gIdx})" class="mt-5 shrink-0 text-red-500 hover:text-red-700 text-xs font-bold p-2.5 hover:bg-red-50 rounded-xl transition border border-transparent hover:border-red-200" title="Видалити розділ зі збереженням параметрів">
-                            <i class="fa-solid fa-trash"></i> <span class="hidden sm:inline ml-1">${dict.btnRemoveGroup}</span>
-                        </button>
+                        
+                        <div class="flex flex-col gap-1 shrink-0 mt-1">
+                            <button type="button" onclick="duplicateParamRow(${idx})" class="text-blue-600 hover:text-blue-800 p-1.5 hover:bg-blue-50 rounded-lg transition" title="Дублювати параметр">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                            <button type="button" onclick="removeParamRow(${idx})" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition" title="Видалити параметр">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
 
-                    ${otherParamsOptions ? `
-                    <div class="bg-indigo-50/80 p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-center gap-2">
-                        <span class="text-[11px] font-semibold text-indigo-950 shrink-0"><i class="fa-solid fa-arrows-turn-right mr-1"></i> ${dict.btnAddExistingParam}</span>
-                        <select onchange="addExistingParamToGroup(${gIdx}, this.value); this.value='';" class="w-full border border-indigo-200 rounded-lg p-1.5 text-xs bg-white shadow-2xs outline-none focus:ring-2 focus:ring-indigo-400">
-                            <option value="">${dict.optSelectExisting}</option>
-                            ${otherParamsOptions}
-                        </select>
+                    ${p.type === 'select' ? `
+                    <div class="pl-8 sm:pl-12 mt-1">
+                        <button type="button" onclick="openOptionsModal(${idx})" class="text-xs bg-slate-200/80 hover:bg-slate-300 text-slate-700 px-3 py-1.5 rounded-xl font-medium shadow-2xs transition">
+                            <i class="fa-solid fa-list mr-1.5"></i> Редагувати варіанти списку (${optsCount})
+                        </button>
                     </div>
                     ` : ''}
 
-                    <div class="space-y-3 pl-2 sm:pl-4 border-l-4 border-indigo-300 pt-2">
-                        ${paramsHtml}
+                    ${p.type === 'formula' ? `
+                    <div class="pl-8 sm:pl-12 mt-1">
+                        <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
+                        <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${idx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-blue-300 bg-blue-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
                     </div>
+                    ` : ''}
 
-                    <div class="flex flex-col sm:flex-row gap-2 mt-3 pt-3 border-t border-slate-200">
-                        <button type="button" onclick="addParamRow(${gIdx})" class="flex-1 text-xs bg-white hover:bg-indigo-50 text-indigo-700 font-bold px-4 py-2.5 rounded-xl border border-indigo-200 transition shadow-sm border-dashed flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-plus"></i> ${dict.btnAddParamRow}
-                        </button>
+                    <div class="flex flex-wrap items-center gap-4 pl-8 sm:pl-12 text-xs text-slate-600 mt-1">
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="base_${idx}" ${p.isBaseWeight ? 'checked' : ''} onchange="updateBaseWeight(${idx}, this.checked)" class="rounded text-blue-600 w-4 h-4">
+                            <label for="base_${idx}" class="font-medium cursor-pointer">${dict.lblIsBaseWeight}</label>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="int_${idx}" ${p.isInteger ? 'checked' : ''} onchange="updateIsInteger(${idx}, this.checked)" class="rounded text-amber-600 w-4 h-4">
+                            <label for="int_${idx}" class="font-medium text-amber-800 font-semibold cursor-pointer">${dict.lblIsInteger}</label>
+                        </div>
+                        ${p.type === 'decimal' || p.type === 'formula' ? `
+                        <div class="flex items-center space-x-2">
+                            <input type="checkbox" id="share_${idx}" ${p.useShare ? 'checked' : ''} onchange="updateUseShare(${idx}, this.checked)" class="rounded text-emerald-600 w-4 h-4">
+                            <label for="share_${idx}" class="font-medium cursor-pointer">${dict.lblUseShare}</label>
+                        </div>
+                        ${p.useShare ? `
+                        <div class="flex items-center space-x-1.5">
+                            <select onchange="updateBaseParamId(${idx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 bg-white text-xs w-32 sm:w-auto shadow-sm outline-none">
+                                <option value="">${dict.lblNoBase}</option>
+                                ${baseOptions}
+                            </select>
+                        </div>
+                        ` : ''}
+                        ` : ''}
                     </div>
                 </div>
-                `;
-            }).join('');
+            `;}).join('');
         }
 
-        function checkParamAutocomplete(gIdx, pIdx, val) {
+        function checkParamAutocomplete(idx, val) {
             const cleanVal = val.trim().toLowerCase();
             const pool = getAllExistingParams();
             const found = pool.find(item => {
@@ -2436,30 +2245,31 @@
             });
 
             if (found) {
-                tempGroups[gIdx].params[pIdx].label = found.label;
-                tempGroups[gIdx].params[pIdx].unit = found.unit;
-                tempGroups[gIdx].params[pIdx].type = found.type;
-                tempGroups[gIdx].params[pIdx].isInteger = found.isInteger;
+                tempParams[idx].label = found.label;
+                tempParams[idx].unit = found.unit;
+                tempParams[idx].type = found.type;
+                tempParams[idx].isInteger = found.isInteger;
                 renderParamRows();
             } else {
-                updateParamLabelLang(gIdx, pIdx, 'uk', val);
+                updateParamLabelLang(idx, 'uk', val);
             }
         }
 
-        function duplicateParamRow(gIdx, pIdx) {
-            const sourceParam = tempGroups[gIdx].params[pIdx];
+        function duplicateParamRow(idx) {
+            const sourceParam = tempParams[idx];
             if (!sourceParam) return;
             const clonedParam = JSON.parse(JSON.stringify(sourceParam));
-            clonedParam.id = 'p_' + Date.now() + Math.floor(Math.random()*1000);
+            clonedParam.id = 'p_' + Date.now();
             clonedParam.isBaseWeight = false;
 
-            tempGroups[gIdx].params.push(clonedParam);
+            tempParams.push(clonedParam);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
             renderParamRows();
 
             setTimeout(() => {
-                const newPIdx = tempGroups[gIdx].params.length - 1;
-                const newRow = document.getElementById(`paramRowBlock_${gIdx}_${newPIdx}`);
-                const ukInput = document.getElementById(`p_label_uk_${gIdx}_${newPIdx}`);
+                const newIdx = tempParams.length - 1;
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
                 if (newRow && ukInput) {
                     newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     ukInput.focus();
@@ -2468,40 +2278,40 @@
             }, 50);
         }
 
-        function updateParamLabelLang(gIdx, pIdx, lang, val) {
-            if (typeof tempGroups[gIdx].params[pIdx].label !== 'object') {
-                const old = tempGroups[gIdx].params[pIdx].label;
-                tempGroups[gIdx].params[pIdx].label = { uk: old, es: old };
+        function updateParamLabelLang(idx, lang, val) {
+            if (typeof tempParams[idx].label !== 'object') {
+                const old = tempParams[idx].label;
+                tempParams[idx].label = { uk: old, es: old };
             }
-            tempGroups[gIdx].params[pIdx].label[lang] = val;
+            tempParams[idx].label[lang] = val;
 
             if (lang === 'uk' && val.trim() !== '') {
-                autoFillFromDict(gIdx, pIdx, val);
+                autoFillFromDict(idx, val);
             }
         }
 
-        function applyUnitPreset(gIdx, pIdx, presetKey) {
-            if (!tempGroups[gIdx].params[pIdx].unit) tempGroups[gIdx].params[pIdx].unit = { uk: '', es: '' };
+        function applyUnitPreset(idx, presetKey) {
+            if (!tempParams[idx].unit) tempParams[idx].unit = { uk: '', es: '' };
             
             if (UNIT_PRESETS[presetKey]) {
-                tempGroups[gIdx].params[pIdx].unit.uk = UNIT_PRESETS[presetKey].uk;
-                tempGroups[gIdx].params[pIdx].unit.es = UNIT_PRESETS[presetKey].es;
+                tempParams[idx].unit.uk = UNIT_PRESETS[presetKey].uk;
+                tempParams[idx].unit.es = UNIT_PRESETS[presetKey].es;
             } else if (presetKey === '' || presetKey === 'custom') {
-                tempGroups[gIdx].params[pIdx].unit.uk = '';
-                tempGroups[gIdx].params[pIdx].unit.es = '';
+                tempParams[idx].unit.uk = '';
+                tempParams[idx].unit.es = '';
             }
             
             if (['pcs', 'heads', 'min'].includes(presetKey)) {
-                tempGroups[gIdx].params[pIdx].isInteger = true;
+                tempParams[idx].isInteger = true;
             } else if (['kg', 'g', 'pct', 'speed'].includes(presetKey)) {
-                tempGroups[gIdx].params[pIdx].isInteger = false;
+                tempParams[idx].isInteger = false;
             }
 
             renderParamRows();
 
             if (presetKey === 'custom') {
                 setTimeout(() => {
-                    const el = document.getElementById(`unit_uk_${gIdx}_${pIdx}`);
+                    const el = document.getElementById(`unit_uk_${idx}`);
                     if(el) {
                         el.focus();
                         el.select();
@@ -2510,30 +2320,30 @@
             }
         }
 
-        function updateParamUnit(gIdx, pIdx, lang, val) {
-            if (!tempGroups[gIdx].params[pIdx].unit || typeof tempGroups[gIdx].params[pIdx].unit !== 'object') {
-                tempGroups[gIdx].params[pIdx].unit = { uk: '', es: '' };
+        function updateParamUnit(idx, lang, val) {
+            if (!tempParams[idx].unit || typeof tempParams[idx].unit !== 'object') {
+                tempParams[idx].unit = { uk: '', es: '' };
             }
-            tempGroups[gIdx].params[pIdx].unit[lang] = val;
+            tempParams[idx].unit[lang] = val;
 
             const cleanVal = val.trim().toLowerCase();
             if (['шт', 'шт.', 'гол', 'гол.', 'хв', 'min', 'uds', 'cabezas'].includes(cleanVal)) {
-                tempGroups[gIdx].params[pIdx].isInteger = true;
+                tempParams[idx].isInteger = true;
             }
         }
 
-        function updateIsInteger(gIdx, pIdx, isChecked) {
-            tempGroups[gIdx].params[pIdx].isInteger = isChecked;
+        function updateIsInteger(idx, isChecked) {
+            tempParams[idx].isInteger = isChecked;
         }
 
-        function autoFillFromDict(gIdx, pIdx, term) {
-            const esInput = document.getElementById(`p_label_es_${gIdx}_${pIdx}`);
+        function autoFillFromDict(idx, term) {
+            const esInput = document.getElementById(`p_label_es_${idx}`);
             const cleanTerm = term.trim().toLowerCase();
 
             if (state.dictionary[cleanTerm] && state.dictionary[cleanTerm].es) {
-                if (esInput && !esInput.value) {
+                if (!esInput.value) {
                     esInput.value = state.dictionary[cleanTerm].es;
-                    tempGroups[gIdx].params[pIdx].label.es = state.dictionary[cleanTerm].es;
+                    tempParams[idx].label.es = state.dictionary[cleanTerm].es;
                 }
                 return;
             }
@@ -2549,176 +2359,13 @@
             }
 
             if (bestMatch && state.dictionary[bestMatch].es) {
-                if (esInput && !esInput.value) {
+                if (!esInput.value) {
                     esInput.value = state.dictionary[bestMatch].es;
-                    tempGroups[gIdx].params[pIdx].label.es = state.dictionary[bestMatch].es;
+                    tempParams[idx].label.es = state.dictionary[bestMatch].es;
                 }
             }
         }
 
-        function openOptionsModal(gIdx, pIdx) {
-            editingOptionGIdx = gIdx;
-            editingOptionPIdx = pIdx;
-            const currentOpts = tempGroups[gIdx].params[pIdx].options || [];
-            document.getElementById('optionsTextArea').value = currentOpts.join('\n');
-            document.getElementById('optionsModal').classList.remove('hidden');
-        }
-
-        function closeOptionsModal() {
-            document.getElementById('optionsModal').classList.add('hidden');
-            editingOptionGIdx = null;
-            editingOptionPIdx = null;
-        }
-
-        function saveOptionsFromModal() {
-            if (editingOptionGIdx !== null && editingOptionPIdx !== null) {
-                const text = document.getElementById('optionsTextArea').value;
-                const opts = text.split('\n').map(s => s.trim()).filter(Boolean);
-                tempGroups[editingOptionGIdx].params[editingOptionPIdx].options = opts;
-                renderParamRows();
-            }
-            closeOptionsModal();
-        }
-
-        function moveParam(gIdx, pIdx, direction) {
-            const newPIdx = pIdx + direction;
-            if (newPIdx < 0 || newPIdx >= tempGroups[gIdx].params.length) return;
-            const item = tempGroups[gIdx].params.splice(pIdx, 1)[0];
-            tempGroups[gIdx].params.splice(newPIdx, 0, item);
-            renderParamRows();
-        }
-
-        function addParamRow(gIdx) {
-            const nextCode = 'v' + Date.now();
-            tempGroups[gIdx].params.push({
-                id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
-                label: { uk: '', es: '' },
-                unit: { uk: '', es: '' },
-                type: 'decimal',
-                required: false,
-                isBaseWeight: false,
-                useShare: false,
-                baseParamId: '',
-                code: nextCode
-            });
-            renderParamRows();
-
-            setTimeout(() => {
-                const newPIdx = tempGroups[gIdx].params.length - 1;
-                const newRow = document.getElementById(`paramRowBlock_${gIdx}_${newPIdx}`);
-                const ukInput = document.getElementById(`p_label_uk_${gIdx}_${newPIdx}`);
-                if (newRow && ukInput) {
-                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    ukInput.focus();
-                }
-            }, 100);
-        }
-
-        function removeParamRow(gIdx, pIdx) {
-            const dict = I18N[currentLang] || I18N.uk;
-            if (confirm(dict.msgRemoveParamConfirm)) {
-                tempGroups[gIdx].params.splice(pIdx, 1);
-                renderParamRows();
-            }
-        }
-
-        function updateParamType(gIdx, pIdx, val) {
-            tempGroups[gIdx].params[pIdx].type = val;
-            renderParamRows();
-        }
-
-        function updateParamFormula(gIdx, pIdx, val) {
-            tempGroups[gIdx].params[pIdx].formulaStr = val;
-        }
-
-        function updateBaseWeight(gIdx, pIdx, isChecked) {
-            tempGroups.forEach((g, gi) => {
-                g.params.forEach((p, pi) => {
-                    p.isBaseWeight = (gi === gIdx && pi === pIdx && isChecked);
-                });
-            });
-            renderParamRows();
-        }
-
-        function updateUseShare(gIdx, pIdx, isChecked) {
-            tempGroups[gIdx].params[pIdx].useShare = isChecked;
-            if (isChecked && !tempGroups[gIdx].params[pIdx].baseParamId) {
-                const firstBase = tempGroups.flatMap(g => g.params).find(p => p.isBaseWeight) || tempGroups.flatMap(g => g.params).find(p => p.type === 'decimal');
-                if (firstBase) tempGroups[gIdx].params[pIdx].baseParamId = firstBase.id;
-            }
-            renderParamRows();
-        }
-
-        function updateBaseParamId(gIdx, pIdx, val) {
-            tempGroups[gIdx].params[pIdx].baseParamId = val;
-        }
-
-        function saveMethodology() {
-            if (!isAdmin) return;
-            const titleUk = document.getElementById('methodTitle_uk').value.trim();
-            const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
-
-            const descUk = document.getElementById('methodDesc_uk').value.trim();
-            const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
-
-            const docUrl = document.getElementById('methodDocUrl').value.trim();
-            const status = document.getElementById('methodStatus').value;
-
-            const editId = document.getElementById('editMethodologyId').value;
-
-            if (!titleUk) {
-                alert(currentLang === 'es' ? "¡Ingrese el título de la metodología!" : "Будь ласка, введіть назву методики!");
-                return;
-            }
-
-            const newTitle = { uk: titleUk, es: titleEs };
-            const newDesc = { uk: descUk, es: descEs };
-            const currentTimeIso = new Date().toISOString();
-
-            const groups = tempGroups.map(g => ({
-                id: g.id || 'g_' + Date.now() + Math.random(),
-                title: g.title,
-                isGeneral: false,
-                params: g.params || []
-            }));
-
-            if (editId) {
-                const idx = state.methodologies.findIndex(m => m.id === editId);
-                if (idx !== -1) {
-                    const wasArchived = state.methodologies[idx].isArchived || false;
-                    state.methodologies[idx] = { 
-                        id: editId, 
-                        title: newTitle, 
-                        description: newDesc, 
-                        docUrl: docUrl,
-                        status: status,
-                        groups: groups,
-                        isArchived: wasArchived,
-                        updatedAt: currentTimeIso
-                    };
-                }
-            } else {
-                state.methodologies.push({
-                    id: 'm_custom_' + Date.now(),
-                    title: newTitle,
-                    description: newDesc,
-                    docUrl: docUrl,
-                    status: status,
-                    groups: groups,
-                    isArchived: false,
-                    updatedAt: currentTimeIso
-                });
-            }
-
-            saveStateToLocal();
-            populateMethodologyDropdown();
-            renderMethodologyCards();
-            closeMethodologyModal();
-            if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
-        }
-
-        // --- DICTIONARY MODAL ---
         function openDictionaryModal() {
             if (!isAdmin) return;
             tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: trans.es }));
@@ -2781,6 +2428,166 @@
             
             if (state.config.binId && state.config.apiKey) pushToJsonBin();
             alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
+        }
+
+        let tempDictArray = [];
+
+        function openOptionsModal(idx) {
+            editingOptionIdx = idx;
+            const currentOpts = tempParams[idx].options || [];
+            document.getElementById('optionsTextArea').value = currentOpts.join('\n');
+            document.getElementById('optionsModal').classList.remove('hidden');
+        }
+
+        function closeOptionsModal() {
+            document.getElementById('optionsModal').classList.add('hidden');
+            editingOptionIdx = null;
+        }
+
+        function saveOptionsFromModal() {
+            if (editingOptionIdx !== null) {
+                const text = document.getElementById('optionsTextArea').value;
+                const opts = text.split('\n').map(s => s.trim()).filter(Boolean);
+                tempParams[editingOptionIdx].options = opts;
+                renderParamRows();
+            }
+            closeOptionsModal();
+        }
+
+        function moveParam(idx, direction) {
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= tempParams.length) return;
+            const item = tempParams.splice(idx, 1)[0];
+            tempParams.splice(newIdx, 0, item);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+        }
+
+        function addParamRow() {
+            const nextCode = 'v' + (tempParams.length + 1);
+            const newIdx = tempParams.length;
+            tempParams.push({
+                id: 'p_' + Date.now(),
+                label: { uk: '', es: '' },
+                unit: { uk: '', es: '' },
+                type: 'decimal',
+                required: false,
+                isBaseWeight: false,
+                useShare: false,
+                baseParamId: '',
+                code: nextCode
+            });
+            renderParamRows();
+
+            setTimeout(() => {
+                const newRow = document.getElementById(`paramRowBlock_${newIdx}`);
+                const ukInput = document.getElementById(`p_label_uk_${newIdx}`);
+                if (newRow && ukInput) {
+                    newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    ukInput.focus();
+                }
+            }, 100);
+        }
+
+        function removeParamRow(idx) {
+            tempParams.splice(idx, 1);
+            tempParams.forEach((p, i) => { p.code = 'v' + (i + 1); });
+            renderParamRows();
+        }
+
+        function updateParamType(idx, val) {
+            tempParams[idx].type = val;
+            renderParamRows();
+        }
+
+        function updateParamFormula(idx, val) {
+            tempParams[idx].formulaStr = val;
+        }
+
+        function updateBaseWeight(idx, isChecked) {
+            tempParams.forEach((p, i) => {
+                p.isBaseWeight = (i === idx && isChecked);
+            });
+            renderParamRows();
+        }
+
+        function updateUseShare(idx, isChecked) {
+            tempParams[idx].useShare = isChecked;
+            if (isChecked && !tempParams[idx].baseParamId) {
+                const firstBase = tempParams.find(p => p.isBaseWeight) || tempParams.find(p => p.type === 'decimal');
+                if (firstBase) tempParams[idx].baseParamId = firstBase.id;
+            }
+            renderParamRows();
+        }
+
+        function updateBaseParamId(idx, val) {
+            tempParams[idx].baseParamId = val;
+        }
+
+        function saveMethodology() {
+            if (!isAdmin) return;
+            const titleUk = document.getElementById('methodTitle_uk').value.trim();
+            const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
+
+            const descUk = document.getElementById('methodDesc_uk').value.trim();
+            const descEs = document.getElementById('methodDesc_es').value.trim() || descUk;
+
+            const docUrl = document.getElementById('methodDocUrl').value.trim();
+            const status = document.getElementById('methodStatus').value;
+
+            const editId = document.getElementById('editMethodologyId').value;
+
+            if (!titleUk) {
+                alert(currentLang === 'es' ? "¡Ingrese el título de la metodología!" : "Будь ласка, введіть назву методики!");
+                return;
+            }
+
+            const newTitle = { uk: titleUk, es: titleEs };
+            const newDesc = { uk: descUk, es: descEs };
+            const currentTimeIso = new Date().toISOString();
+
+            const groups = [
+                {
+                    title: { uk: 'Параметри методики', es: 'Parámetros' },
+                    isGeneral: false,
+                    params: tempParams
+                }
+            ];
+
+            if (editId) {
+                const idx = state.methodologies.findIndex(m => m.id === editId);
+                if (idx !== -1) {
+                    const wasArchived = state.methodologies[idx].isArchived || false;
+                    state.methodologies[idx] = { 
+                        id: editId, 
+                        title: newTitle, 
+                        description: newDesc, 
+                        docUrl: docUrl,
+                        status: status,
+                        groups: groups,
+                        isArchived: wasArchived,
+                        updatedAt: currentTimeIso
+                    };
+                }
+            } else {
+                state.methodologies.push({
+                    id: 'm_custom_' + Date.now(),
+                    title: newTitle,
+                    description: newDesc,
+                    docUrl: docUrl,
+                    status: status,
+                    groups: groups,
+                    isArchived: false,
+                    updatedAt: currentTimeIso
+                });
+            }
+
+            saveStateToLocal();
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+            closeMethodologyModal();
+            if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
         }
 
         function loadSettingsInputs() {
@@ -2932,7 +2739,7 @@
             }
         }
 
-        clearAllData = function() {
+        function clearAllData() {
             if (!isAdmin) {
                 alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
@@ -2943,7 +2750,7 @@
                 renderHistoryTable();
                 if (state.config.binId && state.config.apiKey) pushToJsonBin();
             }
-        };
+        }
     </script>
 </body>
 </html>
