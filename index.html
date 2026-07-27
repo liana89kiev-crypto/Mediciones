@@ -1844,11 +1844,21 @@
 
                     allParams.forEach((p) => {
                         const rawVal = getValByParam(p);
-                        const numVal = parseFloat(rawVal);
+                        
+                        // ФІКС ДРОБОВИХ ЧИСЕЛ: перетворюємо числа з крапкою замість коми для правильного формату Excel
+                        let parsedNum = null;
+                        if (rawVal !== '-' && rawVal !== '' && rawVal !== null) {
+                            const cleanStr = String(rawVal).replace(',', '.');
+                            const num = parseFloat(cleanStr);
+                            if (!isNaN(num)) {
+                                parsedNum = num;
+                            }
+                        }
+
                         const isInt = integerParamIds.has(p.id);
 
-                        if (!isNaN(numVal) && rawVal !== '-' && rawVal !== '' && !String(p.id).includes("Примітки") && !String(p.id).includes("Notas") && !String(p.id).includes("Дата")) {
-                            row.push(isInt ? Math.round(numVal) : numVal);
+                        if (parsedNum !== null && !String(p.id).includes("Примітки") && !String(p.id).includes("Notas") && !String(p.id).includes("Дата")) {
+                            row.push(isInt ? Math.round(parsedNum) : parsedNum);
                         } else {
                             row.push(rawVal || '-');
                         }
@@ -1856,14 +1866,18 @@
                         const ruleEntry = Object.entries(shareRules).find(([colIdx, rule]) => rule.paramId === p.id);
                         if (ruleEntry) {
                             const rule = ruleEntry[1];
-                            const valForShare = parseFloat(rawVal) || 0;
+                            const valForShare = parsedNum !== null ? parsedNum : 0;
                             
                             const baseParamObj = allParams.find(x => x.id === rule.baseParamId);
-                            let baseVal = baseParamObj ? parseFloat(getValByParam(baseParamObj)) || 0 : 0;
+                            let baseVal = 0;
+                            if (baseParamObj) {
+                                const bRaw = getValByParam(baseParamObj);
+                                baseVal = parseFloat(String(bRaw).replace(',', '.')) || 0;
+                            }
 
                             if (baseVal === 0 && rec.values) {
                                 for (const v of Object.values(rec.values)) {
-                                    const parsedB = parseFloat(v);
+                                    const parsedB = parseFloat(String(v).replace(',', '.'));
                                     if (parsedB > 0) {
                                         baseVal = parsedB;
                                         break;
@@ -1935,7 +1949,7 @@
                             } else if (isIntegerCol[C]) {
                                 cell.z = '0';
                             } else {
-                                cell.z = '0.003';
+                                cell.z = '0.003'; // Числовий формат із крапкою та 3 знаками для дробових
                             }
                         }
 
@@ -2007,7 +2021,7 @@
                                 <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-50 text-blue-700 border border-blue-100'} font-bold px-2.5 py-1 rounded-xl shadow-xs">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
                             <p class="text-xs text-slate-500 mb-4 leading-relaxed">${escapeHTML(mDesc) || '...'}</p>
-                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-lg border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
                         </div>
                         <div class="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
                             ${actions}
