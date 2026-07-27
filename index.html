@@ -1845,7 +1845,6 @@
                     allParams.forEach((p) => {
                         const rawVal = getValByParam(p);
                         
-                        // ФІКС ДРОБОВИХ ЧИСЕЛ: перетворюємо числа з крапкою замість коми для правильного формату Excel
                         let parsedNum = null;
                         if (rawVal !== '-' && rawVal !== '' && rawVal !== null) {
                             const cleanStr = String(rawVal).replace(',', '.');
@@ -1949,7 +1948,7 @@
                             } else if (isIntegerCol[C]) {
                                 cell.z = '0';
                             } else {
-                                cell.z = '0.003'; // Числовий формат із крапкою та 3 знаками для дробових
+                                cell.z = '0.003';
                             }
                         }
 
