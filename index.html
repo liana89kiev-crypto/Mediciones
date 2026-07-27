@@ -1898,6 +1898,26 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
 
+                // ПРИМУСОВИЙ ТИП 'n' (number) ТА ФОРМАТ З КРАПКОЮ ДЛЯ ЧИСЛОВИХ КОМІРОК
+                for (let R = 0; R < dataRows.length; R++) {
+                    for (let C = 0; C < dataRows[R].length; C++) {
+                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+                        if (!worksheet[cellAddress]) continue;
+                        const cell = worksheet[cellAddress];
+
+                        if (R > 0 && typeof cell.v === 'number') {
+                            cell.t = 'n'; // Примусово вказуємо тип 'число' (number) замість тексту чи загального
+                            if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
+                                cell.z = '0.00%';
+                            } else if (isIntegerCol[C]) {
+                                cell.z = '0';
+                            } else {
+                                cell.z = '0.000'; // Формат з крапкою для дробових чисел (напр. 1.770)
+                            }
+                        }
+                    }
+                }
+
                 const headerStyle = {
                     font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10, name: "Segoe UI" },
                     fill: { fgColor: { rgb: "1E293B" } },
@@ -1941,17 +1961,6 @@
                         if (!worksheet[cellAddress]) continue;
 
                         const cell = worksheet[cellAddress];
-
-                        if (typeof cell.v === 'number') {
-                            if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
-                                cell.z = '0.00%';
-                            } else if (isIntegerCol[C]) {
-                                cell.z = '0';
-                            } else {
-                                cell.z = '0.003';
-                            }
-                        }
-
                         colWidths[C] = Math.max(colWidths[C] || 18, 26);
 
                         if (R === 0) {
@@ -2176,7 +2185,6 @@
         }
 
         function addGroup() {
-            // Додаємо новий розділ У КІНЕЦЬ масиву (після вже існуючих)
             tempGroups.push({
                 id: 'g_' + Date.now(),
                 title: { uk: `Новий розділ`, es: `Nueva sección` },
