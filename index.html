@@ -347,11 +347,12 @@
 
                 <div class="border-t border-slate-200 pt-5">
                     <div class="flex justify-between items-center mb-4">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Параметри методики</label>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Розділи та параметри методики</label>
                         <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-md flex items-center gap-2" id="btnAddGroup">
                             <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ (етап)</span>
                         </button>
                     </div>
+
                     <div id="paramRowsContainer" class="space-y-6">
                     </div>
                 </div>
@@ -519,11 +520,11 @@
                 modalEditTitle: "Редагувати методику",
                 lblModalMethodTitle: "Назва методики (UA / ES)",
                 lblModalMethodDesc: "Опис методики (UA / ES)",
-                lblModalParams: "Параметри методики",
+                lblModalParams: "Розділи та параметри методики",
                 btnAddGroup: "+ Додати розділ (етап)",
                 lblGroupTitle: "Назва розділу (етапу) (UA / ES)",
                 btnRemoveGroup: "Видалити розділ",
-                btnAddParamRow: "+ Додати параметр",
+                btnAddParamRow: "+ Додати параметр до цього розділу",
                 btnCancelModal: "Скасувати",
                 btnSaveModal: "Зберегти методику",
                 optTypeDecimal: "Число (0.000)",
@@ -545,7 +546,7 @@
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
                 msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр?",
-                msgRemoveGroupConfirm: "Ви дійсно бажаєте видалити цей розділ з усіма параметрами?",
+                msgRemoveGroupConfirm: "Видалити цей розділ? Усі параметри з нього автоматично перенесуться в кінець (Без категорії).",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
                 allMethodsOpt: "Всі методики",
                 adminOp: "Оператор",
@@ -636,11 +637,11 @@
                 modalEditTitle: "Editar metodología",
                 lblModalMethodTitle: "Nombre de metodología (UA / ES)",
                 lblModalMethodDesc: "Descripción de metodología (UA / ES)",
-                lblModalParams: "Parámetros de la metodología",
+                lblModalParams: "Secciones y parámetros",
                 btnAddGroup: "+ Añadir sección (etapa)",
-                lblGroupTitle: "Nombre de la sección (UA / ES)",
+                lblGroupTitle: "Nombre de sección (UA / ES)",
                 btnRemoveGroup: "Eliminar sección",
-                btnAddParamRow: "+ Añadir parámetro",
+                btnAddParamRow: "+ Añadir parámetro a esta sección",
                 btnCancelModal: "Cancelar",
                 btnSaveModal: "Guardar metodología",
                 optTypeDecimal: "Número (0.000)",
@@ -662,7 +663,7 @@
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 msgResetConfirm: "¿Realmente desea limpiar el formulario? Se perderán todos los datos ingresados.",
                 msgRemoveParamConfirm: "¿Realmente desea eliminar este parámetro?",
-                msgRemoveGroupConfirm: "¿Realmente desea eliminar esta sección con todos sus parámetros?",
+                msgRemoveGroupConfirm: "¿Eliminar esta sección? Todos sus parámetros se moverán al final (Sin categoría).",
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
                 allMethodsOpt: "Todas las metodologías",
                 adminOp: "Operador",
@@ -1063,7 +1064,7 @@
 
         async function switchTab(tabId) {
             if (tabId === 'methodologies' && !isAdmin) {
-                alert(currentLang === 'es' ? "Acceso restringido. ¡Inicie sesión como administrador!" : "Доступ обмежено. Увійдіть як адміністратор!");
+                alert(currentLang === 'es' ? "Acceso restringido. ¡Inicie sesión как administrador!" : "Доступ обмежено. Увійдіть як адміністратор!");
                 return;
             }
             if (state.config.binId && state.config.apiKey) {
@@ -1213,11 +1214,15 @@
             const groups = m.groups || [{ title: 'Parameters', params: m.params || [] }];
 
             groups.forEach(group => {
-                const groupBlock = document.createElement('div');
-                groupBlock.className = 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4';
-                
                 const groupTitle = getI18nText(group.title);
-                groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
+                const hasGroupTitle = groupTitle && groupTitle.trim() !== '';
+
+                const groupBlock = document.createElement('div');
+                groupBlock.className = hasGroupTitle ? 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4' : 'space-y-4 mb-4';
+                
+                if (hasGroupTitle) {
+                    groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
+                }
                 
                 const grid = document.createElement('div');
                 grid.className = 'grid grid-cols-1 gap-4 pt-1';
@@ -1977,7 +1982,7 @@
                                 <span class="text-xs ${isArchived ? 'bg-slate-200 text-slate-500' : 'bg-blue-50 text-blue-700 border border-blue-100'} font-bold px-2.5 py-1 rounded-xl shadow-xs">${paramCount} ${dict.lblParamsBadge}</span>
                             </div>
                             <p class="text-xs text-slate-500 mb-4 leading-relaxed">${escapeHTML(mDesc) || '...'}</p>
-                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-xl border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
+                            ${m.docUrl ? `<a href="${escapeHTML(m.docUrl)}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1.5 mb-3 bg-blue-50/60 px-3 py-1.5 rounded-lg border border-blue-100 shadow-xs"><i class="fa-solid fa-external-link-alt"></i> ${dict.docLinkText}</a>` : ''}
                         </div>
                         <div class="flex justify-end space-x-2 pt-3.5 border-t border-slate-100">
                             ${actions}
@@ -2148,7 +2153,17 @@
         function removeGroup(gIdx) {
             const dict = I18N[currentLang] || I18N.uk;
             if (confirm(dict.msgRemoveGroupConfirm)) {
-                tempGroups.splice(gIdx, 1);
+                const removedGroup = tempGroups.splice(gIdx, 1)[0];
+                if (removedGroup && removedGroup.params && removedGroup.params.length > 0) {
+                    if (tempGroups.length === 0) {
+                        tempGroups.push({
+                            id: 'g_' + Date.now(),
+                            title: { uk: 'Без категорії', es: 'Sin categoría' },
+                            params: []
+                        });
+                    }
+                    tempGroups[tempGroups.length - 1].params.push(...removedGroup.params);
+                }
                 renderParamRows();
             }
         }
@@ -2298,24 +2313,24 @@
                 }).join('');
 
                 return `
-                <div class="p-5 bg-slate-100/80 border border-slate-200 rounded-2xl shadow-sm space-y-4 mb-6 relative">
+                <div class="p-5 bg-slate-100/90 border border-slate-200 rounded-2xl shadow-sm space-y-4 mb-6 relative">
                     <div class="flex justify-between items-start gap-4">
                         <div class="flex-grow flex flex-col sm:flex-row gap-3">
                             <div class="w-full sm:w-1/2">
                                 <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">${dict.lblGroupTitle}</label>
-                                <input type="text" value="${escapeHTML(groupTitleUk)}" oninput="updateGroupTitle(${gIdx}, 'uk', this.value)" placeholder="🇺🇦 Назва розділу" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <input type="text" value="${escapeHTML(groupTitleUk)}" oninput="updateGroupTitle(${gIdx}, 'uk', this.value)" placeholder="🇺🇦 Назва розділу (залиште пустим для без категорії)" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                             </div>
                             <div class="w-full sm:w-1/2">
                                 <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">&nbsp;</label>
-                                <input type="text" value="${escapeHTML(groupTitleEs)}" oninput="updateGroupTitle(${gIdx}, 'es', this.value)" placeholder="🇪🇸 Nombre de sección" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <input type="text" value="${escapeHTML(groupTitleEs)}" oninput="updateGroupTitle(${gIdx}, 'es', this.value)" placeholder="🇪🇸 Nombre de sección (opcional)" class="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                             </div>
                         </div>
-                        <button type="button" onclick="removeGroup(${gIdx})" class="mt-5 shrink-0 text-red-500 hover:text-red-700 text-xs font-bold p-2.5 hover:bg-red-50 rounded-xl transition border border-transparent hover:border-red-200">
+                        <button type="button" onclick="removeGroup(${gIdx})" class="mt-5 shrink-0 text-red-500 hover:text-red-700 text-xs font-bold p-2.5 hover:bg-red-50 rounded-xl transition border border-transparent hover:border-red-200" title="Видалити розділ зі збереженням параметрів">
                             <i class="fa-solid fa-trash"></i> <span class="hidden sm:inline ml-1">${dict.btnRemoveGroup}</span>
                         </button>
                     </div>
 
-                    <div class="space-y-3 pl-2 sm:pl-4 border-l-4 border-indigo-200 pt-2">
+                    <div class="space-y-3 pl-2 sm:pl-4 border-l-4 border-indigo-300 pt-2">
                         ${paramsHtml}
                     </div>
 
@@ -2579,7 +2594,7 @@
                 id: g.id || 'g_' + Date.now() + Math.random(),
                 title: g.title,
                 isGeneral: false,
-                params: g.params
+                params: g.params || []
             }));
 
             if (editId) {
