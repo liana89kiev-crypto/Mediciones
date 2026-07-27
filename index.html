@@ -524,8 +524,8 @@
                 btnAddGroup: "+ Додати розділ (етап) зверху",
                 lblGroupTitle: "Назва розділу (етапу) (UA / ES)",
                 btnRemoveGroup: "Видалити розділ",
-                btnAddParamRow: "+ Додати новий параметр",
-                btnAddExistingParam: "➕ Додати існуючий параметр у цей розділ:",
+                btnAddParamRow: "+ Додати параметр до цього розділу",
+                btnAddExistingParam: "➕ Перенести сюди існуючий параметр:",
                 optSelectExisting: "-- Обрати існуючий параметр --",
                 btnCancelModal: "Скасувати",
                 btnSaveModal: "Зберегти методику",
@@ -548,7 +548,7 @@
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
                 msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр з методики?",
-                msgRemoveGroupConfirm: "Видалити цей розділ? Усі параметри з нього автоматично перенесуться в кінець.",
+                msgRemoveGroupConfirm: "Видалити цей розділ? Усі параметри з нього автоматично перенесуться в інший розділ.",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
                 allMethodsOpt: "Всі методики",
                 adminOp: "Оператор",
@@ -644,7 +644,7 @@
                 lblGroupTitle: "Nombre de sección (UA / ES)",
                 btnRemoveGroup: "Eliminar sección",
                 btnAddParamRow: "+ Añadir nuevo parámetro",
-                btnAddExistingParam: "➕ Añadir parámetro existente a esta sección:",
+                btnAddExistingParam: "➕ Mover parámetro existente a esta sección:",
                 optSelectExisting: "-- Seleccionar parámetro existente --",
                 btnCancelModal: "Cancelar",
                 btnSaveModal: "Guardar metodología",
@@ -667,7 +667,7 @@
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 msgResetConfirm: "¿Realmente desea limpiar el formulario? Se perderán todos los datos ingresados.",
                 msgRemoveParamConfirm: "¿Realmente desea eliminar este parámetro?",
-                msgRemoveGroupConfirm: "¿Eliminar esta sección? Todos sus parámetros se moverán al final.",
+                msgRemoveGroupConfirm: "¿Eliminar esta sección? Todos sus parámetros se moverán a otra sección.",
                 factories: ["Planta 1", "Planta 2", "Planta 3", "Planta 4", "Planta 5"],
                 allMethodsOpt: "Todas las metodologías",
                 adminOp: "Operador",
@@ -2141,7 +2141,7 @@
         }
 
         function addGroup() {
-            // Додаємо новий розділ НА САМИЙ ПОЧАТОК масиву
+            // Додаємо новий розділ НА САМИЙ ПОЧАТОК масиву (ЗВЕРХУ ПІСЛЯ ІСНУЮЧИХ або перед ними)
             tempGroups.unshift({
                 id: 'g_' + Date.now(),
                 title: { uk: `Новий розділ`, es: `Nueva sección` },
@@ -2167,7 +2167,7 @@
                             params: []
                         });
                     }
-                    tempGroups[tempGroups.length - 1].params.push(...removedGroup.params);
+                    tempGroups[0].params.push(...removedGroup.params);
                 }
                 renderParamRows();
             }
@@ -2181,29 +2181,26 @@
             tempGroups[gIdx].title[lang] = val;
         }
 
-        function addExistingParamToGroup(gIdx, pId) {
-            if (!pId) return;
-            // Шукаємо цей параметр серед інших груп
+        function addExistingParamToGroup(targetGIdx, paramId) {
+            if (!paramId) return;
             let foundParam = null;
-            let foundFromGIdx = -1;
-            let foundPIdx = -1;
+            let sourceGIdx = -1;
+            let sourcePIdx = -1;
 
             tempGroups.forEach((g, gi) => {
                 (g.params || []).forEach((p, pi) => {
-                    if (p.id === pId) {
+                    if (p.id === paramId) {
                         foundParam = p;
-                        foundFromGIdx = gi;
-                        foundPIdx = pi;
+                        sourceGIdx = gi;
+                        sourcePIdx = pi;
                     }
                 });
             });
 
-            if (foundParam && foundFromGIdx !== gIdx) {
-                // Видаляємо з попередньої групи
-                tempGroups[foundFromGIdx].params.splice(foundPIdx, 1);
-                // Додаємо в цільову групу
-                if (!tempGroups[gIdx].params) tempGroups[gIdx].params = [];
-                tempGroups[gIdx].params.push(foundParam);
+            if (foundParam && sourceGIdx !== targetGIdx) {
+                tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
+                if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
+                tempGroups[targetGIdx].params.push(foundParam);
                 renderParamRows();
             }
         }
@@ -2219,9 +2216,7 @@
                 });
             });
 
-            // Збираємо список усіх параметрів, які вже є в цій методиці, для випадаючого списку переносу
             const allCurrentParamsInMethod = tempGroups.flatMap(g => g.params || []);
-
             const allDecimalParams = tempGroups.flatMap(g => (g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula'));
             const existingParamsPool = getAllExistingParams();
 
@@ -2229,7 +2224,6 @@
                 const groupTitleUk = typeof group.title === 'object' ? (group.title.uk || '') : (group.title || '');
                 const groupTitleEs = typeof group.title === 'object' ? (group.title.es || '') : '';
 
-                // Список інших параметрів у методиці, яких ще немає в цьому конкретному розділі
                 const otherParamsOptions = allCurrentParamsInMethod
                     .filter(p => !(group.params || []).some(gp => gp.id === p.id))
                     .map(p => `<option value="${p.id}">${escapeHTML(getLabelWithUnit(p, currentLang))} [${p.code}]</option>`)
@@ -2371,7 +2365,6 @@
                         </button>
                     </div>
 
-                    <!-- Швидке додавання існуючого параметра у цей розділ -->
                     ${otherParamsOptions ? `
                     <div class="bg-indigo-50/80 p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-center gap-2">
                         <span class="text-[11px] font-semibold text-indigo-950 shrink-0"><i class="fa-solid fa-arrows-turn-right mr-1"></i> ${dict.btnAddExistingParam}</span>
@@ -2581,30 +2574,6 @@
                     ukInput.focus();
                 }
             }, 100);
-        }
-
-        function addExistingParamToGroup(targetGIdx, paramId) {
-            if (!paramId) return;
-            let foundParam = null;
-            let sourceGIdx = -1;
-            let sourcePIdx = -1;
-
-            tempGroups.forEach((g, gi) => {
-                (g.params || []).forEach((p, pi) => {
-                    if (p.id === paramId) {
-                        foundParam = p;
-                        sourceGIdx = gi;
-                        sourcePIdx = pi;
-                    }
-                });
-            });
-
-            if (foundParam && sourceGIdx !== targetGIdx) {
-                tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
-                if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
-                tempGroups[targetGIdx].params.push(foundParam);
-                renderParamRows();
-            }
         }
 
         function removeParamRow(gIdx, pIdx) {
@@ -2925,7 +2894,7 @@
             }
         }
 
-        function clearAllData() {
+        clearAllData = function() {
             if (!isAdmin) {
                 alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
@@ -2936,7 +2905,7 @@
                 renderHistoryTable();
                 if (state.config.binId && state.config.apiKey) pushToJsonBin();
             }
-        }
+        };
     </script>
 </body>
 </html>
