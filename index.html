@@ -349,7 +349,7 @@
                     <div class="flex justify-between items-center mb-4">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Розділи та параметри методики</label>
                         <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-md flex items-center gap-2" id="btnAddGroup">
-                            <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ (етап)</span>
+                            <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ (етап) зверху</span>
                         </button>
                     </div>
 
@@ -521,10 +521,12 @@
                 lblModalMethodTitle: "Назва методики (UA / ES)",
                 lblModalMethodDesc: "Опис методики (UA / ES)",
                 lblModalParams: "Розділи та параметри методики",
-                btnAddGroup: "+ Додати розділ (етап)",
+                btnAddGroup: "+ Додати розділ (етап) зверху",
                 lblGroupTitle: "Назва розділу (етапу) (UA / ES)",
                 btnRemoveGroup: "Видалити розділ",
-                btnAddParamRow: "+ Додати параметр до цього розділу",
+                btnAddParamRow: "+ Додати новий параметр",
+                btnAddExistingParam: "➕ Додати існуючий параметр у цей розділ:",
+                optSelectExisting: "-- Обрати існуючий параметр --",
                 btnCancelModal: "Скасувати",
                 btnSaveModal: "Зберегти методику",
                 optTypeDecimal: "Число (0.000)",
@@ -545,7 +547,7 @@
                 msgSaved: "Замір успішно збережено!",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
-                msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр?",
+                msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр з методики?",
                 msgRemoveGroupConfirm: "Видалити цей розділ? Усі параметри з нього автоматично перенесуться в кінець.",
                 factories: ["Фабрика 1", "Фабрика 2", "Фабрика 3", "Фабрика 4", "Фабрика 5"],
                 allMethodsOpt: "Всі методики",
@@ -638,10 +640,12 @@
                 lblModalMethodTitle: "Nombre de metodología (UA / ES)",
                 lblModalMethodDesc: "Descripción de metodología (UA / ES)",
                 lblModalParams: "Secciones y parámetros",
-                btnAddGroup: "+ Añadir sección (etapa)",
+                btnAddGroup: "+ Añadir sección (etapa) arriba",
                 lblGroupTitle: "Nombre de sección (UA / ES)",
                 btnRemoveGroup: "Eliminar sección",
-                btnAddParamRow: "+ Añadir parámetro a esta sección",
+                btnAddParamRow: "+ Añadir nuevo parámetro",
+                btnAddExistingParam: "➕ Añadir parámetro existente a esta sección:",
+                optSelectExisting: "-- Seleccionar parámetro existente --",
                 btnCancelModal: "Cancelar",
                 btnSaveModal: "Guardar metodología",
                 optTypeDecimal: "Número (0.000)",
@@ -2137,16 +2141,17 @@
         }
 
         function addGroup() {
-            tempGroups.push({
+            // Додаємо новий розділ НА САМИЙ ПОЧАТОК масиву
+            tempGroups.unshift({
                 id: 'g_' + Date.now(),
-                title: { uk: `Етап ${tempGroups.length + 1}`, es: `Etapa ${tempGroups.length + 1}` },
+                title: { uk: `Новий розділ`, es: `Nueva sección` },
                 params: []
             });
             renderParamRows();
             
             setTimeout(() => {
                 const container = document.getElementById('paramRowsContainer');
-                container.parentElement.scrollTop = container.parentElement.scrollHeight;
+                if (container) container.scrollTop = 0;
             }, 50);
         }
 
@@ -2176,6 +2181,33 @@
             tempGroups[gIdx].title[lang] = val;
         }
 
+        function addExistingParamToGroup(gIdx, pId) {
+            if (!pId) return;
+            // Шукаємо цей параметр серед інших груп
+            let foundParam = null;
+            let foundFromGIdx = -1;
+            let foundPIdx = -1;
+
+            tempGroups.forEach((g, gi) => {
+                (g.params || []).forEach((p, pi) => {
+                    if (p.id === pId) {
+                        foundParam = p;
+                        foundFromGIdx = gi;
+                        foundPIdx = pi;
+                    }
+                });
+            });
+
+            if (foundParam && foundFromGIdx !== gIdx) {
+                // Видаляємо з попередньої групи
+                tempGroups[foundFromGIdx].params.splice(foundPIdx, 1);
+                // Додаємо в цільову групу
+                if (!tempGroups[gIdx].params) tempGroups[gIdx].params = [];
+                tempGroups[gIdx].params.push(foundParam);
+                renderParamRows();
+            }
+        }
+
         function renderParamRows() {
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
@@ -2187,12 +2219,21 @@
                 });
             });
 
+            // Збираємо список усіх параметрів, які вже є в цій методиці, для випадаючого списку переносу
+            const allCurrentParamsInMethod = tempGroups.flatMap(g => g.params || []);
+
             const allDecimalParams = tempGroups.flatMap(g => (g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula'));
             const existingParamsPool = getAllExistingParams();
 
             container.innerHTML = tempGroups.map((group, gIdx) => {
                 const groupTitleUk = typeof group.title === 'object' ? (group.title.uk || '') : (group.title || '');
                 const groupTitleEs = typeof group.title === 'object' ? (group.title.es || '') : '';
+
+                // Список інших параметрів у методиці, яких ще немає в цьому конкретному розділі
+                const otherParamsOptions = allCurrentParamsInMethod
+                    .filter(p => !(group.params || []).some(gp => gp.id === p.id))
+                    .map(p => `<option value="${p.id}">${escapeHTML(getLabelWithUnit(p, currentLang))} [${p.code}]</option>`)
+                    .join('');
 
                 const paramsHtml = (group.params || []).map((p, pIdx) => {
                     const baseOptions = allDecimalParams.map(dp => 
@@ -2329,6 +2370,17 @@
                             <i class="fa-solid fa-trash"></i> <span class="hidden sm:inline ml-1">${dict.btnRemoveGroup}</span>
                         </button>
                     </div>
+
+                    <!-- Швидке додавання існуючого параметра у цей розділ -->
+                    ${otherParamsOptions ? `
+                    <div class="bg-indigo-50/80 p-3 rounded-xl border border-indigo-100 flex flex-col sm:flex-row items-center gap-2">
+                        <span class="text-[11px] font-semibold text-indigo-950 shrink-0"><i class="fa-solid fa-arrows-turn-right mr-1"></i> ${dict.btnAddExistingParam}</span>
+                        <select onchange="addExistingParamToGroup(${gIdx}, this.value); this.value='';" class="w-full border border-indigo-200 rounded-lg p-1.5 text-xs bg-white shadow-2xs outline-none focus:ring-2 focus:ring-indigo-400">
+                            <option value="">${dict.optSelectExisting}</option>
+                            ${otherParamsOptions}
+                        </select>
+                    </div>
+                    ` : ''}
 
                     <div class="space-y-3 pl-2 sm:pl-4 border-l-4 border-indigo-300 pt-2">
                         ${paramsHtml}
@@ -2529,6 +2581,30 @@
                     ukInput.focus();
                 }
             }, 100);
+        }
+
+        function addExistingParamToGroup(targetGIdx, paramId) {
+            if (!paramId) return;
+            let foundParam = null;
+            let sourceGIdx = -1;
+            let sourcePIdx = -1;
+
+            tempGroups.forEach((g, gi) => {
+                (g.params || []).forEach((p, pi) => {
+                    if (p.id === paramId) {
+                        foundParam = p;
+                        sourceGIdx = gi;
+                        sourcePIdx = pi;
+                    }
+                });
+            });
+
+            if (foundParam && sourceGIdx !== targetGIdx) {
+                tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
+                if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
+                tempGroups[targetGIdx].params.push(foundParam);
+                renderParamRows();
+            }
         }
 
         function removeParamRow(gIdx, pIdx) {
