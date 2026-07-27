@@ -1898,7 +1898,7 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
 
-                // ПРИМУСОВИЙ ТИП 'n' (number) ТА ФОРМАТ З КРАПКОЮ ДЛЯ ЧИСЛОВИХ КОМІРОК
+                // ЖОРСТКЕ ФОРМАТУВАННЯ КОМІРОК ЯК ТЕКСТОВИХ ЧИСЕЛ З КРАПКОЮ ДЛЯ ЕКСЕЛЯ
                 for (let R = 0; R < dataRows.length; R++) {
                     for (let C = 0; C < dataRows[R].length; C++) {
                         const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
@@ -1906,13 +1906,13 @@
                         const cell = worksheet[cellAddress];
 
                         if (R > 0 && typeof cell.v === 'number') {
-                            cell.t = 'n'; // Примусово вказуємо тип 'число' (number) замість тексту чи загального
+                            cell.t = 's'; // Робимо ячейку текстовою, щоб Excel не замінював крапку на кому за локаллю ОС
                             if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
-                                cell.z = '0.00%';
+                                cell.v = (cell.v * 100).toFixed(2) + '%';
                             } else if (isIntegerCol[C]) {
-                                cell.z = '0';
+                                cell.v = String(Math.round(cell.v));
                             } else {
-                                cell.z = '0.000'; // Формат з крапкою для дробових чисел (напр. 1.770)
+                                cell.v = String(cell.v);
                             }
                         }
                     }
