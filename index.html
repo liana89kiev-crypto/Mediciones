@@ -1245,7 +1245,7 @@
                                 ${showPercentBadge ? `
                                     <div class="shrink-0 w-24">
                                         <span id="badge_pct_${p.id}" class="block w-full text-center text-xs font-extrabold bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-3 rounded-xl shadow-sm transition-all opacity-60">
-                                            0.000 %
+                                            0.00 %
                                         </span>
                                     </div>
                                 ` : ''}
@@ -1317,12 +1317,12 @@
                         const baseVal = baseParam ? (vars[baseParam.code] || 0) : 0;
 
                         if (baseVal > 0 && val > 0) {
-                            const pct = ((val / baseVal) * 100).toFixed(3);
+                            const pct = ((val / baseVal) * 100).toFixed(2);
                             badge.innerText = `${pct} %`;
                             badge.classList.remove("opacity-60", "text-slate-400", "bg-slate-50", "border-slate-200");
                             badge.classList.add("opacity-100", "text-emerald-800", "bg-emerald-50", "border-emerald-300");
                         } else {
-                            badge.innerText = "0.000 %";
+                            badge.innerText = "0.00 %";
                             badge.classList.remove("opacity-100", "text-emerald-800", "bg-emerald-50", "border-emerald-300");
                             badge.classList.add("opacity-60", "text-slate-400", "bg-slate-50", "border-slate-200");
                         }
@@ -1702,14 +1702,12 @@
                 const methodologyRecords = groupData.records;
                 const m = groupData.methodObj;
 
-                // ВИКОРИСТОВУЄМО АБО ЕТАЛОННУ МЕТОДИКУ, АБО КОРИСТУЄМОСЬ ПЕРШИМ ЗНАЙДЕНИМ ЗАПИСОМ ДЛЯ СТРУКТУРИ
                 let allParams = [];
                 if (m && m.groups) {
                     allParams = m.groups.flatMap(g => g.params || []);
                 } else if (m && m.params) {
                     allParams = m.params;
                 } else if (methodologyRecords.length > 0 && methodologyRecords[0].paramIdToValueMap) {
-                    // Якщо методики немає в списку, беремо ключі з першого записаного замару
                     allParams = Object.keys(methodologyRecords[0].paramIdToValueMap).map(id => ({ id: id, label: id, type: 'decimal' }));
                 }
 
@@ -1738,7 +1736,6 @@
                 const isCalcCol = [false, false, false];
                 const shareRules = {};
 
-                // ФОРМУЄМО ЕДИНУ ШАПКУ ТАБЛИЦІ НА ОСНОВІ ЕТАЛОННИХ ПАРАМЕТРІВ
                 allParams.forEach(p => {
                     const bilingualHeader = paramIdToBilingualHeader[p.id] || p.id;
                     fullHeaders.push(bilingualHeader);
@@ -1766,7 +1763,6 @@
 
                 const dataRows = [fullHeaders];
 
-                // ЗАПОВНЮЄМО РЯДКИ З ВИКОРИСТАННЯМ ПЕРЕХРЕСНОГО ПОШУКУ ПО ТЕКСТАХ ТА ID
                 methodologyRecords.forEach(rec => {
                     const row = [
                         rec.timestamp,
@@ -1775,21 +1771,17 @@
                     ];
 
                     const getValByParam = (p) => {
-                        // 1. Шукаємо за точним ID в paramIdToValueMap
                         if (rec.paramIdToValueMap && rec.paramIdToValueMap[p.id] !== undefined && rec.paramIdToValueMap[p.id] !== '-') {
                             return rec.paramIdToValueMap[p.id];
                         }
-                        // 2. Шукаємо за українською назвою параметра
                         const pUk = getLabelWithUnit(p, 'uk');
                         if (rec.values && rec.values[pUk] !== undefined && rec.values[pUk] !== '-') {
                             return rec.values[pUk];
                         }
-                        // 3. Шукаємо за іспанською назвою параметра
                         const pEs = getLabelWithUnit(p, 'es');
                         if (rec.values && rec.values[pEs] !== undefined && rec.values[pEs] !== '-') {
                             return rec.values[pEs];
                         }
-                        // 4. Пошук по суфіксах/частинах ключа в values для старих записів
                         for (const [k, v] of Object.entries(rec.values || {})) {
                             if (k.toLowerCase().includes(p.id.toLowerCase()) || (typeof p.label === 'object' && Object.values(p.label).some(l => l && k.toLowerCase().includes(l.toLowerCase())))) {
                                 if (v !== undefined && v !== '-') return v;
@@ -1828,7 +1820,9 @@
                             }
 
                             if (valForShare > 0 && baseVal > 0) {
-                                row.push(parseFloat(((valForShare / baseVal) * 100).toFixed(3)) / 100);
+                                // Зберігаємо значення частки у форматі дробу для Excel (наприклад, 15.45% -> 0.1545) з округленням до 2 знаків після коми у відсотках
+                                const calculatedShare = parseFloat(((valForShare / baseVal)).toFixed(4));
+                                row.push(calculatedShare);
                             } else {
                                 row.push("-");
                             }
@@ -1886,11 +1880,11 @@
 
                         if (typeof cell.v === 'number') {
                             if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
-                                cell.z = '0.000%';
+                                cell.z = '0.00%'; // Формат відсотків рівно з 2 знаками після коми
                             } else if (isIntegerCol[C]) {
                                 cell.z = '0';
                             } else {
-                                cell.z = '0.000';
+                                cell.z = '0.003';
                             }
                         }
 
