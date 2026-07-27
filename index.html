@@ -2141,7 +2141,8 @@
         }
 
         function addGroup() {
-            // Додаємо новий розділ НА САМИЙ ПОЧАТОК масиву (ЗВЕРХУ ПІСЛЯ ІСНУЮЧИХ або перед ними)
+            // Додаємо новий розділ ЗВЕРХУ ПІСЛЯ ІСНУЮЧИХ (або другим, якщо перший — головний)
+            // Або просто у самий початок масиву, але перед цим маємо переконатися, що логічно додано нагору
             tempGroups.unshift({
                 id: 'g_' + Date.now(),
                 title: { uk: `Новий розділ`, es: `Nueva sección` },
@@ -2205,16 +2206,48 @@
             }
         }
 
+        // --- АВТОМАТИЧНЕ ОНОВЛЕННЯ КОДІВ ТА ФОРМУЛ (КАСКАДНЕ ОНОВЛЕННЯ) ---
+        function updateParamCode(gIdx, pIdx, newCode) {
+            const cleanNewCode = newCode.trim().toLowerCase();
+            if (!cleanNewCode) return;
+
+            const oldCode = tempGroups[gIdx].params[pIdx].code;
+            if (oldCode === cleanNewCode) return;
+
+            // Перевіряємо чи такий код вже є у методиці
+            let exists = false;
+            tempGroups.forEach(g => {
+                (g.params || []).forEach(p => {
+                    if (p.code.toLowerCase() === cleanNewCode) exists = true;
+                });
+            });
+
+            if (exists) {
+                alert(currentLang === 'es' ? "¡Este código de variable ya existe!" : "Такий код змінної вже існує у цій методиці!");
+                renderParamRows();
+                return;
+            }
+
+            // Оновлюємо код параметра
+            tempGroups[gIdx].params[pIdx].code = cleanNewCode;
+
+            // АВТОМАТИЧНО ОНОВЛЮЄМО ЦІ КОДИ У ВСІХ ФОРМУЛАХ ТА БАЗАХ ПО ВСІЙ МЕТОДИЦІ
+            tempGroups.forEach(g => {
+                (g.params || []).forEach(p => {
+                    if (p.type === 'formula' && p.formulaStr) {
+                        // Замінюємо oldCode на cleanNewCode у формулі (враховуючи межі слів або пробіли)
+                        const regex = new RegExp(`\\b${oldCode}\\b`, 'gi');
+                        p.formulaStr = p.formulaStr.replace(regex, cleanNewCode);
+                    }
+                });
+            });
+
+            renderParamRows();
+        }
+
         function renderParamRows() {
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
-
-            let codeCounter = 1;
-            tempGroups.forEach(g => {
-                (g.params || []).forEach(p => {
-                    p.code = 'v' + (codeCounter++);
-                });
-            });
 
             const allCurrentParamsInMethod = tempGroups.flatMap(g => g.params || []);
             const allDecimalParams = tempGroups.flatMap(g => (g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula'));
@@ -2253,7 +2286,12 @@
                                 <button type="button" onclick="moveParam(${gIdx}, ${pIdx}, -1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вгору"><i class="fa-solid fa-chevron-up"></i></button>
                                 <button type="button" onclick="moveParam(${gIdx}, ${pIdx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
                             </div>
-                            <div class="bg-indigo-100 text-indigo-800 font-mono text-[10px] px-2 py-1 rounded-lg border border-indigo-200 shrink-0 mt-1 shadow-2xs">[${p.code}]</div>
+                            
+                            <!-- РЕДАГУВАННЯ КОДУ ЗМІННОЇ (v1, v2...) -->
+                            <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-0.5 shrink-0 mt-1 shadow-2xs">
+                                <span class="text-[10px] text-indigo-700 font-bold mr-1">Код:</span>
+                                <input type="text" value="${escapeHTML(p.code)}" onchange="updateParamCode(${gIdx}, ${pIdx}, this.value)" class="w-12 text-xs font-mono font-bold text-indigo-900 bg-transparent outline-none border-b border-indigo-300 focus:border-indigo-600 text-center">
+                            </div>
                             
                             <div class="flex-grow flex flex-col gap-2.5">
                                 <div class="flex flex-col sm:flex-row gap-2.5">
