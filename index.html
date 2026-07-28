@@ -312,7 +312,7 @@
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Розділи та параметри методики</label>
                         <div class="flex gap-2">
                             <button type="button" onclick="addStandaloneParam()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
-                                <i class="fa-solid fa-plus"></i> <span>Окремий параметр</span>
+                                <i class="fa-solid fa-plus"></i> <span>+ Окремий параметр</span>
                             </button>
                             <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5" id="btnAddGroup">
                                 <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ</span>
@@ -2073,31 +2073,26 @@
             return Array.from(map.values());
         }
 
-        // Функція створення окремого параметра поза категоріями (додається В КІНЕЦЬ)
+        // Функція створення окремого параметра поза категоріями (додається СТРOГО В КІНЕЦЬ ПОТОЧНОГО СПИСКУ)
         function addStandaloneParam() {
-            let standaloneGroup = tempGroups.find(g => g.isStandalone || (g.title && (g.title.uk === 'Без розділу' || g.title.uk === '')));
-            if (!standaloneGroup) {
-                standaloneGroup = {
-                    id: 'g_standalone_' + Date.now(),
-                    title: { uk: 'Без розділу', es: 'Sin sección' },
-                    isStandalone: true,
-                    params: []
-                };
-                tempGroups.push(standaloneGroup); // Додаємо в кінець списку!
-            }
+            const newStandaloneGroup = {
+                id: 'g_standalone_' + Date.now() + Math.floor(Math.random()*1000),
+                title: { uk: 'Без розділу', es: 'Sin sección' },
+                isStandalone: true,
+                params: [{
+                    id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
+                    label: { uk: '', es: '' },
+                    unit: { uk: '', es: '' },
+                    type: 'decimal',
+                    required: false,
+                    isBaseWeight: false,
+                    useShare: false,
+                    baseParamId: '',
+                    code: ''
+                }]
+            };
 
-            standaloneGroup.params.push({
-                id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
-                label: { uk: '', es: '' },
-                unit: { uk: '', es: '' },
-                type: 'decimal',
-                required: false,
-                isBaseWeight: false,
-                useShare: false,
-                baseParamId: '',
-                code: ''
-            });
-
+            tempGroups.push(newStandaloneGroup);
             renderParamRows();
 
             setTimeout(() => {
@@ -2164,6 +2159,13 @@
 
             if (foundParam && sourceGIdx !== targetGIdx) {
                 tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
+                
+                // Якщо початковий окремий блок став порожнім — прибираємо його
+                if (tempGroups[sourceGIdx].isStandalone && tempGroups[sourceGIdx].params.length === 0) {
+                    tempGroups.splice(sourceGIdx, 1);
+                    if (sourceGIdx < targetGIdx) targetGIdx--; // корегуємо індекс після видалення
+                }
+
                 if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
                 tempGroups[targetGIdx].params.push(foundParam);
                 renderParamRows();
@@ -2366,14 +2368,14 @@
                     return `
                     <div class="p-5 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-xs space-y-4 mb-6 relative">
                         <div class="flex justify-between items-center border-b border-emerald-100 pb-2">
-                            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wide"><i class="fa-solid fa-list-check mr-1.5"></i> Окремі параметри (поза розділами)</span>
+                            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wide"><i class="fa-solid fa-list-check mr-1.5"></i> Окремий параметр (поза розділом)</span>
+                            <button type="button" onclick="removeGroup(${gIdx})" class="text-red-500 hover:text-red-700 text-xs font-bold p-1 hover:bg-red-50 rounded-lg transition" title="Видалити цей окремий параметр">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
                         </div>
                         <div class="space-y-3 pt-1">
                             ${paramsHtml}
                         </div>
-                        <button type="button" onclick="addParamRow(${gIdx})" class="w-full text-xs bg-white hover:bg-emerald-100/60 text-emerald-800 font-bold px-4 py-2.5 rounded-xl border border-emerald-300 transition shadow-xs border-dashed flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-plus"></i> + Додати ще окремий параметр
-                        </button>
                     </div>
                     `;
                 }
