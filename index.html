@@ -35,8 +35,8 @@
             
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Email / Пошта</label>
-                    <input type="email" id="loginEmail" required placeholder="operator@factory.com" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Логін / Користувач</label>
+                    <input type="text" id="loginEmail" required placeholder="operator або admin" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Пароль</label>
@@ -727,8 +727,8 @@
             document.getElementById('loginOverlay').classList.add('hidden');
             currentUser = session.user;
             
-            // Адміном є тільки diana89kiev@gmail.com
-            isAdmin = (currentUser.email === 'diana89kiev@gmail.com');
+            // Перевіряємо, чи це Адмін (admin@factory.com)
+            isAdmin = (currentUser.email === 'admin@factory.com');
             localStorage.setItem('qm_is_admin', isAdmin ? 'true' : 'false');
 
             updateAdminUI();
@@ -742,17 +742,22 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
+            let userInput = document.getElementById('loginEmail').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value;
             const errorEl = document.getElementById('loginError');
             const btn = document.getElementById('loginBtn');
+
+            // Якщо введено просто "operator" або "admin" — автодоповнюємо до повноцінного email
+            if (!userInput.includes('@')) {
+                userInput = userInput + '@factory.com';
+            }
 
             errorEl.classList.add('hidden');
             btn.disabled = true;
             btn.innerText = "Авторизація...";
 
             const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
+                email: userInput,
                 password: password
             });
 
@@ -985,11 +990,12 @@
 
             if (currentUser) {
                 badge.classList.remove('hidden');
+                const username = currentUser.email.split('@')[0];
                 if (isAdmin) {
-                    badgeText.innerText = `Адмін (${currentUser.email})`;
+                    badgeText.innerText = `Адмін (${username})`;
                     constructorTab.classList.remove('hidden');
                 } else {
-                    badgeText.innerText = `Оператор (${currentUser.email})`;
+                    badgeText.innerText = `Оператор (${username})`;
                     constructorTab.classList.add('hidden');
                 }
             } else {
@@ -2393,7 +2399,6 @@
                 if (newRow && ukInput) {
                     newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     ukInput.focus();
-                    ukInput.select();
                 }
             }, 50);
         }
