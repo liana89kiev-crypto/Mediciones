@@ -22,8 +22,36 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
+    <!-- LOGIN OVERLAY -->
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-slate-100">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-inner">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">Вхід у систему</h2>
+                <p class="text-xs text-slate-500 mt-1">Авторизуйтесь для доступу до замірів та методик</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Email / Пошта</label>
+                    <input type="email" id="loginEmail" required placeholder="operator@factory.com" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">Пароль</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50">
+                </div>
+                <div id="loginError" class="hidden text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-200"></div>
+                <button type="submit" id="loginBtn" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-lg shadow-blue-500/30 text-sm">
+                    Увійти
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- BLOCKING SYNC OVERLAY -->
-    <div id="syncOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
+    <div id="syncOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-40 flex flex-col items-center justify-center text-white transition-opacity duration-300">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <div>
@@ -34,7 +62,7 @@
     </div>
 
     <!-- Header / Navbar -->
-    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-40">
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <span class="text-3xl text-blue-400 bg-slate-800 p-2 rounded-xl border border-slate-700 shadow-inner"><i class="fa-solid fa-scale-balanced"></i></span>
@@ -44,10 +72,10 @@
                 </div>
             </div>
             <div class="flex items-center space-x-2 sm:space-x-3 text-sm">
-                <button onclick="toggleAdminMode()" id="adminModeBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition text-xs font-semibold flex items-center space-x-1.5 border border-slate-700 shadow-sm" title="Адмін-доступ">
-                    <i class="fa-solid fa-lock text-amber-400" id="adminLockIcon"></i>
-                    <span id="adminModeText">Оператор</span>
-                </button>
+                <!-- User Status Badge -->
+                <div id="userBadge" class="hidden sm:flex items-center px-3 py-1.5 bg-slate-800 rounded-xl border border-slate-700 text-xs font-semibold">
+                    <span id="userBadgeText" class="text-slate-300"></span>
+                </div>
 
                 <div class="relative">
                     <button onclick="toggleLangMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl transition flex items-center space-x-1.5 text-xs font-semibold border border-slate-700 shadow-sm">
@@ -65,6 +93,11 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Logout Button -->
+                <button onclick="handleLogout()" class="p-2 bg-slate-800 hover:bg-red-900/60 text-slate-300 hover:text-red-300 rounded-xl transition border border-slate-700 shadow-sm text-xs font-semibold" title="Вийти з акаунта">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
             </div>
         </div>
         <div class="bg-slate-800/90 backdrop-blur text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
@@ -383,18 +416,6 @@
         </div>
     </div>
 
-    <!-- Modal 6: Admin Password Secure Modal (Masked Input) -->
-    <div id="adminPasswordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
-            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2.5" id="modalAdminTitle">Введіть пароль адміністратора</h3>
-            <input type="password" id="adminPasswordInput" placeholder="••••••••" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeAdminPasswordModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold shadow-sm">Скасувати</button>
-                <button onclick="submitAdminPassword()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md">Увійти</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Application JavaScript Code -->
     <script>
         // === SUPABASE CONNECTION & SYNC ===
@@ -677,7 +698,7 @@
 
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
         let isAdmin = false;
-        let adminResolveCallback = null;
+        let currentUser = null;
 
         let state = {
             methodologies: [],
@@ -685,27 +706,76 @@
             dictionary: {}
         };
 
-        // Ініціалізація та Завантаження з Supabase
+        // Ініціалізація сторінки
         document.addEventListener('DOMContentLoaded', async () => {
             applyLanguageUI();
-            
-            // --- Перевірка активної сесії Supabase Auth ---
+            await checkAuthSession();
+        });
+
+        // === SUPABASE AUTH: ПЕРЕВІРКА СЕСІЇ ТА АВТОРИЗАЦІЯ ===
+        async function checkAuthSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                isAdmin = true;
-                localStorage.setItem('qm_is_admin', 'true');
-            } else {
-                isAdmin = false;
-                localStorage.setItem('qm_is_admin', 'false');
+            
+            if (!session) {
+                // Якщо користувач не увійшов — відкриваємо оверлей авторизації
+                document.getElementById('loginOverlay').classList.remove('hidden');
+                hideSyncOverlay();
+                return false;
             }
+            
+            // Якщо сесія є — приховуємо оверлей
+            document.getElementById('loginOverlay').classList.add('hidden');
+            currentUser = session.user;
+            
+            // Адміном є тільки diana89kiev@gmail.com
+            isAdmin = (currentUser.email === 'diana89kiev@gmail.com');
+            localStorage.setItem('qm_is_admin', isAdmin ? 'true' : 'false');
 
             updateAdminUI();
             
+            // Завантажуємо захищені дані з Supabase
             await loadDataFromSupabase();
             hideSyncOverlay();
-            
             initAppAfterSync();
-        });
+            return true;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+            const btn = document.getElementById('loginBtn');
+
+            errorEl.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerText = "Авторизація...";
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            btn.disabled = false;
+            btn.innerText = "Увійти";
+
+            if (error) {
+                errorEl.innerText = "Помилка входу: " + (error.message || "Невірний логін або пароль");
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('syncOverlay').classList.remove('hidden');
+            document.getElementById('syncOverlay').style.opacity = '1';
+            
+            await checkAuthSession();
+        }
+
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        }
 
         async function loadDataFromSupabase() {
             try {
@@ -893,7 +963,7 @@
 
         async function switchTab(tabId) {
             if (tabId === 'methodologies' && !isAdmin) {
-                alert(currentLang === 'es' ? "Acceso restringido. ¡Inicie sesión como administrador!" : "Доступ обмежено. Увійдіть як адміністратор!");
+                alert(currentLang === 'es' ? "Acceso restringido. ¡Solo administradores!" : "Доступ обмежено. Тільки для адміністраторів!");
                 return;
             }
 
@@ -907,90 +977,23 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
 
-        // === БЕЗПЕЧНИЙ ВХІД АДМІНІСТРАТОРА ЧЕРЕЗ SUPABASE AUTH ===
-        async function toggleAdminMode() {
-            const dict = I18N[currentLang] || I18N.uk;
-            
-            if (isAdmin) {
-                await supabaseClient.auth.signOut();
-                isAdmin = false;
-                localStorage.setItem('qm_is_admin', 'false');
-                updateAdminUI();
-                switchTab('new-measure');
-            } else {
-                const pwd = await showAdminPasswordPrompt();
-                if (pwd !== null && pwd.trim() !== "") {
-                    try {
-                        const { data, error } = await supabaseClient.auth.signInWithPassword({
-                            email: 'diana89kiev@gmail.com',
-                            password: pwd.trim()
-                        });
-
-                        if (error) {
-                            console.error("Помилка автентифікації:", error.message);
-                            alert(currentLang === 'es' ? "¡Contraseña incorrecta!" : "Невірний пароль!");
-                            return;
-                        }
-
-                        isAdmin = true;
-                        localStorage.setItem('qm_is_admin', 'true');
-                        updateAdminUI();
-                        alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
-
-                    } catch (e) {
-                        console.error("Помилка перевірки пароля:", e);
-                        alert(currentLang === 'es' ? "Error de conexión." : "Помилка зв'язку з хмарою.");
-                    }
-                }
-            }
-        }
-
-        function showAdminPasswordPrompt() {
-            return new Promise((resolve) => {
-                adminResolveCallback = resolve;
-                const modal = document.getElementById('adminPasswordModal');
-                const input = document.getElementById('adminPasswordInput');
-                input.value = "";
-                modal.classList.remove('hidden');
-                setTimeout(() => input.focus(), 100);
-
-                input.onkeydown = function(e) {
-                    if (e.key === 'Enter') submitAdminPassword();
-                };
-            });
-        }
-
-        function closeAdminPasswordModal() {
-            document.getElementById('adminPasswordModal').classList.add('hidden');
-            if (adminResolveCallback) {
-                adminResolveCallback(null);
-                adminResolveCallback = null;
-            }
-        }
-
-        function submitAdminPassword() {
-            const input = document.getElementById('adminPasswordInput');
-            const pwd = input.value;
-            document.getElementById('adminPasswordModal').classList.add('hidden');
-            if (adminResolveCallback) {
-                adminResolveCallback(pwd);
-                adminResolveCallback = null;
-            }
-        }
-
         function updateAdminUI() {
             const dict = I18N[currentLang] || I18N.uk;
-            const lockIcon = document.getElementById('adminLockIcon');
-            const adminText = document.getElementById('adminModeText');
             const constructorTab = document.getElementById('tab-methodologies');
+            const badge = document.getElementById('userBadge');
+            const badgeText = document.getElementById('userBadgeText');
 
-            if (isAdmin) {
-                lockIcon.className = "fa-solid fa-lock-open text-emerald-400";
-                adminText.innerText = dict.adminAd;
-                constructorTab.classList.remove('hidden');
+            if (currentUser) {
+                badge.classList.remove('hidden');
+                if (isAdmin) {
+                    badgeText.innerText = `Адмін (${currentUser.email})`;
+                    constructorTab.classList.remove('hidden');
+                } else {
+                    badgeText.innerText = `Оператор (${currentUser.email})`;
+                    constructorTab.classList.add('hidden');
+                }
             } else {
-                lockIcon.className = "fa-solid fa-lock text-amber-400";
-                adminText.innerText = dict.adminOp;
+                badge.classList.add('hidden');
                 constructorTab.classList.add('hidden');
             }
         }
@@ -1301,7 +1304,6 @@
             }
         }
 
-        // === ВІДПРАВКА ДАНИХ ДО SUPABASE ===
         async function saveMeasurement(e) {
             e.preventDefault();
             const dict = I18N[currentLang] || I18N.uk;
@@ -1501,11 +1503,11 @@
                     </span>
                 `).join('');
 
-                const deleteBtnHtml = isAdmin ? `
+                const deleteBtnHtml = `
                     <button onclick="deleteMeasurement('${rec.id}')" class="text-red-500 hover:text-red-700 text-xs font-medium p-1.5 hover:bg-red-50 rounded-lg transition" title="Delete">
                         <i class="fa-solid fa-trash"></i>
                     </button>
-                ` : '';
+                `;
 
                 const editTooltip = currentLang === 'es' ? 'Editar' : 'Редагувати';
                 const xlsxTooltip = currentLang === 'es' ? 'Exportar XLSX' : 'XLSX';
@@ -1531,10 +1533,6 @@
         }
 
         async function deleteMeasurement(id) {
-            if (!isAdmin) {
-                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
-                return;
-            }
             const confirmDel = currentLang === 'es' ? "¿Realmente desea eliminar esta medición?" : "Ви дійсно бажаєте видалити цей замір?";
             if (confirm(confirmDel)) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
@@ -1669,7 +1667,6 @@
                     if (shareParamMap.has(p.id)) {
                         const basePId = shareParamMap.get(p.id);
                         const baseParamObj = allParams.find(x => x.id === basePId);
-                        const baseHeader = baseParamObj ? getBilingualLabelWithUnit(baseParamObj) : "Base";
                         
                         fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${bilingualHeader})` : `Частка % / % Participación\n(${bilingualHeader})`);
                         isIntegerCol.push(false);
