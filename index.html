@@ -1102,7 +1102,6 @@
 
             groups.forEach(group => {
                 const groupTitle = getI18nText(group.title);
-                // Поле показується як розділ лише якщо є назва ТА вона не є службовим "Без розділу"
                 const isRealGroup = groupTitle && groupTitle.trim() !== '' && groupTitle !== 'Без розділу' && groupTitle !== 'Sin sección';
 
                 const groupBlock = document.createElement('div');
@@ -2074,7 +2073,7 @@
             return Array.from(map.values());
         }
 
-        // Функція створення окремого параметра поза категоріями
+        // Функція створення окремого параметра поза категоріями (додається В КІНЕЦЬ)
         function addStandaloneParam() {
             let standaloneGroup = tempGroups.find(g => g.isStandalone || (g.title && (g.title.uk === 'Без розділу' || g.title.uk === '')));
             if (!standaloneGroup) {
@@ -2084,10 +2083,9 @@
                     isStandalone: true,
                     params: []
                 };
-                tempGroups.unshift(standaloneGroup); // кладемо на початок
+                tempGroups.push(standaloneGroup); // Додаємо в кінець списку!
             }
 
-            const nextCode = 'v' + Date.now();
             standaloneGroup.params.push({
                 id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
                 label: { uk: '', es: '' },
@@ -2097,10 +2095,15 @@
                 isBaseWeight: false,
                 useShare: false,
                 baseParamId: '',
-                code: nextCode
+                code: ''
             });
 
             renderParamRows();
+
+            setTimeout(() => {
+                const container = document.getElementById('paramRowsContainer');
+                if (container) container.scrollTop = container.scrollHeight;
+            }, 50);
         }
 
         function addGroup() {
@@ -2205,6 +2208,7 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
+            // Наскрізна нумерація змінних v1, v2, v3... по всьому списку зверху донизу
             let codeCounter = 1;
             tempGroups.forEach(g => {
                 (g.params || []).forEach(p => {
@@ -2358,7 +2362,7 @@
                 }).join('') : emptyNotice;
 
                 if (isStandalone) {
-                    // Якщо це окремі параметри поза категоріями
+                    // Окремі параметри без розділу
                     return `
                     <div class="p-5 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-xs space-y-4 mb-6 relative">
                         <div class="flex justify-between items-center border-b border-emerald-100 pb-2">
@@ -2577,7 +2581,6 @@
         }
 
         function addParamRow(gIdx) {
-            const nextCode = 'v' + Date.now();
             tempGroups[gIdx].params.push({
                 id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
                 label: { uk: '', es: '' },
@@ -2587,7 +2590,7 @@
                 isBaseWeight: false,
                 useShare: false,
                 baseParamId: '',
-                code: nextCode
+                code: ''
             });
             renderParamRows();
 
