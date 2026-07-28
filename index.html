@@ -308,11 +308,16 @@
                 </div>
 
                 <div class="border-t border-slate-200 pt-5">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide" id="lblModalParams">Розділи та параметри методики</label>
-                        <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-xl transition shadow-md flex items-center gap-2" id="btnAddGroup">
-                            <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ (етап) в кінець</span>
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="addStandaloneParam()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> <span>Окремий параметр</span>
+                            </button>
+                            <button type="button" onclick="addGroup()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl transition shadow-md flex items-center gap-1.5" id="btnAddGroup">
+                                <i class="fa-solid fa-layer-group"></i> <span id="btnAddGroupText">+ Додати розділ</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="paramRowsContainer" class="space-y-6">
@@ -509,7 +514,7 @@
                 lblModalMethodTitle: "Назва методики (UA / ES)",
                 lblModalMethodDesc: "Опис методики (UA / ES)",
                 lblModalParams: "Розділи та параметри методики",
-                btnAddGroup: "+ Додати розділ (етап) в кінець",
+                btnAddGroup: "+ Додати розділ",
                 lblGroupTitle: "Назва розділу (етапу) (UA / ES)",
                 btnRemoveGroup: "Видалити розділ",
                 btnAddParamRow: "+ Додати параметр до цього розділу",
@@ -612,7 +617,7 @@
                 lblModalMethodTitle: "Nombre de metodología (UA / ES)",
                 lblModalMethodDesc: "Descripción de metodología (UA / ES)",
                 lblModalParams: "Secciones y parámetros",
-                btnAddGroup: "+ Añadir sección (etapa) al final",
+                btnAddGroup: "+ Añadir sección",
                 lblGroupTitle: "Nombre de sección (UA / ES)",
                 btnRemoveGroup: "Eliminar sección",
                 btnAddParamRow: "+ Añadir nuevo parámetro",
@@ -717,23 +722,19 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (!session) {
-                // Якщо користувач не увійшов — відкриваємо оверлей авторизації
                 document.getElementById('loginOverlay').classList.remove('hidden');
                 hideSyncOverlay();
                 return false;
             }
             
-            // Якщо сесія є — приховуємо оверлей
             document.getElementById('loginOverlay').classList.add('hidden');
             currentUser = session.user;
             
-            // Перевіряємо, чи це Адмін (admin@factory.com)
             isAdmin = (currentUser.email === 'admin@factory.com');
             localStorage.setItem('qm_is_admin', isAdmin ? 'true' : 'false');
 
             updateAdminUI();
             
-            // Завантажуємо захищені дані з Supabase
             await loadDataFromSupabase();
             hideSyncOverlay();
             initAppAfterSync();
@@ -747,7 +748,6 @@
             const errorEl = document.getElementById('loginError');
             const btn = document.getElementById('loginBtn');
 
-            // Якщо введено просто "operator" або "admin" — автодоповнюємо до повноцінного email
             if (!userInput.includes('@')) {
                 userInput = userInput + '@factory.com';
             }
@@ -1068,6 +1068,7 @@
             saveDraft();
         }
 
+        // === РЕНДЕРИНГ ФОРМИ ЗАМІРУ (ДЛЯ ОПЕРАТОРА) ===
         function renderMeasurementForm() {
             const methodId = document.getElementById('methodologySelect').value;
             const container = document.getElementById('dynamicFormContainer');
@@ -1097,16 +1098,17 @@
 
             fieldsDiv.innerHTML = '';
 
-            const groups = m.groups || [{ title: 'Parameters', params: m.params || [] }];
+            const groups = m.groups || [{ title: '', params: m.params || [] }];
 
             groups.forEach(group => {
                 const groupTitle = getI18nText(group.title);
-                const hasGroupTitle = groupTitle && groupTitle.trim() !== '';
+                // Поле показується як розділ лише якщо є назва ТА вона не є службовим "Без розділу"
+                const isRealGroup = groupTitle && groupTitle.trim() !== '' && groupTitle !== 'Без розділу' && groupTitle !== 'Sin sección';
 
                 const groupBlock = document.createElement('div');
-                groupBlock.className = hasGroupTitle ? 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4' : 'space-y-4 mb-4';
+                groupBlock.className = isRealGroup ? 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4' : 'space-y-4 mb-4';
                 
-                if (hasGroupTitle) {
+                if (isRealGroup) {
                     groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
                 }
                 
@@ -2027,12 +2029,12 @@
                 } else if (m.params && Array.isArray(m.params)) {
                     tempGroups = [{
                         id: 'g_' + Date.now(),
-                        title: { uk: 'Показники', es: 'Parámetros' },
+                        title: { uk: '', es: '' },
                         params: JSON.parse(JSON.stringify(m.params))
                     }];
                 }
             } else {
-                // Нова методика створюється з повністю порожнім розділом!
+                // Нова методика створюється порожньою
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
                 document.getElementById('editMethodologyId').value = "";
                 document.getElementById('methodTitle_uk').value = "";
@@ -2042,11 +2044,7 @@
                 document.getElementById('methodDocUrl').value = "";
                 document.getElementById('methodStatus').value = "ready";
 
-                tempGroups = [{
-                    id: 'g_' + Date.now(),
-                    title: { uk: 'Розділ 1', es: 'Sección 1' },
-                    params: []
-                }];
+                tempGroups = [];
             }
 
             renderParamRows();
@@ -2076,6 +2074,35 @@
             return Array.from(map.values());
         }
 
+        // Функція створення окремого параметра поза категоріями
+        function addStandaloneParam() {
+            let standaloneGroup = tempGroups.find(g => g.isStandalone || (g.title && (g.title.uk === 'Без розділу' || g.title.uk === '')));
+            if (!standaloneGroup) {
+                standaloneGroup = {
+                    id: 'g_standalone_' + Date.now(),
+                    title: { uk: 'Без розділу', es: 'Sin sección' },
+                    isStandalone: true,
+                    params: []
+                };
+                tempGroups.unshift(standaloneGroup); // кладемо на початок
+            }
+
+            const nextCode = 'v' + Date.now();
+            standaloneGroup.params.push({
+                id: 'p_' + Date.now() + Math.floor(Math.random()*1000),
+                label: { uk: '', es: '' },
+                unit: { uk: '', es: '' },
+                type: 'decimal',
+                required: false,
+                isBaseWeight: false,
+                useShare: false,
+                baseParamId: '',
+                code: nextCode
+            });
+
+            renderParamRows();
+        }
+
         function addGroup() {
             tempGroups.push({
                 id: 'g_' + Date.now(),
@@ -2098,7 +2125,7 @@
                     if (tempGroups.length === 0) {
                         tempGroups.push({
                             id: 'g_' + Date.now(),
-                            title: { uk: 'Без категорії', es: 'Sin categoría' },
+                            title: { uk: 'Без розділу', es: 'Sin sección' },
                             params: []
                         });
                     }
@@ -2185,6 +2212,11 @@
                 });
             });
 
+            if (tempGroups.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-200 rounded-2xl">Поки немає розділів або параметрів. Натисніть кнопочки вище, щоб додати їх.</div>`;
+                return;
+            }
+
             const allCurrentParamsInMethod = tempGroups.flatMap(g => g.params || []);
             const allDecimalParams = tempGroups.flatMap(g => (g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula'));
             const existingParamsPool = getAllExistingParams();
@@ -2192,6 +2224,8 @@
             container.innerHTML = tempGroups.map((group, gIdx) => {
                 const groupTitleUk = typeof group.title === 'object' ? (group.title.uk || '') : (group.title || '');
                 const groupTitleEs = typeof group.title === 'object' ? (group.title.es || '') : '';
+
+                const isStandalone = group.isStandalone || groupTitleUk === 'Без розділу' || groupTitleUk === '';
 
                 const otherParamsOptions = allCurrentParamsInMethod
                     .filter(p => !(group.params || []).some(gp => gp.id === p.id))
@@ -2322,6 +2356,23 @@
                     </div>
                     `;
                 }).join('') : emptyNotice;
+
+                if (isStandalone) {
+                    // Якщо це окремі параметри поза категоріями
+                    return `
+                    <div class="p-5 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-xs space-y-4 mb-6 relative">
+                        <div class="flex justify-between items-center border-b border-emerald-100 pb-2">
+                            <span class="text-xs font-bold text-emerald-800 uppercase tracking-wide"><i class="fa-solid fa-list-check mr-1.5"></i> Окремі параметри (поза розділами)</span>
+                        </div>
+                        <div class="space-y-3 pt-1">
+                            ${paramsHtml}
+                        </div>
+                        <button type="button" onclick="addParamRow(${gIdx})" class="w-full text-xs bg-white hover:bg-emerald-100/60 text-emerald-800 font-bold px-4 py-2.5 rounded-xl border border-emerald-300 transition shadow-xs border-dashed flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-plus"></i> + Додати ще окремий параметр
+                        </button>
+                    </div>
+                    `;
+                }
 
                 return `
                 <div class="p-5 bg-slate-100/90 border border-slate-200 rounded-2xl shadow-sm space-y-4 mb-6 relative">
@@ -2574,7 +2625,7 @@
                 tempGroups[gIdx].params.splice(pIdx, 1);
                 let otherGroup = tempGroups.find((g, gi) => gi !== gIdx);
                 if (!otherGroup) {
-                    tempGroups.push({ id: 'g_' + Date.now(), title: { uk: 'Без категорії', es: 'Sin categoría' }, params: [paramToRemove] });
+                    tempGroups.push({ id: 'g_' + Date.now(), title: { uk: 'Без розділу', es: 'Sin sección' }, params: [paramToRemove] });
                 } else {
                     otherGroup.params.push(paramToRemove);
                 }
@@ -2643,6 +2694,7 @@
                 id: g.id || 'g_' + Date.now() + Math.random(),
                 title: g.title,
                 isGeneral: false,
+                isStandalone: g.isStandalone || false,
                 params: g.params || []
             }));
 
