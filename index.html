@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #f1f5f9; }
         .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 600; }
@@ -25,7 +27,7 @@
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <div>
-                <h3 class="font-bold text-base mb-1" id="overlayTitle">Синхронізація з хмарою...</h3>
+                <h3 class="font-bold text-base mb-1" id="overlayTitle">Синхронізація з Supabase...</h3>
                 <p class="text-xs text-slate-400" id="overlaySub">Будь ласка, зачекайте, завантаження актуальних даних</p>
             </div>
         </div>
@@ -63,10 +65,6 @@
                         </button>
                     </div>
                 </div>
-
-                <button onclick="switchTab('settings')" class="p-2.5 bg-slate-800 hover:bg-slate-700 rounded-xl transition text-slate-400 hover:text-white border border-slate-700 shadow-sm" title="API Settings">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
             </div>
         </div>
         <div class="bg-slate-800/90 backdrop-blur text-slate-300 text-xs sm:text-sm flex justify-around sm:justify-center space-x-2 sm:space-x-8 border-t border-slate-700 px-2 overflow-x-auto">
@@ -156,15 +154,12 @@
                     </div>
                     <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
                         <div id="syncStatus" class="flex items-center space-x-1.5 text-slate-500 text-xs bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-xl shadow-sm">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
-                            <span id="syncText">Локально</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
+                            <span id="syncText">Supabase Cloud</span>
                         </div>
                         <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2 pl-4 pr-4">
                             <i class="fa-solid fa-file-excel text-emerald-200 shrink-0"></i>
                             <span id="btnExportAll" class="truncate">Експорт в Excel (.xlsx)</span>
-                        </button>
-                        <button onclick="syncDataManual()" class="w-full sm:w-auto px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition flex items-center justify-center border border-slate-200 shadow-sm" title="Синхронізувати">
-                            <i class="fa-solid fa-rotate"></i>
                         </button>
                     </div>
                 </div>
@@ -228,72 +223,6 @@
                 </div>
 
                 <div id="methodologyList" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 4: SETTINGS & BACKUP -->
-        <section id="sec-settings" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl card-shadow border border-slate-200/80 p-5 sm:p-8 max-w-2xl mx-auto">
-                <h2 class="text-lg sm:text-xl font-bold mb-2 text-slate-800 flex items-center" id="lblSettingsTitle">
-                    <i class="fa-solid fa-database text-slate-600 mr-2.5"></i> Налаштування JSONBin.io
-                </h2>
-                <p class="text-xs text-slate-500 mb-6" id="lblSettingsSub">Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.</p>
-
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">JSONBin BIN ID</label>
-                        <input type="text" id="cfgBinId" placeholder="64a8b...123" class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">JSONBin Access Key (X-Access-Key)</label>
-                        <input type="password" id="cfgApiKey" placeholder="$2a$10$..." class="w-full border border-slate-300 rounded-xl p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50">
-                    </div>
-                    
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div class="text-xs text-slate-600">
-                            <span class="font-bold block text-slate-800 mb-0.5" id="lblCloudSyncStatusHeader">Хмарна синхронізація</span>
-                            <span id="lblCloudSyncStatusDesc">Миттєве оновлення з загальною базою</span>
-                        </div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="syncDataManual()" class="flex-1 sm:flex-none px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-rotate"></i> <span id="btnSyncPull">Стягнути з хмари</span>
-                            </button>
-                            <button onclick="pushToJsonBinManual()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> <span id="btnSyncPush">Вивантажити в хмару</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="pt-2 flex justify-between items-center">
-                        <button onclick="testJsonBinConnection()" class="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 shadow-sm transition" id="btnTestConn">
-                            Тест з'єднання
-                        </button>
-                        <button onclick="saveSettings()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition" id="btnSaveSettings">
-                            Зберегти
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-slate-100">
-                    <h3 class="text-sm font-bold text-blue-600 mb-1.5" id="lblBackupTitle"><i class="fa-solid fa-shield-halved mr-1.5"></i> Резервне копіювання (Backup)</h3>
-                    <p class="text-xs text-slate-500 mb-4" id="lblBackupDesc">Створіть повну локальну копію бази даних (методики, заміри, словник).</p>
-                    <div class="flex flex-wrap gap-2.5">
-                        <button onclick="downloadBackup()" class="px-4.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-semibold transition shadow-sm">
-                            <i class="fa-solid fa-download mr-1.5"></i> <span id="btnBackupText">Завантажити копію</span>
-                        </button>
-                        <input type="file" id="restoreFile" accept=".json" class="hidden" onchange="restoreBackup(event)">
-                        <button onclick="document.getElementById('restoreFile').click()" class="px-4.5 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold transition border border-slate-300 shadow-sm">
-                            <i class="fa-solid fa-upload mr-1.5"></i> <span id="btnRestoreText">Відновити з копії</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-6 border-t border-slate-100">
-                    <h3 class="text-sm font-bold text-red-600 mb-2" id="lblDangerZone">Небезпечна зона</h3>
-                    <button onclick="clearAllData()" class="px-4.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 rounded-xl text-xs font-semibold transition shadow-sm" id="btnClearLocal">
-                        Очистити всі локальні дані замірів
-                    </button>
                 </div>
             </div>
         </section>
@@ -456,6 +385,11 @@
 
     <!-- Application JavaScript Code -->
     <script>
+        // === SUPABASE CONNECTION & SYNC ===
+        const SUPABASE_URL = 'https://yvtbrzzwfzgotrowwmrk.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2dGJyenp3Znpnb3Ryb3d3bXJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyMjA1MTMsImV4cCI6MjEwMDc5NjUxM30.kxK_ShFIkBQPoID1KElDEbF4HiacESRk4954lzWQxp4';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const DEFAULT_POULTRY_DICT = {
             "жива вага": { es: "Peso vivo" },
             "живок": { es: "Pollo vivo" },
@@ -497,7 +431,7 @@
         const I18N = {
             uk: {
                 appSub: "Система замірів та зважування тушки",
-                syncDone: "Синхронізовано",
+                syncDone: "Синхронізовано з Supabase",
                 syncing: "Синхронізація...",
                 navNew: "Новий замір",
                 navHistory: "Історія та Експорт",
@@ -525,7 +459,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методика",
+                btnNewMethod: "Нова методидика",
                 btnEdit: "Редагувати",
                 btnDeletePermanent: "Видалити назавжди",
                 btnArchive: "В архів",
@@ -558,14 +492,8 @@
                 lblUseShare: "Рахувати % від:",
                 lblBaseParam: "База для %:",
                 lblNoBase: "-- Без розрахунку % --",
-                lblSettingsTitle: "Налаштування JSONBin.io",
-                lblSettingsSub: "Вкажіть ваші ключі JSONBin.io для автоматичного хмарного збереження.",
-                btnTestConn: "Тест з'єднання",
-                btnSaveSettings: "Зберегти",
-                lblDangerZone: "Небезпечна зона",
-                btnClearLocal: "Очистити всі локальні дані замірів",
                 placeholderText: "Введіть текст...",
-                msgSaved: "Замір успішно збережено!",
+                msgSaved: "Замір успішно збережено в хмару Supabase!",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
                 msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр з методики?",
@@ -582,12 +510,6 @@
                 lblIsInteger: "Ціле число (без знаків після коми)",
                 autoText: "авто",
                 docLinkText: "Інструкція / Таблиця",
-                lblBackupTitle: "Резервне копіювання (Backup)",
-                lblBackupDesc: "Створіть повну локальну копію бази даних (методики, заміри, словник).",
-                btnBackup: "Завантажити копію",
-                btnRestore: "Відновити з копії",
-                msgRestoreConfirm: "УВАГА: Це повністю перезапише всі ваші поточні дані! Продовжити?",
-                msgRestoreSuccess: "Резервну копію успішно відновлено! Сторінка буде перезавантажена.",
                 devBadgeText: "🟡 В розробці",
                 btnDictTerms: "Словник термінів",
                 lblDocUrl: "🔗 Інструкція (URL)",
@@ -608,15 +530,11 @@
                 lblDictPairsHeader: "Список пар (UA - ES)",
                 btnAddDictWord: "+ Додати слово",
                 btnDictCancel: "Скасувати",
-                btnDictSave: "Зберегти словник",
-                btnSyncPull: "Стягнути з хмари",
-                btnSyncPush: "Вивантажити в хмару",
-                lblCloudSyncStatusHeader: "Хмарна синхронізація",
-                lblCloudSyncStatusDesc: "Миттєве оновлення з загальною базою"
+                btnDictSave: "Зберегти словник"
             },
             es: {
                 appSub: "Sistema de medición y pesaje de canales",
-                syncDone: "Sincronizado",
+                syncDone: "Sincronizado con Supabase",
                 syncing: "Sincronizando...",
                 navNew: "Nueva medición",
                 navHistory: "Historial y Exportación",
@@ -677,14 +595,8 @@
                 lblUseShare: "Calcular % de:",
                 lblBaseParam: "Base para %:",
                 lblNoBase: "-- Sin cálculo de % --",
-                lblSettingsTitle: "Configuración de JSONBin.io",
-                lblSettingsSub: "Ingrese sus claves de JSONBin.io para el guardado automático en la nube.",
-                btnTestConn: "Probar conexión",
-                btnSaveSettings: "Guardar",
-                lblDangerZone: "Zona de peligro",
-                btnClearLocal: "Limpiar datos locales",
                 placeholderText: "Ingrese texto...",
-                msgSaved: "¡Medición guardada con éxito!",
+                msgSaved: "¡Medición guardada en la nube con éxito!",
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 msgResetConfirm: "¿Realmente desea limpiar el formulario? Se perderán todos los datos ingresados.",
                 msgRemoveParamConfirm: "¿Realmente desea eliminar este parámetro?",
@@ -701,12 +613,6 @@
                 lblIsInteger: "Número entero (sin decimales)",
                 autoText: "auto",
                 docLinkText: "Instrucción / Tabla",
-                lblBackupTitle: "Copia de seguridad (Backup)",
-                lblBackupDesc: "Cree una copia local completa de la base de datos (metodologías, mediciones, diccionario).",
-                btnBackup: "Descargar copia",
-                btnRestore: "Restaurar copia",
-                msgRestoreConfirm: "ATENCIÓN: ¡Esto sobrescribirá todos sus datos actuales! ¿Continuar?",
-                msgRestoreSuccess: "¡Copia de seguridad restaurada con éxito! La página se recargará.",
                 devBadgeText: "🟡 En desarrollo",
                 btnDictTerms: "Diccionario",
                 lblDocUrl: "🔗 Instrucción (URL)",
@@ -727,11 +633,7 @@
                 lblDictPairsHeader: "Pares de términos (UA - ES)",
                 btnAddDictWord: "+ Añadir palabra",
                 btnDictCancel: "Cancelar",
-                btnDictSave: "Guardar diccionario",
-                btnSyncPull: "Sincronizar (Descargar)",
-                btnSyncPush: "Subir a la nube",
-                lblCloudSyncStatusHeader: "Sincronización en la nube",
-                lblCloudSyncStatusDesc: "Actualización instantánea con la base común"
+                btnDictSave: "Guardar diccionario"
             }
         };
 
@@ -758,54 +660,6 @@
                         ]
                     }
                 ]
-            },
-            {
-                id: 'm_poultry_deboning_v10',
-                title: { uk: 'Замір розробки тушки', es: 'Control de despiece' },
-                description: { uk: 'Аналіз виходу анатомічних частин', es: 'Análisis de rendimiento de partes' },
-                isArchived: false,
-                status: 'ready',
-                docUrl: '',
-                updatedAt: new Date(0).toISOString(),
-                groups: [
-                    {
-                        id: 'g2',
-                        title: { uk: 'Частини', es: 'Partes' },
-                        params: [
-                            { id: 'p_date_time', label: { uk: 'Дата заміру', es: 'Fecha de medición' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'p_carcass_count', label: { uk: 'Кількість тушок', es: 'Cantidad de canales' }, unit: { uk: 'шт.', es: 'uds' }, isInteger: true, type: 'decimal', required: true, code: 'v2' },
-                            { id: 'p_total_weight_wog', label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, code: 'v3' },
-                            { id: 'p_avg_carcass_weight', label: { uk: 'Середня вага', es: 'Peso medio' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 / v2', code: 'v4' },
-                            { id: 'p_wing_whole', label: { uk: 'Крило', es: 'Ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v5' },
-                            { id: 'p_filet', label: { uk: 'Філе', es: 'Pechuga' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v6' },
-                            { id: 'p_thigh_drum', label: { uk: 'Окорочок (Стегно+Гомілка)', es: 'Contramuslo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v7' },
-                            { id: 'p_saddle_tail', label: { uk: 'Спинка та Гузка', es: 'Espalda y Obispillo' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'p_total_weight_wog', code: 'v8' },
-                            { id: 'p_tech_losses', label: { uk: 'Тех. втрати', es: 'Pérdidas' }, unit: { uk: 'кг', es: 'kg' }, type: 'formula', formulaStr: 'v3 - (v5 + v6 + v7 + v8)', useShare: true, baseParamId: 'p_total_weight_wog', code: 'v9' }
-                        ]
-                    }
-                ]
-            },
-            {
-                id: 'm_wings_control_v1',
-                title: { uk: 'Замір по крилах', es: 'Control de alas' },
-                description: { uk: 'Спеціалізований замір виходу та якості крил', es: 'Control especializado de rendimiento de alas' },
-                isArchived: false,
-                status: 'ready',
-                docUrl: '',
-                updatedAt: new Date(0).toISOString(),
-                groups: [
-                    {
-                        id: 'g3',
-                        title: { uk: 'Показники', es: 'Parámetros' },
-                        params: [
-                            { id: 'w_date', label: { uk: 'Дата', es: 'Fecha' }, type: 'date', required: true, code: 'v1' },
-                            { id: 'w_total', label: { uk: 'Загальна вага крила', es: 'Peso total de alas' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, code: 'v2' },
-                            { id: 'w_1st', label: { uk: 'Плече (1-а фаланга)', es: '1er corte (Ala entera)' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v3' },
-                            { id: 'w_2nd', label: { uk: 'Передпліччя (2-а фаланга)', es: '2do corte' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v4' },
-                            { id: 'w_tip', label: { uk: 'Кінчик (3-я фаланга)', es: 'Punta de ala' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: false, useShare: true, baseParamId: 'w_total', code: 'v5' }
-                        ]
-                    }
-                ]
             }
         ];
 
@@ -814,72 +668,68 @@
 
         let state = {
             methodologies: [],
-            measurements: JSON.parse(localStorage.getItem('qm_measurements')) || [],
-            dictionary: {},
-            config: JSON.parse(localStorage.getItem('qm_config')) || { 
-                binId: '6a60ba54da38895dfe7f4ed1', 
-                apiKey: '$2a$10$m5vuxXDrQuaRGRsuXa0NQ.5xt8PVhS1Dqui4kah97g51lMAngg946' 
-            }
+            measurements: [],
+            dictionary: {}
         };
 
-        const savedMethods = JSON.parse(localStorage.getItem('qm_methodologies'));
-        if (savedMethods && Array.isArray(savedMethods) && savedMethods.length > 0) {
-            state.methodologies = savedMethods;
-        } else {
-            state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
-        }
-        state.methodologies.forEach(m => { 
-            if (!m.status) m.status = 'ready'; 
-            if (!m.updatedAt) m.updatedAt = new Date().toISOString();
-        });
-
-        const savedDict = JSON.parse(localStorage.getItem('qm_dictionary'));
-        if (savedDict && typeof savedDict === 'object' && Object.keys(savedDict).length > 0) {
-            state.dictionary = savedDict;
-        } else {
-            state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
-        }
-
+        // Ініціалізація та Завантаження з Supabase
         document.addEventListener('DOMContentLoaded', async () => {
             applyLanguageUI();
             updateAdminUI();
-            loadSettingsInputs();
-
-            if (state.config.binId && state.config.apiKey) {
-                await syncDataBlocking();
-            } else {
-                hideSyncOverlay();
-            }
-
+            
+            await loadDataFromSupabase();
+            hideSyncOverlay();
+            
             initAppAfterSync();
         });
 
-        async function syncDataBlocking() {
-            const overlayTitle = document.getElementById('overlayTitle');
-            const overlaySub = document.getElementById('overlaySub');
-            if (overlayTitle) overlayTitle.innerText = currentLang === 'es' ? "Sincronizando con la nube..." : "Синхронізація з хмарою...";
-
+        async function loadDataFromSupabase() {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
+                const { data: methData, error: methErr } = await supabaseClient.from('methodologies').select('*');
+                if (!methErr && methData && methData.length > 0) {
+                    state.methodologies = methData.map(m => ({
+                        id: m.id,
+                        title: m.title,
+                        description: m.description,
+                        status: m.status || 'ready',
+                        docUrl: m.doc_url || '',
+                        isArchived: m.is_archived || false,
+                        groups: m.groups || [],
+                        updatedAt: m.updated_at
+                    }));
+                } else {
+                    state.methodologies = JSON.parse(JSON.stringify(DEFAULT_METHODOLOGIES));
+                }
 
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
-                    headers: { 'X-Access-Key': state.config.apiKey },
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
+                const { data: measData, error: measErr } = await supabaseClient.from('measurements').select('*').order('raw_date', { ascending: false });
+                if (!measErr && measData) {
+                    state.measurements = measData.map(r => ({
+                        id: r.id,
+                        timestamp: r.timestamp,
+                        rawDate: r.raw_date,
+                        methodologyId: r.methodology_id,
+                        methodologyTitle: r.methodology_title,
+                        inspector: r.inspector,
+                        values: r.values || {},
+                        paramIdToValueMap: r.param_id_to_value_map || {}
+                    }));
+                }
 
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.record) {
-                        smartMergeWithRemote(data.record);
-                    }
+                const { data: dictData } = await supabaseClient.from('dictionary').select('*');
+                if (dictData && dictData.length > 0) {
+                    const dictObj = {};
+                    dictData.forEach(d => { dictObj[d.term] = d.translation; });
+                    state.dictionary = dictObj;
+                } else {
+                    state.dictionary = JSON.parse(JSON.stringify(DEFAULT_POULTRY_DICT));
                 }
             } catch (e) {
-                console.warn("Блокуюча синхронізація недоступна (офлайн-режим):", e);
-            } finally {
-                hideSyncOverlay();
+                console.error("Помилка завантаження з Supabase:", e);
             }
+
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+            renderHistoryTable();
         }
 
         function hideSyncOverlay() {
@@ -890,54 +740,7 @@
             }
         }
 
-        function smartMergeWithRemote(remoteData) {
-            if (remoteData.methodologies && Array.isArray(remoteData.methodologies)) {
-                const map = new Map();
-                state.methodologies.forEach(m => map.set(m.id, m));
-
-                remoteData.methodologies.forEach(remoteM => {
-                    if (!map.has(remoteM.id)) {
-                        map.set(remoteM.id, remoteM);
-                    } else {
-                        const localM = map.get(remoteM.id);
-                        const localTime = new Date(localM.updatedAt || 0).getTime();
-                        const remoteTime = new Date(remoteM.updatedAt || 0).getTime();
-                        if (remoteTime > localTime) {
-                            map.set(remoteM.id, remoteM);
-                        }
-                    }
-                });
-                state.methodologies = Array.from(map.values());
-            }
-
-            if (remoteData.measurements && Array.isArray(remoteData.measurements)) {
-                const map = new Map();
-                state.measurements.forEach(r => map.set(r.id, r));
-
-                remoteData.measurements.forEach(remoteRec => {
-                    if (!map.has(remoteRec.id)) {
-                        map.set(remoteRec.id, remoteRec);
-                    } else {
-                        const localRec = map.get(remoteRec.id);
-                        const localTime = new Date(localRec.updatedAt || localRec.rawDate || 0).getTime();
-                        const remoteTime = new Date(remoteRec.updatedAt || remoteRec.rawDate || 0).getTime();
-                        if (remoteTime > localTime) {
-                            map.set(remoteRec.id, remoteRec);
-                        }
-                    }
-                });
-                state.measurements = Array.from(map.values());
-            }
-
-            if (remoteData.dictionary && typeof remoteData.dictionary === 'object') {
-                state.dictionary = { ...remoteData.dictionary, ...state.dictionary };
-            }
-
-            saveStateToLocal();
-        }
-
         function initAppAfterSync() {
-            saveStateToLocal();
             populateMethodologyDropdown();
             renderMethodologyCards();
             renderHistoryTable();
@@ -1033,18 +836,7 @@
             document.getElementById('btnCancelModal').innerText = dict.btnCancelModal;
             document.getElementById('btnSaveModal').innerText = dict.btnSaveModal;
 
-            document.getElementById('lblSettingsTitle').innerHTML = `<i class="fa-solid fa-database text-slate-600 mr-2.5"></i> ${dict.lblSettingsTitle}`;
-            document.getElementById('lblSettingsSub').innerText = dict.lblSettingsSub;
-            document.getElementById('btnTestConn').innerText = dict.btnTestConn;
-            document.getElementById('btnSaveSettings').innerText = dict.saveSettings || dict.btnSaveSettings;
-            document.getElementById('lblDangerZone').innerText = dict.lblDangerZone;
-            document.getElementById('btnClearLocal').innerText = dict.btnClearLocal;
-
             document.getElementById('editingBadgeText').innerText = dict.editingBadge;
-            document.getElementById('lblBackupTitle').innerHTML = `<i class="fa-solid fa-shield-halved mr-1.5"></i> ${dict.lblBackupTitle}`;
-            document.getElementById('lblBackupDesc').innerText = dict.lblBackupDesc;
-            document.getElementById('btnBackupText').innerText = dict.btnBackup;
-            document.getElementById('btnRestoreText').innerText = dict.btnRestore;
             document.getElementById('docLinkText').innerText = dict.docLinkText;
 
             document.getElementById('btnDictTerms').innerText = dict.btnDictTerms;
@@ -1068,11 +860,6 @@
             document.getElementById('btnDictCancel').innerText = dict.btnDictCancel;
             document.getElementById('btnDictSave').innerText = dict.btnDictSave;
 
-            document.getElementById('lblCloudSyncStatusHeader').innerText = dict.lblCloudSyncStatusHeader;
-            document.getElementById('lblCloudSyncStatusDesc').innerText = dict.lblCloudSyncStatusDesc;
-            document.getElementById('btnSyncPull').innerText = dict.btnSyncPull;
-            document.getElementById('btnSyncPush').innerText = dict.btnSyncPush;
-
             const inspectorSelect = document.getElementById('inspectorName');
             const selectedVal = inspectorSelect.value;
             inspectorSelect.innerHTML = `<option value="">-- ${dict.lblFactory} --</option>` +
@@ -1080,20 +867,10 @@
             if (selectedVal) inspectorSelect.value = selectedVal;
         }
 
-        function saveStateToLocal() {
-            localStorage.setItem('qm_methodologies', JSON.stringify(state.methodologies));
-            localStorage.setItem('qm_measurements', JSON.stringify(state.measurements));
-            localStorage.setItem('qm_dictionary', JSON.stringify(state.dictionary));
-            localStorage.setItem('qm_config', JSON.stringify(state.config));
-        }
-
         async function switchTab(tabId) {
             if (tabId === 'methodologies' && !isAdmin) {
                 alert(currentLang === 'es' ? "Acceso restringido. ¡Inicie sesión como administrador!" : "Доступ обмежено. Увійдіть як адміністратор!");
                 return;
-            }
-            if (state.config.binId && state.config.apiKey) {
-                await syncData();
             }
 
             document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
@@ -1449,7 +1226,8 @@
             }
         }
 
-        function saveMeasurement(e) {
+        // === ВІДПРАВКА ДАНИХ ДО SUPABASE ===
+        async function saveMeasurement(e) {
             e.preventDefault();
             const dict = I18N[currentLang] || I18N.uk;
             const inspector = document.getElementById('inspectorName').value;
@@ -1503,6 +1281,18 @@
                     state.measurements[recordIdx].paramIdToValueMap = paramIdToValueMap;
                     state.measurements[recordIdx].timestamp = dateOnly;
                     state.measurements[recordIdx].updatedAt = currentTimeIso;
+                    
+                    await supabaseClient.from('measurements').upsert({
+                        id: state.measurements[recordIdx].id,
+                        timestamp: dateOnly,
+                        raw_date: state.measurements[recordIdx].rawDate,
+                        methodology_id: m.id,
+                        methodology_title: getI18nText(m.title),
+                        inspector: inspector,
+                        values: values,
+                        param_id_to_value_map: paramIdToValueMap,
+                        updated_at: currentTimeIso
+                    });
                 }
                 document.getElementById('editingRecordId').value = "";
                 document.getElementById('editingBadge').classList.add('hidden');
@@ -1519,17 +1309,24 @@
                     paramIdToValueMap: paramIdToValueMap
                 };
                 state.measurements.unshift(newRecord);
+
+                await supabaseClient.from('measurements').insert({
+                    id: newRecord.id,
+                    timestamp: newRecord.timestamp,
+                    raw_date: newRecord.rawDate,
+                    methodology_id: newRecord.methodologyId,
+                    methodology_title: newRecord.methodologyTitle,
+                    inspector: newRecord.inspector,
+                    values: newRecord.values,
+                    param_id_to_value_map: newRecord.paramIdToValueMap,
+                    updated_at: currentTimeIso
+                });
             }
 
-            saveStateToLocal();
             renderHistoryTable();
             resetForm();
             clearDraft();
             alert(dict.msgSaved);
-            
-            if (state.config.binId && state.config.apiKey) {
-                pushToJsonBin();
-            }
         }
 
         function editMeasurementRecord(id) {
@@ -1658,7 +1455,7 @@
             }).join('');
         }
 
-        function deleteMeasurement(id) {
+        async function deleteMeasurement(id) {
             if (!isAdmin) {
                 alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
                 return;
@@ -1666,9 +1463,8 @@
             const confirmDel = currentLang === 'es' ? "¿Realmente desea eliminar esta medición?" : "Ви дійсно бажаєте видалити цей замір?";
             if (confirm(confirmDel)) {
                 state.measurements = state.measurements.filter(x => x.id !== id);
-                saveStateToLocal();
                 renderHistoryTable();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+                await supabaseClient.from('measurements').delete().eq('id', id);
             }
         }
 
@@ -1692,7 +1488,6 @@
             `).join('');
 
             updateSelectedExportCount();
-            document.getElementById('exportModal').classList.add('hidden');
             document.getElementById('exportModal').classList.remove('hidden');
         }
 
@@ -1985,15 +1780,17 @@
             XLSX.writeFile(workbook, filename);
         }
 
-        async function syncDataManual() {
-            await syncData();
-            alert(currentLang === 'es' ? "¡Datos sincronizados con éxito desde la nube!" : "Дані успішно стягнуто з хмари!");
-            window.location.reload();
-        }
+        function updateSyncStatusUI(status = 'local') {
+            const el = document.getElementById('syncStatus');
+            const dict = I18N[currentLang] || I18N.uk;
 
-        async function pushToJsonBinManual() {
-            await pushToJsonBin();
-            alert(currentLang === 'es' ? "¡Datos subidos con éxito a la nube!" : "Дані успішно вивантажено в хмару!");
+            if (status === 'synced') {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px] font-medium">${dict.syncDone}</span>`;
+            } else if (status === 'syncing') {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px] font-medium">${dict.syncing}</span>`;
+            } else {
+                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px] font-medium">Local</span>`;
+            }
         }
 
         function renderMethodologyCards() {
@@ -2059,7 +1856,7 @@
         let nativeEditingParamGIdx = null;
         let nativeEditingParamPIdx = null;
 
-        function archiveMethodology(id) {
+        async function archiveMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgArchiveConfirm)) {
@@ -2067,15 +1864,24 @@
                 if (m) {
                     m.isArchived = true;
                     m.updatedAt = new Date().toISOString();
+                    
+                    await supabaseClient.from('methodologies').upsert({
+                        id: m.id,
+                        title: m.title,
+                        description: m.description,
+                        status: m.status,
+                        doc_url: m.docUrl,
+                        is_archived: m.isArchived,
+                        groups: m.groups,
+                        updated_at: m.updatedAt
+                    });
                 }
-                saveStateToLocal();
                 populateMethodologyDropdown();
                 renderMethodologyCards();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
             }
         }
 
-        function restoreMethodology(id) {
+        async function restoreMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgRestoreConfirm)) {
@@ -2083,23 +1889,32 @@
                 if (m) {
                     m.isArchived = false;
                     m.updatedAt = new Date().toISOString();
+                    
+                    await supabaseClient.from('methodologies').upsert({
+                        id: m.id,
+                        title: m.title,
+                        description: m.description,
+                        status: m.status,
+                        doc_url: m.docUrl,
+                        is_archived: m.isArchived,
+                        groups: m.groups,
+                        updated_at: m.updatedAt
+                    });
                 }
-                saveStateToLocal();
                 populateMethodologyDropdown();
                 renderMethodologyCards();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
             }
         }
 
-        function deleteMethodology(id) {
+        async function deleteMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
             if (confirm(dict.msgDeleteConfirm)) {
                 state.methodologies = state.methodologies.filter(x => x.id !== id);
-                saveStateToLocal();
                 populateMethodologyDropdown();
                 renderMethodologyCards();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
+                
+                await supabaseClient.from('methodologies').delete().eq('id', id);
             }
         }
 
@@ -2724,7 +2539,7 @@
             tempGroups[gIdx].params[pIdx].baseParamId = val;
         }
 
-        function saveMethodology() {
+        async function saveMethodology() {
             if (!isAdmin) return;
             const titleUk = document.getElementById('methodTitle_uk').value.trim();
             const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
@@ -2767,9 +2582,20 @@
                         isArchived: wasArchived,
                         updatedAt: currentTimeIso
                     };
+                    
+                    await supabaseClient.from('methodologies').upsert({
+                        id: editId,
+                        title: newTitle,
+                        description: newDesc,
+                        status: status,
+                        doc_url: docUrl,
+                        is_archived: wasArchived,
+                        groups: groups,
+                        updated_at: currentTimeIso
+                    });
                 }
             } else {
-                state.methodologies.push({
+                const newMeth = {
                     id: 'm_custom_' + Date.now(),
                     title: newTitle,
                     description: newDesc,
@@ -2778,14 +2604,24 @@
                     groups: groups,
                     isArchived: false,
                     updatedAt: currentTimeIso
+                };
+                state.methodologies.push(newMeth);
+                
+                await supabaseClient.from('methodologies').insert({
+                    id: newMeth.id,
+                    title: newMeth.title,
+                    description: newMeth.description,
+                    status: newMeth.status,
+                    doc_url: newMeth.docUrl,
+                    is_archived: newMeth.isArchived,
+                    groups: newMeth.groups,
+                    updated_at: newMeth.updatedAt
                 });
             }
 
-            saveStateToLocal();
             populateMethodologyDropdown();
             renderMethodologyCards();
             closeMethodologyModal();
-            if (state.config.binId && state.config.apiKey) pushToJsonBin();
             alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
         }
 
@@ -2836,185 +2672,33 @@
             tempDictArray[idx][lang] = val;
         }
 
-        function saveDictionary() {
+        async function saveDictionary() {
             const newDict = {};
+            const arrForDb = [];
+            
             tempDictArray.forEach(item => {
                 const ukWord = item.uk.trim().toLowerCase();
                 const esWord = item.es.trim();
                 if (ukWord) {
                     newDict[ukWord] = { es: esWord };
+                    arrForDb.push({ term: ukWord, translation: { es: esWord } });
                 }
             });
 
             state.dictionary = newDict;
-            saveStateToLocal();
-            closeDictionaryModal();
             
-            if (state.config.binId && state.config.apiKey) pushToJsonBin();
+            try {
+                // Clear old dict and insert new
+                await supabaseClient.from('dictionary').delete().neq('term', '0');
+                if(arrForDb.length > 0) {
+                    await supabaseClient.from('dictionary').insert(arrForDb);
+                }
+            } catch(e) {}
+
+            closeDictionaryModal();
             alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
         }
 
-        function loadSettingsInputs() {
-            document.getElementById('cfgBinId').value = state.config.binId || '';
-            document.getElementById('cfgApiKey').value = state.config.apiKey || '';
-        }
-
-        function saveSettings() {
-            state.config.binId = document.getElementById('cfgBinId').value.trim();
-            state.config.apiKey = document.getElementById('cfgApiKey').value.trim();
-            saveStateToLocal();
-            alert(currentLang === 'es' ? "¡Configuración guardada!" : "Налаштування збережено!");
-            if (state.config.binId && state.config.apiKey) syncData();
-        }
-
-        function updateSyncStatusUI(status = 'local') {
-            const el = document.getElementById('syncStatus');
-            const dict = I18N[currentLang] || I18N.uk;
-
-            if (status === 'synced') {
-                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span> <span class="text-[10px] font-medium">${dict.syncDone}</span>`;
-            } else if (status === 'syncing') {
-                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-ping inline-block"></span> <span class="text-[10px] font-medium">${dict.syncing}</span>`;
-            } else {
-                el.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> <span class="text-[10px] font-medium">Local</span>`;
-            }
-        }
-
-        function downloadBackup() {
-            const backupData = {
-                methodologies: state.methodologies,
-                measurements: state.measurements,
-                dictionary: state.dictionary,
-                config: state.config
-            };
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "mediciones_backup_" + new Date().toISOString().split('T')[0] + ".json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
-        }
-
-        function restoreBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const dict = I18N[currentLang] || I18N.uk;
-            
-            if (!confirm(dict.msgRestoreConfirm)) {
-                event.target.value = ''; 
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.methodologies) state.methodologies = data.methodologies;
-                    if (data.measurements) state.measurements = data.measurements;
-                    if (data.dictionary) state.dictionary = data.dictionary;
-                    if (data.config) state.config = data.config;
-                    
-                    saveStateToLocal();
-                    
-                    if (state.config.binId && state.config.apiKey) {
-                        pushToJsonBin();
-                    }
-                    
-                    alert(dict.msgRestoreSuccess);
-                    window.location.reload();
-                } catch(err) {
-                    alert("Error: Invalid JSON file.");
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        async function syncData() {
-            if (!state.config.binId || !state.config.apiKey) return;
-            updateSyncStatusUI('syncing');
-
-            try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}/latest`, {
-                    headers: { 'X-Access-Key': state.config.apiKey }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.record) {
-                        smartMergeWithRemote(data.record);
-                        populateMethodologyDropdown();
-                        renderMethodologyCards();
-                        renderHistoryTable();
-                        updateSyncStatusUI('synced');
-                    }
-                }
-            } catch (e) {
-                console.error("JSONBin sync error:", e);
-                updateSyncStatusUI('local');
-            }
-        }
-
-        async function pushToJsonBin() {
-            if (!state.config.binId || !state.config.apiKey) return;
-            updateSyncStatusUI('syncing');
-
-            try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${state.config.binId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Access-Key': state.config.apiKey
-                    },
-                    body: JSON.stringify({
-                        methodologies: state.methodologies,
-                        measurements: state.measurements,
-                        dictionary: state.dictionary
-                    })
-                });
-                if (res.ok) {
-                    updateSyncStatusUI('synced');
-                }
-            } catch (e) {
-                console.error("JSONBin push error:", e);
-                updateSyncStatusUI('local');
-            }
-        }
-
-        async function testJsonBinConnection() {
-            const binId = document.getElementById('cfgBinId').value.trim();
-            const apiKey = document.getElementById('cfgApiKey').value.trim();
-
-            if (!binId || !apiKey) {
-                alert("Please fill BIN ID and Access Key");
-                return;
-            }
-
-            try {
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                    headers: { 'X-Access-Key': apiKey }
-                });
-                if (res.ok) {
-                    alert(currentLang === 'es' ? "¡Conexión exitosa!" : "Успішне з'єднання!");
-                } else {
-                    alert(currentLang === 'es' ? "Error de conexión." : "Помилка з'єднання.");
-                }
-            } catch (e) {
-                alert(currentLang === 'es' ? "Error de red." : "Помилка мережі.");
-            }
-        }
-
-        clearAllData = function() {
-            if (!isAdmin) {
-                alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
-                return;
-            }
-            if (confirm(currentLang === 'es' ? "¿Eliminar todas las mediciones locales?" : "Ви дійсно бажаєте видалити всі локальні заміри?")) {
-                state.measurements = [];
-                saveStateToLocal();
-                renderHistoryTable();
-                if (state.config.binId && state.config.apiKey) pushToJsonBin();
-            }
-        };
     </script>
 </body>
 </html>
