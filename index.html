@@ -2032,6 +2032,7 @@
                     }];
                 }
             } else {
+                // Нова методика створюється з повністю порожнім розділом!
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
                 document.getElementById('editMethodologyId').value = "";
                 document.getElementById('methodTitle_uk').value = "";
@@ -2043,10 +2044,8 @@
 
                 tempGroups = [{
                     id: 'g_' + Date.now(),
-                    title: { uk: 'Етап 1', es: 'Etapa 1' },
-                    params: [
-                        { id: 'p_' + Date.now(), label: { uk: 'Загальна вага', es: 'Peso total' }, unit: { uk: 'кг', es: 'kg' }, type: 'decimal', required: true, isBaseWeight: true, useShare: false, code: 'v1' }
-                    ]
+                    title: { uk: 'Розділ 1', es: 'Sección 1' },
+                    params: []
                 }];
             }
 
@@ -2199,7 +2198,10 @@
                     .map(p => `<option value="${p.id}">${escapeHTML(getLabelWithUnit(p, currentLang))} [${p.code}]</option>`)
                     .join('');
 
-                const paramsHtml = (group.params || []).map((p, pIdx) => {
+                const paramsCount = (group.params || []).length;
+                const emptyNotice = `<div class="text-xs text-slate-400 italic py-2 pl-2">У цьому розділі поки немає параметрів</div>`;
+
+                const paramsHtml = paramsCount > 0 ? (group.params || []).map((p, pIdx) => {
                     const baseOptions = allDecimalParams.map(dp => 
                         `<option value="${dp.id}" ${p.baseParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`
                     ).join('');
@@ -2319,7 +2321,7 @@
                         </div>
                     </div>
                     `;
-                }).join('');
+                }).join('') : emptyNotice;
 
                 return `
                 <div class="p-5 bg-slate-100/90 border border-slate-200 rounded-2xl shadow-sm space-y-4 mb-6 relative">
