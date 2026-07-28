@@ -22,7 +22,7 @@
 </head>
 <body class="min-h-screen text-slate-800 flex flex-col">
 
-    <!-- BLOCKING SYNC OVERLAY (Remote-First Policy) -->
+    <!-- BLOCKING SYNC OVERLAY -->
     <div id="syncOverlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex flex-col items-center justify-center text-white transition-opacity duration-300">
         <div class="bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl flex flex-col items-center space-y-4 max-w-sm text-center">
             <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -676,7 +676,7 @@
         ];
 
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
-        let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
+        let isAdmin = false;
         let adminResolveCallback = null;
 
         let state = {
@@ -688,6 +688,17 @@
         // Ініціалізація та Завантаження з Supabase
         document.addEventListener('DOMContentLoaded', async () => {
             applyLanguageUI();
+            
+            // --- Перевірка активної сесії Supabase Auth ---
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                isAdmin = true;
+                localStorage.setItem('qm_is_admin', 'true');
+            } else {
+                isAdmin = false;
+                localStorage.setItem('qm_is_admin', 'false');
+            }
+
             updateAdminUI();
             
             await loadDataFromSupabase();
@@ -896,9 +907,12 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
 
-        // --- БЕЗПЕЧНИЙ ВХІД АДМІНІСТРААТОРА (З ПРИХОВАНИМ ВВЕДЕННЯМ ••••••) ---
+        // === БЕЗПЕЧНИЙ ВХІД АДМІНІСТРАТОРА ЧЕРЕЗ SUPABASE AUTH ===
         async function toggleAdminMode() {
+            const dict = I18N[currentLang] || I18N.uk;
+            
             if (isAdmin) {
+                await supabaseClient.auth.signOut();
                 isAdmin = false;
                 localStorage.setItem('qm_is_admin', 'false');
                 updateAdminUI();
@@ -907,20 +921,22 @@
                 const pwd = await showAdminPasswordPrompt();
                 if (pwd !== null && pwd.trim() !== "") {
                     try {
-                        const { data, error } = await supabaseClient
-                            .from('app_settings')
-                            .select('value')
-                            .eq('key', 'admin_password')
-                            .single();
+                        const { data, error } = await supabaseClient.auth.signInWithPassword({
+                            email: 'diana89kiev@gmail.com',
+                            password: pwd.trim()
+                        });
 
-                        if (!error && data && data.value === pwd.trim()) {
-                            isAdmin = true;
-                            localStorage.setItem('qm_is_admin', 'true');
-                            updateAdminUI();
-                            alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
-                        } else {
+                        if (error) {
+                            console.error("Помилка автентифікації:", error.message);
                             alert(currentLang === 'es' ? "¡Contraseña incorrecta!" : "Невірний пароль!");
+                            return;
                         }
+
+                        isAdmin = true;
+                        localStorage.setItem('qm_is_admin', 'true');
+                        updateAdminUI();
+                        alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
+
                     } catch (e) {
                         console.error("Помилка перевірки пароля:", e);
                         alert(currentLang === 'es' ? "Error de conexión." : "Помилка зв'язку з хмарою.");
@@ -1752,7 +1768,6 @@
 
                 const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
 
-                // ЖОРСТКЕ ФОРМАТУВАННЯ КОМІРОК ЯК ТЕКСТОВИХ ЧИСЕЛ З КРАПКОЮ ДЛЯ ЕКСЕЛЯ
                 for (let R = 0; R < dataRows.length; R++) {
                     for (let C = 0; C < dataRows[R].length; C++) {
                         const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
@@ -1760,7 +1775,7 @@
                         const cell = worksheet[cellAddress];
 
                         if (R > 0 && typeof cell.v === 'number') {
-                            cell.t = 's'; // Робимо ячейку текстовою, щоб Excel не замінював крапку на кому за локаллю ОС
+                            cell.t = 's';
                             if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
                                 cell.v = (cell.v * 100).toFixed(2) + '%';
                             } else if (isIntegerCol[C]) {
@@ -1912,6 +1927,7 @@
 
         let tempGroups = [];
         let editingOptionGIdx = null;
+        let editingOptionPIdx = null;
         let nativeEditingParamGIdx = null;
         let nativeEditingParamPIdx = null;
 
@@ -2205,7 +2221,6 @@
                                 <button type="button" onclick="moveParam(${gIdx}, ${pIdx}, 1)" class="text-slate-400 hover:text-slate-700 text-xs p-1 rounded hover:bg-slate-200/60 transition" title="Вниз"><i class="fa-solid fa-chevron-down"></i></button>
                             </div>
                             
-                            <!-- РЕДАГУВАННЯ КОДУ ЗМІННОЇ -->
                             <div class="flex items-center bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-0.5 shrink-0 mt-1 shadow-2xs">
                                 <span class="text-[10px] text-indigo-700 font-bold mr-1">Код:</span>
                                 <input type="text" value="${escapeHTML(p.code)}" onchange="updateParamCode(${gIdx}, ${pIdx}, this.value)" class="w-12 text-xs font-mono font-bold text-indigo-900 bg-transparent outline-none border-b border-indigo-300 focus:border-indigo-600 text-center">
