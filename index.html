@@ -883,7 +883,7 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
 
-        function toggleAdminMode() {
+        async function toggleAdminMode() {
             const dict = I18N[currentLang] || I18N.uk;
             if (isAdmin) {
                 isAdmin = false;
@@ -892,13 +892,27 @@
                 switchTab('new-measure');
             } else {
                 const pwd = prompt(dict.adminPrompt);
-                if (pwd !== null && btoa(pwd + "_secret") === "YWRtaW4yMDI2X3NlY3JldA==") {
-                    isAdmin = true;
-                    localStorage.setItem('qm_is_admin', 'true');
-                    updateAdminUI();
-                    alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
-                } else if (pwd !== null) {
-                    alert(currentLang === 'es' ? "¡Contraseña incorrecta!" : "Невірний пароль!");
+                if (pwd !== null && pwd.trim() !== "") {
+                    try {
+                        // Звертаємося до бази Supabase для перевірки пароля
+                        const { data, error } = await supabaseClient
+                            .from('app_settings')
+                            .select('value')
+                            .eq('key', 'admin_password')
+                            .single();
+
+                        if (!error && data && data.value === pwd.trim()) {
+                            isAdmin = true;
+                            localStorage.setItem('qm_is_admin', 'true');
+                            updateAdminUI();
+                            alert(currentLang === 'es' ? "¡Modo administrador activado!" : "Режим адміністратора активовано!");
+                        } else {
+                            alert(currentLang === 'es' ? "¡Contraseña incorrecta!" : "Невірний пароль!");
+                        }
+                    } catch (e) {
+                        console.error("Помилка перевірки пароля:", e);
+                        alert(currentLang === 'es' ? "Error de conexión." : "Помилка зв'язку з хмарою.");
+                    }
                 }
             }
         }
