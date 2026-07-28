@@ -383,6 +383,18 @@
         </div>
     </div>
 
+    <!-- Modal 6: Admin Password Secure Modal (Masked Input) -->
+    <div id="adminPasswordModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 space-y-4">
+            <h3 class="font-bold text-slate-800 text-sm uppercase border-b pb-2.5" id="modalAdminTitle">Введіть пароль адміністратора</h3>
+            <input type="password" id="adminPasswordInput" placeholder="••••••••" class="w-full border border-slate-300 rounded-xl p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50">
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeAdminPasswordModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold shadow-sm">Скасувати</button>
+                <button onclick="submitAdminPassword()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md">Увійти</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Application JavaScript Code -->
     <script>
         // === SUPABASE CONNECTION & SYNC ===
@@ -459,7 +471,7 @@
                 thActions: "Дії",
                 lblConstructorTitle: "Управління методиками",
                 lblConstructorSub: "Створюйте та редагуйте методики замірів",
-                btnNewMethod: "Нова методидика",
+                btnNewMethod: "Нова методика",
                 btnEdit: "Редагувати",
                 btnDeletePermanent: "Видалити назавжди",
                 btnArchive: "В архів",
@@ -665,6 +677,7 @@
 
         let currentLang = localStorage.getItem('qm_lang') || 'uk';
         let isAdmin = localStorage.getItem('qm_is_admin') === 'true';
+        let adminResolveCallback = null;
 
         let state = {
             methodologies: [],
@@ -883,18 +896,17 @@
             if (targetBtn) targetBtn.classList.add('active');
         }
 
+        // --- БЕЗПЕЧНИЙ ВХІД АДМІНІСТРААТОРА (З ПРИХОВАНИМ ВВЕДЕННЯМ ••••••) ---
         async function toggleAdminMode() {
-            const dict = I18N[currentLang] || I18N.uk;
             if (isAdmin) {
                 isAdmin = false;
                 localStorage.setItem('qm_is_admin', 'false');
                 updateAdminUI();
                 switchTab('new-measure');
             } else {
-                const pwd = prompt(dict.adminPrompt);
+                const pwd = await showAdminPasswordPrompt();
                 if (pwd !== null && pwd.trim() !== "") {
                     try {
-                        // Звертаємося до бази Supabase для перевірки пароля
                         const { data, error } = await supabaseClient
                             .from('app_settings')
                             .select('value')
@@ -914,6 +926,39 @@
                         alert(currentLang === 'es' ? "Error de conexión." : "Помилка зв'язку з хмарою.");
                     }
                 }
+            }
+        }
+
+        function showAdminPasswordPrompt() {
+            return new Promise((resolve) => {
+                adminResolveCallback = resolve;
+                const modal = document.getElementById('adminPasswordModal');
+                const input = document.getElementById('adminPasswordInput');
+                input.value = "";
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 100);
+
+                input.onkeydown = function(e) {
+                    if (e.key === 'Enter') submitAdminPassword();
+                };
+            });
+        }
+
+        function closeAdminPasswordModal() {
+            document.getElementById('adminPasswordModal').classList.add('hidden');
+            if (adminResolveCallback) {
+                adminResolveCallback(null);
+                adminResolveCallback = null;
+            }
+        }
+
+        function submitAdminPassword() {
+            const input = document.getElementById('adminPasswordInput');
+            const pwd = input.value;
+            document.getElementById('adminPasswordModal').classList.add('hidden');
+            if (adminResolveCallback) {
+                adminResolveCallback(pwd);
+                adminResolveCallback = null;
             }
         }
 
@@ -2702,7 +2747,6 @@
             state.dictionary = newDict;
             
             try {
-                // Clear old dict and insert new
                 await supabaseClient.from('dictionary').delete().neq('term', '0');
                 if(arrForDb.length > 0) {
                     await supabaseClient.from('dictionary').insert(arrForDb);
