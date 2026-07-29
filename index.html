@@ -1607,6 +1607,7 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
+        // === ГЕНЕРАЦІЯ EXCEL ФАЙЛУ З ГАРАНТОВАНОЮ КРАПКОЮ ДЛЯ ЧИСЕЛ ===
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
@@ -1673,7 +1674,6 @@
 
                     if (shareParamMap.has(p.id)) {
                         const basePId = shareParamMap.get(p.id);
-                        const baseParamObj = allParams.find(x => x.id === basePId);
                         
                         fullHeaders.push(currentLang === 'es' ? `Participación % (%)\n(${bilingualHeader})` : `Частка % / % Participación\n(${bilingualHeader})`);
                         isIntegerCol.push(false);
@@ -1759,7 +1759,7 @@
                             }
 
                             if (valForShare > 0 && baseVal > 0) {
-                                const calculatedShare = parseFloat(((valForShare / baseVal)).toFixed(4));
+                                const calculatedShare = (valForShare / baseVal);
                                 row.push(calculatedShare);
                             } else {
                                 row.push("-");
@@ -1771,25 +1771,6 @@
                 });
 
                 const worksheet = XLSX.utils.aoa_to_sheet(dataRows);
-
-                for (let R = 0; R < dataRows.length; R++) {
-                    for (let C = 0; C < dataRows[R].length; C++) {
-                        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
-                        if (!worksheet[cellAddress]) continue;
-                        const cell = worksheet[cellAddress];
-
-                        if (R > 0 && typeof cell.v === 'number') {
-                            cell.t = 's';
-                            if (isCalcCol[C] && (String(fullHeaders[C]).includes("Частка %") || String(fullHeaders[C]).includes("Participación"))) {
-                                cell.v = (cell.v * 100).toFixed(2) + '%';
-                            } else if (isIntegerCol[C]) {
-                                cell.v = String(Math.round(cell.v));
-                            } else {
-                                cell.v = String(cell.v);
-                            }
-                        }
-                    }
-                }
 
                 const headerStyle = {
                     font: { bold: true, color: { rgb: "FFFFFF" }, sz: 10, name: "Segoe UI" },
@@ -1806,7 +1787,7 @@
                 const autoCalcStyle = {
                     font: { bold: true, color: { rgb: "1E3A8A" }, sz: 10, name: "Segoe UI" },
                     fill: { fgColor: { rgb: "E0F2FE" } },
-                    alignment: { wrapText: true, vertical: "center", horizontal: "center" },
+                    alignment: { vertical: "center", horizontal: "center" },
                     border: {
                         top: { style: "thin", color: { rgb: "CBD5E1" } },
                         bottom: { style: "thin", color: { rgb: "CBD5E1" } },
@@ -1840,8 +1821,20 @@
                             cell.s = headerStyle;
                         } else if (isCalcCol[C]) {
                             cell.s = autoCalcStyle;
+                            if (typeof cell.v === 'number') {
+                                cell.t = 'n';
+                                cell.z = '0.00%'; // форматуємо відсоток в Excel
+                            }
                         } else {
                             cell.s = normalStyle;
+                            if (typeof cell.v === 'number') {
+                                cell.t = 'n';
+                                if (isIntegerCol[C]) {
+                                    cell.z = '0';
+                                } else {
+                                    cell.z = '0.000'; // числовий формат Excel з крапкою
+                                }
+                            }
                         }
                     }
                 }
@@ -2073,7 +2066,7 @@
             return Array.from(map.values());
         }
 
-        // Функція створення окремого параметра поза категоріями (додається СТРOГО В КІНЕЦЬ ПОТОЧНОГО СПИСКУ)
+        // Функція створення окремого параметра поза категоріями
         function addStandaloneParam() {
             const newStandaloneGroup = {
                 id: 'g_standalone_' + Date.now() + Math.floor(Math.random()*1000),
@@ -2160,10 +2153,9 @@
             if (foundParam && sourceGIdx !== targetGIdx) {
                 tempGroups[sourceGIdx].params.splice(sourcePIdx, 1);
                 
-                // Якщо початковий окремий блок став порожнім — прибираємо його
                 if (tempGroups[sourceGIdx].isStandalone && tempGroups[sourceGIdx].params.length === 0) {
                     tempGroups.splice(sourceGIdx, 1);
-                    if (sourceGIdx < targetGIdx) targetGIdx--; // корегуємо індекс після видалення
+                    if (sourceGIdx < targetGIdx) targetGIdx--;
                 }
 
                 if (!tempGroups[targetGIdx].params) tempGroups[targetGIdx].params = [];
@@ -2210,7 +2202,6 @@
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            // Наскрізна нумерація змінних v1, v2, v3... по всьому списку зверху донизу
             let codeCounter = 1;
             tempGroups.forEach(g => {
                 (g.params || []).forEach(p => {
