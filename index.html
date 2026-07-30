@@ -139,11 +139,26 @@
                         <select id="inspectorName" onchange="saveDraft()" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50 transition">
                         </select>
                     </div>
-                    <div>
+                    
+                    <!-- РОЗУМНИЙ ПОШУК МЕТОДИКИ -->
+                    <div class="relative">
                         <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5" id="lblMethodology">Оберіть методику</label>
-                        <select id="methodologySelect" onchange="renderMeasurementForm()" class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50 transition">
-                            <option value="">-- Оберіть методику --</option>
-                        </select>
+                        <input type="hidden" id="methodologySelect" value="">
+                        
+                        <div class="relative">
+                            <input type="text" id="methodologySearchInput" 
+                                onfocus="openMethodologyDropdown()" 
+                                oninput="filterMethodologyDropdown(this.value)" 
+                                placeholder="🔍 Введіть назву методики..." 
+                                class="w-full border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50/50 transition pr-10">
+                            <button type="button" onclick="toggleMethodologyDropdown()" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- Випадаючий список результатів пошуку -->
+                        <div id="methodologyDropdownList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl z-40 max-h-60 overflow-y-auto divide-y divide-slate-100 text-xs">
+                        </div>
                     </div>
                 </div>
 
@@ -478,7 +493,7 @@
                 lblDraftSaved: "Черновик збережено",
                 lblFactory: "Оператор / Фабрика",
                 lblMethodology: "Оберіть методику",
-                optSelectMethod: "-- Оберіть методику --",
+                optSelectMethod: "-- Введіть або оберіть методику --",
                 btnReset: "Очистити",
                 btnSave: "Зберегти результати",
                 lblSelectPrompt: "Будь ласка, оберіть методику зі списку вище для початку внесення даних.",
@@ -581,7 +596,7 @@
                 lblDraftSaved: "Borrador guardado",
                 lblFactory: "Operador / Planta",
                 lblMethodology: "Seleccione metodología",
-                optSelectMethod: "-- Seleccione metodología --",
+                optSelectMethod: "-- Ingrese o seleccione metodología --",
                 btnReset: "Limpiar",
                 btnSave: "Guardar resultados",
                 lblSelectPrompt: "Por favor, seleccione una metodología arriba para comenzar a ingresar datos.",
@@ -715,6 +730,15 @@
         document.addEventListener('DOMContentLoaded', async () => {
             applyLanguageUI();
             await checkAuthSession();
+
+            // Закриття випадаючого списку при кліку поза ним
+            document.addEventListener('click', (e) => {
+                const searchInput = document.getElementById('methodologySearchInput');
+                const dropdown = document.getElementById('methodologyDropdownList');
+                if (searchInput && dropdown && !searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
         });
 
         // === SUPABASE AUTH: ПЕРЕВІРКА СЕСІЇ ТА АВТОРИЗАЦІЯ ===
@@ -1004,33 +1028,78 @@
             }
         }
 
+        // === ЛОГІКА РОЗУМНОГО ПОШУКУ МЕТОДИКИ ===
         function populateMethodologyDropdown() {
-            const select = document.getElementById('methodologySelect');
             const filterSelect = document.getElementById('filterMethodology');
             const dict = I18N[currentLang] || I18N.uk;
-
-            const selectedM = select.value;
             const selectedFilterM = filterSelect.value;
 
-            select.innerHTML = `<option value="">${dict.optSelectMethod}</option>`;
             filterSelect.innerHTML = `<option value="ALL">${dict.allMethodsOpt}</option>`;
 
             state.methodologies.forEach(m => {
                 const title = getI18nText(m.title);
                 const archiveTag = m.isArchived ? ` ${dict.lblArchived}` : '';
-
-                if (!m.isArchived && m.status !== 'dev') {
-                    select.innerHTML += `<option value="${m.id}">${title}</option>`;
-                }
                 filterSelect.innerHTML += `<option value="${m.id}">${title}${archiveTag}</option>`;
             });
 
-            if (selectedM && state.methodologies.find(m => m.id === selectedM && !m.isArchived && m.status !== 'dev')) {
-                select.value = selectedM;
-            } else {
-                select.value = "";
-            }
             if (selectedFilterM) filterSelect.value = selectedFilterM;
+            renderMethodologySearchList("");
+        }
+
+        function openMethodologyDropdown() {
+            renderMethodologySearchList(document.getElementById('methodologySearchInput').value);
+            document.getElementById('methodologyDropdownList').classList.remove('hidden');
+        }
+
+        function toggleMethodologyDropdown() {
+            const dropdown = document.getElementById('methodologyDropdownList');
+            if (dropdown.classList.contains('hidden')) {
+                openMethodologyDropdown();
+                document.getElementById('methodologySearchInput').focus();
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        }
+
+        function filterMethodologyDropdown(query) {
+            renderMethodologySearchList(query);
+            document.getElementById('methodologyDropdownList').classList.remove('hidden');
+        }
+
+        function renderMethodologySearchList(query = "") {
+            const dropdown = document.getElementById('methodologyDropdownList');
+            const cleanQuery = query.toLowerCase().trim();
+
+            const activeMethods = state.methodologies.filter(m => !m.isArchived && m.status !== 'dev');
+            const filtered = activeMethods.filter(m => {
+                const titleUk = typeof m.title === 'object' ? (m.title.uk || '') : m.title;
+                const titleEs = typeof m.title === 'object' ? (m.title.es || '') : '';
+                return titleUk.toLowerCase().includes(cleanQuery) || titleEs.toLowerCase().includes(cleanQuery);
+            });
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = `<div class="p-3 text-slate-400 italic text-center">Нічого не знайдено</div>`;
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map(m => {
+                const title = getI18nText(m.title);
+                const desc = getI18nText(m.description);
+                return `
+                    <div onclick="selectMethodologyFromSearch('${m.id}', '${escapeHTML(title)}')" class="p-3 hover:bg-blue-50 cursor-pointer transition flex flex-col gap-0.5">
+                        <span class="font-bold text-slate-800 text-xs">${escapeHTML(title)}</span>
+                        ${desc ? `<span class="text-[10px] text-slate-400 truncate">${escapeHTML(desc)}</span>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectMethodologyFromSearch(methodId, methodTitle) {
+            document.getElementById('methodologySelect').value = methodId;
+            document.getElementById('methodologySearchInput').value = methodTitle;
+            document.getElementById('methodologyDropdownList').classList.add('hidden');
+            renderMeasurementForm();
+            saveDraft();
         }
 
         function safeEvaluate(expr, vars) {
@@ -1274,8 +1343,12 @@
                     document.getElementById('inspectorName').value = draft.inspector;
                 }
                 if (draft.methodologyId) {
-                    document.getElementById('methodologySelect').value = draft.methodologyId;
-                    renderMeasurementForm();
+                    const m = state.methodologies.find(x => x.id === draft.methodologyId);
+                    if (m) {
+                        document.getElementById('methodologySelect').value = draft.methodologyId;
+                        document.getElementById('methodologySearchInput').value = getI18nText(m.title);
+                        renderMeasurementForm();
+                    }
                 }
             } catch(e) {}
         }
@@ -1421,14 +1494,16 @@
             if (confirm(confirmMsg)) {
                 switchTab('new-measure');
                 document.getElementById('inspectorName').value = rec.inspector;
-                document.getElementById('methodologySelect').value = rec.methodologyId;
-                renderMeasurementForm();
-
-                document.getElementById('editingRecordId').value = rec.id;
-                document.getElementById('editingBadge').classList.remove('hidden');
-
+                
                 const m = state.methodologies.find(x => x.id === rec.methodologyId);
                 if (m) {
+                    document.getElementById('methodologySelect').value = rec.methodologyId;
+                    document.getElementById('methodologySearchInput').value = getI18nText(m.title);
+                    renderMeasurementForm();
+
+                    document.getElementById('editingRecordId').value = rec.id;
+                    document.getElementById('editingBadge').classList.remove('hidden');
+
                     const allParams = m.groups ? m.groups.flatMap(g => g.params || []) : m.params;
                     allParams.forEach(p => {
                         const inputEl = document.getElementById(p.id);
@@ -1454,6 +1529,8 @@
         function resetForm() {
             document.getElementById('measurementForm').reset();
             document.getElementById('inspectorName').value = "";
+            document.getElementById('methodologySelect').value = "";
+            document.getElementById('methodologySearchInput').value = "";
             document.getElementById('editingRecordId').value = "";
             document.getElementById('editingBadge').classList.add('hidden');
             clearDraft();
@@ -1823,7 +1900,7 @@
                             cell.s = autoCalcStyle;
                             if (typeof cell.v === 'number') {
                                 cell.t = 'n';
-                                cell.z = '0.00%'; // форматуємо відсоток в Excel
+                                cell.z = '0.00%';
                             }
                         } else {
                             cell.s = normalStyle;
@@ -1832,7 +1909,7 @@
                                 if (isIntegerCol[C]) {
                                     cell.z = '0';
                                 } else {
-                                    cell.z = '0.000'; // числовий формат Excel з крапкою
+                                    cell.z = '0.000';
                                 }
                             }
                         }
@@ -2026,7 +2103,6 @@
                     }];
                 }
             } else {
-                // Нова методика створюється порожньою
                 document.getElementById('modalTitle').innerText = dict.modalCreateTitle;
                 document.getElementById('editMethodologyId').value = "";
                 document.getElementById('methodTitle_uk').value = "";
@@ -2066,7 +2142,6 @@
             return Array.from(map.values());
         }
 
-        // Функція створення окремого параметра поза категоріями
         function addStandaloneParam() {
             const newStandaloneGroup = {
                 id: 'g_standalone_' + Date.now() + Math.floor(Math.random()*1000),
@@ -2355,7 +2430,6 @@
                 }).join('') : emptyNotice;
 
                 if (isStandalone) {
-                    // Окремі параметри без розділу
                     return `
                     <div class="p-5 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-xs space-y-4 mb-6 relative">
                         <div class="flex justify-between items-center border-b border-emerald-100 pb-2">
