@@ -1684,7 +1684,7 @@
             generateExcelFile([rec], `Medicion_${rec.inspector}_${rec.timestamp}.xlsx`);
         }
 
-        // === ГЕНЕРАЦІЯ EXCEL ФАЙЛУ З ГАРАНТОВАНОЮ КРАПКОЮ ДЛЯ ЧИСЕЛ ===
+        // === ГЕНЕРАЦІЯ EXCEL ФАЙЛУ З УНІВЕРСАЛЬНИМ ТЕКСТОВИМ ФОРМАТУВАННЯМ ДЛЯ GOOGLE SHEETS ===
         function generateExcelFile(recordsArray, filename) {
             const workbook = XLSX.utils.book_new();
 
@@ -1808,7 +1808,8 @@
                         const isInt = integerParamIds.has(p.id);
 
                         if (parsedNum !== null && !String(p.id).includes("Примітки") && !String(p.id).includes("Notas") && !String(p.id).includes("Дата")) {
-                            row.push(isInt ? Math.round(parsedNum) : parsedNum);
+                            // Зберігаємо як відформатований текст, який не спотворюється при Ctrl+C -> Ctrl+V
+                            row.push(isInt ? Math.round(parsedNum).toString() : parsedNum.toFixed(3).replace('.', '.'));
                         } else {
                             row.push(rawVal || '-');
                         }
@@ -1836,7 +1837,7 @@
                             }
 
                             if (valForShare > 0 && baseVal > 0) {
-                                const calculatedShare = (valForShare / baseVal);
+                                const calculatedShare = ((valForShare / baseVal) * 100).toFixed(2) + '%';
                                 row.push(calculatedShare);
                             } else {
                                 row.push("-");
@@ -1898,20 +1899,10 @@
                             cell.s = headerStyle;
                         } else if (isCalcCol[C]) {
                             cell.s = autoCalcStyle;
-                            if (typeof cell.v === 'number') {
-                                cell.t = 'n';
-                                cell.z = '0.00%';
-                            }
+                            cell.t = 's'; // Текстовий тип запобігає автоперетворенню Excel у тисячі
                         } else {
                             cell.s = normalStyle;
-                            if (typeof cell.v === 'number') {
-                                cell.t = 'n';
-                                if (isIntegerCol[C]) {
-                                    cell.z = '0';
-                                } else {
-                                    cell.z = '0.000';
-                                }
-                            }
+                            cell.t = 's'; // Гарантує збереження крапки при вставці в Google Sheets
                         }
                     }
                 }
