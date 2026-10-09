@@ -206,6 +206,10 @@
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
                             <span id="syncText">Supabase Cloud</span>
                         </div>
+                        <button id="btnAiAnalytics" onclick="openAiModal()" class="hidden w-full sm:w-auto px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-wand-magic-sparkles text-violet-200 shrink-0"></i>
+                            <span id="btnAiAnalyticsText" class="truncate">AI-аналітика</span>
+                        </button>
                         <button onclick="openExportModal()" class="w-full sm:w-auto px-4.5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2 pl-4 pr-4">
                             <i class="fa-solid fa-file-excel text-emerald-200 shrink-0"></i>
                             <span id="btnExportAll" class="truncate">Експорт в Excel (.xlsx)</span>
@@ -440,6 +444,68 @@
             </div>
             <div class="flex justify-end pt-3 border-t">
                 <button onclick="closeDeleteParamModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold" id="delModalCancel">Скасувати</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6: AI Analytics -->
+    <div id="aiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-3 sm:p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden flex flex-col max-h-[92vh]">
+            <div class="px-5 sm:px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/80">
+                <h3 class="font-bold text-slate-800 text-sm sm:text-base" id="aiTitle"><i class="fa-solid fa-wand-magic-sparkles text-violet-600 mr-2"></i> AI-аналітика</h3>
+                <button onclick="closeAiModal()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="p-5 sm:p-6 overflow-y-auto space-y-5 flex-grow">
+                <div>
+                    <div class="flex justify-between items-center text-xs pb-2 border-b border-slate-100 mb-2">
+                        <span class="font-bold text-slate-700 uppercase" id="aiLblRecords">1. Оберіть заміри</span>
+                        <span class="flex gap-4">
+                            <button type="button" onclick="aiToggleAll(true)" class="text-blue-600 hover:underline font-semibold" id="aiLblAll">Вибрати всі</button>
+                            <button type="button" onclick="aiToggleAll(false)" class="text-slate-500 hover:underline font-medium" id="aiLblNone">Зняти виділення</button>
+                        </span>
+                    </div>
+                    <div id="aiRecordsList" class="max-h-52 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl"></div>
+                    <p class="text-xs text-slate-500 mt-1.5"><span id="aiLblSelected">Вибрано:</span> <strong id="aiSelectedCount">0</strong></p>
+                </div>
+
+                <div>
+                    <span class="block text-xs font-bold text-slate-700 uppercase mb-2" id="aiLblTypes">2. Що проаналізувати</span>
+                    <div id="aiReportTypes" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="aiQuestion" id="aiLblQuestion">3. Своє питання (необов'язково)</label>
+                    <textarea id="aiQuestion" rows="2" maxlength="1000" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-violet-500 bg-white shadow-sm"></textarea>
+                </div>
+
+                <div class="flex flex-col sm:flex-row sm:items-end gap-3">
+                    <div class="sm:w-48">
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5" for="aiLang" id="aiLblLang">Мова звіту</label>
+                        <select id="aiLang" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-semibold shadow-sm">
+                            <option value="uk">🇺🇦 Українська</option>
+                            <option value="es">🇪🇸 Español</option>
+                        </select>
+                    </div>
+                    <button type="button" id="aiRunBtn" onclick="runAiAnalytics()" class="sm:ml-auto px-6 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold shadow-md transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span id="aiRunBtnText">Проаналізувати</span>
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-slate-400" id="aiPrivacyNote"></p>
+                <div id="aiStatus" class="hidden text-xs font-semibold p-3 rounded-xl border"></div>
+
+                <div id="aiResultBox" class="hidden border border-violet-200 bg-violet-50/40 rounded-2xl p-4 sm:p-5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-violet-800 uppercase" id="aiLblResult">Результат аналізу</span>
+                        <button type="button" onclick="copyAiResult()" class="text-xs bg-white hover:bg-violet-50 text-violet-700 border border-violet-200 font-semibold px-3 py-1.5 rounded-lg shadow-sm transition">
+                            <i class="fa-solid fa-copy mr-1"></i><span id="aiCopyText">Копіювати</span>
+                        </button>
+                    </div>
+                    <div id="aiResult" class="text-sm text-slate-800 leading-relaxed"></div>
+                    <p id="aiTruncNote" class="hidden text-[11px] text-amber-700 mt-3"></p>
+                </div>
             </div>
         </div>
     </div>
@@ -1049,9 +1115,13 @@
                 const username = currentUser.email.split('@')[0];
                 if (isAdmin) {
                     badgeText.innerText = `Адмін (${username})`;
+                    const aiBtn = document.getElementById('btnAiAnalytics');
+                    if (aiBtn) aiBtn.classList.remove('hidden');
                     constructorTab.classList.remove('hidden');
                 } else {
                     badgeText.innerText = `Оператор (${username})`;
+                    const aiBtnOp = document.getElementById('btnAiAnalytics');
+                    if (aiBtnOp) aiBtnOp.classList.add('hidden');
                     constructorTab.classList.add('hidden');
                 }
             } else {
@@ -1616,6 +1686,7 @@
         }
 
         function applyValidationUI() {
+            applyAiButtonLabel();
             const lbl = document.getElementById('lblFilterFlagged');
             const sel = document.getElementById('filterFlagged');
             if (lbl) lbl.innerText = vt('filterLabel');
@@ -1625,6 +1696,437 @@
             }
         }
         // <<< VALIDATION END
+
+        // >>> AI START
+        const AI_MAX_ROWS = 150;      // скільки вихідних рядків віддаємо моделі (решта — лише статистика)
+        const AI_MAX_DATES = 60;      // скільки днів для динаміки
+        const AI_MAX_PAYLOAD = 200000;
+        let lastAiText = '';
+
+        const AI_T = {
+            uk: {
+                btn: 'AI-аналітика',
+                title: 'AI-аналітика',
+                lblRecords: '1. Оберіть заміри',
+                all: 'Вибрати всі',
+                none: 'Зняти виділення',
+                selected: 'Вибрано:',
+                lblTypes: '2. Що проаналізувати',
+                types: {
+                    summary: 'Зведення за період',
+                    compare: 'Порівняння фабрик',
+                    trend: 'Динаміка в часі',
+                    anomalies: 'Аномалії та підозрілі дані',
+                    recommendations: 'Рекомендації технологам'
+                },
+                lblQuestion: '3. Своє питання (необов\'язково)',
+                questionPh: 'Наприклад: чому на фабриці 2 нижчий вихід?',
+                lang: 'Мова звіту',
+                run: 'Проаналізувати',
+                running: 'Аналізую...',
+                privacy: 'Для аналізу до сервісу Google Gemini передається статистика обраних замірів і частина вихідних рядків. Цифри рахує програма, а не модель.',
+                noRecords: 'Немає замірів для аналізу. Змініть фільтри в історії.',
+                needSelect: 'Оберіть хоча б один замір.',
+                needTask: 'Оберіть, що аналізувати, або напишіть своє питання.',
+                adminOnly: 'Аналітика доступна лише адміністратору.',
+                working: 'Готую дані й чекаю відповіді (зазвичай до хвилини)...',
+                result: 'Результат аналізу',
+                copy: 'Копіювати',
+                copied: 'Скопійовано',
+                truncated: 'Відповідь була обрізана через ліміт довжини. Оберіть менше замірів або менше завдань.',
+                notDeployed: 'Функцію аналітики ще не розгорнуто в Supabase. Виконайте інструкцію з налаштування.',
+                noInternet: 'Немає зв\'язку із сервером. Перевірте інтернет і спробуйте ще раз.',
+                errPrefix: 'Не вдалося отримати аналіз: ',
+                rowsNote: 'Показано лише частину вихідних рядків; усі підсумки пораховані за всіма вибраними замірами.'
+            },
+            es: {
+                btn: 'Analítica IA',
+                title: 'Analítica IA',
+                lblRecords: '1. Seleccione mediciones',
+                all: 'Seleccionar todo',
+                none: 'Deseleccionar todo',
+                selected: 'Seleccionados:',
+                lblTypes: '2. Qué analizar',
+                types: {
+                    summary: 'Resumen del periodo',
+                    compare: 'Comparación de plantas',
+                    trend: 'Evolución en el tiempo',
+                    anomalies: 'Anomalías y datos sospechosos',
+                    recommendations: 'Recomendaciones para técnicos'
+                },
+                lblQuestion: '3. Su propia pregunta (opcional)',
+                questionPh: 'Por ejemplo: ¿por qué la planta 2 tiene menor rendimiento?',
+                lang: 'Idioma del informe',
+                run: 'Analizar',
+                running: 'Analizando...',
+                privacy: 'Para el análisis se envía a Google Gemini la estadística de las mediciones elegidas y parte de las filas originales. Las cifras las calcula el programa, no el modelo.',
+                noRecords: 'No hay mediciones para analizar. Cambie los filtros del historial.',
+                needSelect: 'Seleccione al menos una medición.',
+                needTask: 'Elija qué analizar o escriba su pregunta.',
+                adminOnly: 'La analítica solo está disponible para el administrador.',
+                working: 'Preparando datos y esperando respuesta (normalmente hasta un minuto)...',
+                result: 'Resultado del análisis',
+                copy: 'Copiar',
+                copied: 'Copiado',
+                truncated: 'La respuesta fue recortada por el límite de longitud. Elija menos mediciones o menos tareas.',
+                notDeployed: 'La función de analítica aún no está desplegada en Supabase. Siga las instrucciones de configuración.',
+                noInternet: 'Sin conexión con el servidor. Compruebe internet e inténtelo de nuevo.',
+                errPrefix: 'No se pudo obtener el análisis: ',
+                rowsNote: 'Solo se muestra parte de las filas originales; los totales se calcularon con todas las mediciones seleccionadas.'
+            }
+        };
+
+        function at(key) {
+            const d = AI_T[currentLang] || AI_T.uk;
+            return d[key];
+        }
+
+        function roundN(x) {
+            return +Number(x).toFixed(3);
+        }
+
+        function numStats(arr) {
+            const n = arr.length;
+            if (n === 0) return null;
+            const sorted = arr.slice().sort((a, b) => a - b);
+            const mean = sorted.reduce((a, b) => a + b, 0) / n;
+            let variance = 0;
+            if (n > 1) variance = sorted.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (n - 1);
+            const mid = Math.floor(n / 2);
+            const median = n % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+            return {
+                n: n,
+                mean: roundN(mean),
+                median: roundN(median),
+                min: roundN(sorted[0]),
+                max: roundN(sorted[n - 1]),
+                std: roundN(Math.sqrt(variance))
+            };
+        }
+
+        // Збирає компактну статистику: розмір даних майже не залежить від кількості замірів
+        function buildAnalyticsData(records) {
+            const byMethod = {};
+            records.forEach(r => {
+                if (!byMethod[r.methodologyId]) byMethod[r.methodologyId] = [];
+                byMethod[r.methodologyId].push(r);
+            });
+
+            const dates = records.map(r => r.timestamp).filter(Boolean).sort();
+            const factories = Array.from(new Set(records.map(r => r.inspector).filter(Boolean))).sort();
+
+            const methodologies = [];
+            const flaggedRecords = [];
+            const allRows = [];
+
+            Object.keys(byMethod).forEach(methodId => {
+                const recs = byMethod[methodId];
+                const m = state.methodologies.find(x => x.id === methodId);
+                const title = m ? getI18nText(m.title) : (recs[0].methodologyTitle || methodId);
+                const params = m && m.groups
+                    ? m.groups.flatMap(g => g.params || []).filter(p => p.type === 'decimal' || p.type === 'formula')
+                    : [];
+                const factoriesHere = Array.from(new Set(recs.map(r => r.inspector).filter(Boolean)));
+
+                const paramsOut = [];
+                params.forEach(p => {
+                    const name = getLabelWithUnit(p, 'uk');
+                    const vals = [];
+                    const perFactory = {};
+                    const perDate = {};
+                    const shares = [];
+                    const baseParam = (p.useShare && p.baseParamId) ? params.find(x => x.id === p.baseParamId) : null;
+
+                    recs.forEach(r => {
+                        const map = r.paramIdToValueMap || {};
+                        const v = parseStrictNum(map[p.id]);
+                        if (v === null) return;
+                        vals.push(v);
+                        if (r.inspector) {
+                            if (!perFactory[r.inspector]) perFactory[r.inspector] = [];
+                            perFactory[r.inspector].push(v);
+                        }
+                        if (r.timestamp) {
+                            if (!perDate[r.timestamp]) perDate[r.timestamp] = [];
+                            perDate[r.timestamp].push(v);
+                        }
+                        if (baseParam) {
+                            const b = parseStrictNum(map[baseParam.id]);
+                            if (b !== null && b > 0) shares.push(v / b * 100);
+                        }
+                    });
+                    if (vals.length === 0) return;
+
+                    const out = { name: name, stats: numStats(vals) };
+                    if (baseParam) {
+                        out.percentOf = getLabelWithUnit(baseParam, 'uk');
+                        out.percentStats = numStats(shares);
+                    }
+                    if (Object.keys(perFactory).length > 1) {
+                        out.byFactory = {};
+                        Object.keys(perFactory).sort().forEach(f => { out.byFactory[f] = numStats(perFactory[f]); });
+                    }
+                    const dateKeys = Object.keys(perDate).sort();
+                    if (dateKeys.length >= 3) {
+                        out.dailyMean = {};
+                        dateKeys.slice(-AI_MAX_DATES).forEach(d => {
+                            out.dailyMean[d] = roundN(perDate[d].reduce((a, b) => a + b, 0) / perDate[d].length);
+                        });
+                    }
+                    paramsOut.push(out);
+                });
+
+                methodologies.push({
+                    title: title,
+                    recordCount: recs.length,
+                    factories: factoriesHere.sort(),
+                    parameters: paramsOut
+                });
+
+                recs.forEach(r => {
+                    const map = r.paramIdToValueMap || {};
+                    const flags = Array.isArray(map.__flags) ? map.__flags : [];
+                    const flagNames = flags.map(f => {
+                        const p = params.find(x => x.id === f.id);
+                        return { field: p ? getLabelWithUnit(p, 'uk') : f.id, level: f.level };
+                    });
+                    if (flagNames.length > 0) {
+                        flaggedRecords.push({ date: r.timestamp, factory: r.inspector, methodology: title, fields: flagNames });
+                    }
+                    const values = {};
+                    params.forEach(p => {
+                        const v = parseStrictNum(map[p.id]);
+                        if (v !== null) values[getLabelWithUnit(p, 'uk')] = v;
+                    });
+                    allRows.push({
+                        date: r.timestamp,
+                        factory: r.inspector,
+                        methodology: title,
+                        flagged: flagNames.length > 0,
+                        values: values
+                    });
+                });
+            });
+
+            // Вихідні рядки: спочатку підозрілі, потім найновіші, але не більше AI_MAX_ROWS
+            const sortedRows = allRows.slice().sort((a, b) => {
+                if (a.flagged !== b.flagged) return a.flagged ? -1 : 1;
+                return String(b.date).localeCompare(String(a.date));
+            });
+            const rows = sortedRows.slice(0, AI_MAX_ROWS);
+
+            const data = {
+                recordsAnalyzed: records.length,
+                period: { from: dates[0] || null, to: dates[dates.length - 1] || null },
+                factories: factories,
+                methodologies: methodologies,
+                flaggedRecords: flaggedRecords.slice(0, 50),
+                flaggedRecordsTotal: flaggedRecords.length,
+                rows: { included: rows.length, total: allRows.length, items: rows }
+            };
+
+            // Запобіжник розміру: спочатку прибираємо динаміку, потім рядки
+            if (JSON.stringify(data).length > AI_MAX_PAYLOAD) {
+                data.methodologies.forEach(mm => mm.parameters.forEach(pp => { delete pp.dailyMean; }));
+            }
+            while (JSON.stringify(data).length > AI_MAX_PAYLOAD && data.rows.items.length > 10) {
+                data.rows.items = data.rows.items.slice(0, Math.floor(data.rows.items.length / 2));
+                data.rows.included = data.rows.items.length;
+            }
+            return data;
+        }
+
+        // Безпечний мінімальний рендер markdown: спочатку екрануємо HTML, потім заголовки/списки/жирний
+        function renderAiMarkdown(text) {
+            const inline = str => str.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            const lines = escapeHTML(text).split('\n');
+            let html = '';
+            let inList = false;
+            lines.forEach(line => {
+                const t = line.trim();
+                const li = /^[-*•]\s+(.*)$/.exec(t);
+                const h = /^#{1,4}\s+(.*)$/.exec(t);
+                if (li) {
+                    if (!inList) { html += '<ul class="list-disc pl-5 space-y-1 my-2">'; inList = true; }
+                    html += '<li>' + inline(li[1]) + '</li>';
+                    return;
+                }
+                if (inList) { html += '</ul>'; inList = false; }
+                if (h) html += '<h4 class="font-bold text-slate-900 mt-4 mb-1 text-sm">' + inline(h[1]) + '</h4>';
+                else if (t !== '') html += '<p class="my-1.5">' + inline(t) + '</p>';
+            });
+            if (inList) html += '</ul>';
+            return html;
+        }
+
+        function applyAiButtonLabel() {
+            const el = document.getElementById('btnAiAnalyticsText');
+            if (el) el.innerText = at('btn');
+        }
+
+        function applyAiUI() {
+            const set = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+            set('aiLblRecords', at('lblRecords'));
+            set('aiLblAll', at('all'));
+            set('aiLblNone', at('none'));
+            set('aiLblSelected', at('selected'));
+            set('aiLblTypes', at('lblTypes'));
+            set('aiLblQuestion', at('lblQuestion'));
+            set('aiLblLang', at('lang'));
+            set('aiRunBtnText', at('run'));
+            set('aiPrivacyNote', at('privacy'));
+            set('aiLblResult', at('result'));
+            set('aiCopyText', at('copy'));
+            const title = document.getElementById('aiTitle');
+            if (title) title.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles text-violet-600 mr-2"></i> ' + escapeHTML(at('title'));
+            const q = document.getElementById('aiQuestion');
+            if (q) q.placeholder = at('questionPh');
+            applyAiButtonLabel();
+        }
+
+        function setAiStatus(kind, text) {
+            const el = document.getElementById('aiStatus');
+            if (!el) return;
+            if (!text) { el.className = 'hidden text-xs font-semibold p-3 rounded-xl border'; el.textContent = ''; return; }
+            const styles = {
+                info: 'bg-blue-50 text-blue-700 border-blue-200',
+                error: 'bg-red-50 text-red-700 border-red-200'
+            };
+            el.className = 'text-xs font-semibold p-3 rounded-xl border ' + (styles[kind] || styles.info);
+            el.textContent = text;
+        }
+
+        function openAiModal() {
+            if (!isAdmin) { alert(at('adminOnly')); return; }
+            const filtered = getFilteredMeasurements();
+            if (filtered.length === 0) { alert(at('noRecords')); return; }
+
+            document.getElementById('aiRecordsList').innerHTML = filtered.map(rec => `
+                <label class="flex items-center space-x-2.5 text-xs cursor-pointer px-3 py-2 hover:bg-slate-50">
+                    <input type="checkbox" name="aiRec" value="${escapeHTML(rec.id)}" checked onchange="updateAiSelectedCount()" class="rounded border-slate-300 text-violet-600 focus:ring-violet-500 w-4 h-4">
+                    <span class="font-mono text-slate-500">${escapeHTML(rec.timestamp)}</span>
+                    <strong class="text-slate-800">${escapeHTML(rec.inspector)}</strong>
+                    <span class="text-slate-500 truncate">(${escapeHTML(rec.methodologyTitle)})</span>
+                </label>
+            `).join('');
+
+            const typeLabels = at('types');
+            document.getElementById('aiReportTypes').innerHTML = Object.keys(typeLabels).map(k => `
+                <label class="flex items-center space-x-2 text-xs cursor-pointer bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 hover:bg-violet-50">
+                    <input type="checkbox" name="aiType" value="${k}" ${k === 'summary' ? 'checked' : ''} class="rounded border-slate-300 text-violet-600 focus:ring-violet-500 w-4 h-4">
+                    <span class="font-medium text-slate-700">${escapeHTML(typeLabels[k])}</span>
+                </label>
+            `).join('');
+
+            document.getElementById('aiLang').value = currentLang === 'es' ? 'es' : 'uk';
+            document.getElementById('aiQuestion').value = '';
+            document.getElementById('aiResultBox').classList.add('hidden');
+            document.getElementById('aiResult').innerHTML = '';
+            setAiStatus('info', '');
+            lastAiText = '';
+
+            applyAiUI();
+            updateAiSelectedCount();
+            document.getElementById('aiModal').classList.remove('hidden');
+        }
+
+        function closeAiModal() {
+            document.getElementById('aiModal').classList.add('hidden');
+        }
+
+        function aiToggleAll(status) {
+            document.querySelectorAll('input[name="aiRec"]').forEach(cb => { cb.checked = status; });
+            updateAiSelectedCount();
+        }
+
+        function updateAiSelectedCount() {
+            const n = document.querySelectorAll('input[name="aiRec"]:checked').length;
+            document.getElementById('aiSelectedCount').innerText = n;
+        }
+
+        async function readFunctionError(error) {
+            let msg = (error && error.message) ? error.message : String(error);
+            let status = null;
+            try {
+                if (error && error.context) {
+                    status = error.context.status;
+                    if (typeof error.context.json === 'function') {
+                        const j = await error.context.json();
+                        if (j && (j.error || j.message)) msg = j.error || j.message;
+                    }
+                }
+            } catch (e) { /* залишаємо загальний текст */ }
+            return { msg: msg, status: status };
+        }
+
+        async function runAiAnalytics() {
+            if (!isAdmin) { alert(at('adminOnly')); return; }
+
+            const ids = Array.from(document.querySelectorAll('input[name="aiRec"]:checked')).map(cb => cb.value);
+            if (ids.length === 0) { alert(at('needSelect')); return; }
+
+            const reportTypes = Array.from(document.querySelectorAll('input[name="aiType"]:checked')).map(cb => cb.value);
+            const question = document.getElementById('aiQuestion').value.trim();
+            if (reportTypes.length === 0 && !question) { alert(at('needTask')); return; }
+
+            const lang = document.getElementById('aiLang').value === 'es' ? 'es' : 'uk';
+            const idSet = new Set(ids);
+            const records = state.measurements.filter(r => idSet.has(r.id));
+            const data = buildAnalyticsData(records);
+
+            const btn = document.getElementById('aiRunBtn');
+            btn.disabled = true;
+            document.getElementById('aiRunBtnText').innerText = at('running');
+            document.getElementById('aiResultBox').classList.add('hidden');
+            setAiStatus('info', at('working'));
+
+            try {
+                const { data: res, error } = await supabaseClient.functions.invoke('analyze-measurements', {
+                    body: { reportTypes: reportTypes, question: question, lang: lang, data: data }
+                });
+
+                if (error) {
+                    const info = await readFunctionError(error);
+                    const e = new Error(info.msg);
+                    e.httpStatus = info.status;
+                    throw e;
+                }
+                if (!res || !res.text) throw new Error('Empty response');
+
+                lastAiText = res.text;
+                document.getElementById('aiResult').innerHTML = renderAiMarkdown(res.text);
+                const trunc = document.getElementById('aiTruncNote');
+                const notes = [];
+                if (res.truncated) notes.push(at('truncated'));
+                if (data.rows.included < data.rows.total) notes.push(at('rowsNote'));
+                trunc.textContent = notes.join(' ');
+                trunc.classList.toggle('hidden', notes.length === 0);
+                document.getElementById('aiResultBox').classList.remove('hidden');
+                setAiStatus('info', '');
+            } catch (err) {
+                console.error('runAiAnalytics error:', err);
+                let text = err.message || String(err);
+                if (err.httpStatus === 404) text = at('notDeployed');
+                else if (/Failed to send a request|Failed to fetch|NetworkError/i.test(text)) text = at('noInternet');
+                setAiStatus('error', at('errPrefix') + text);
+            } finally {
+                btn.disabled = false;
+                document.getElementById('aiRunBtnText').innerText = at('run');
+            }
+        }
+
+        async function copyAiResult() {
+            if (!lastAiText) return;
+            try {
+                await navigator.clipboard.writeText(lastAiText);
+                const el = document.getElementById('aiCopyText');
+                el.innerText = at('copied');
+                setTimeout(() => { el.innerText = at('copy'); }, 1500);
+            } catch (e) {
+                console.error('copy failed', e);
+            }
+        }
+        // <<< AI END
 
         function saveDraft() {
             const methodId = document.getElementById('methodologySelect').value;
