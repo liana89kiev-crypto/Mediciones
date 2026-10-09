@@ -172,12 +172,13 @@
                     <form id="measurementForm" onsubmit="saveMeasurement(event)" oninput="saveDraft()" class="space-y-6">
                         <input type="hidden" id="editingRecordId" value="">
                         <div id="dynamicFields" class="space-y-6"></div>
+                        <div id="validationSummary" class="hidden text-xs font-semibold p-3 rounded-xl border"></div>
                         
                         <div class="pt-5 flex flex-wrap justify-end gap-3 border-t border-slate-100">
                             <button type="button" onclick="confirmResetForm()" class="w-full sm:w-auto px-6 py-3 border border-slate-300 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition shadow-sm">
                                 <span id="btnReset">Очистити</span>
                             </button>
-                            <button type="submit" class="w-full sm:w-auto px-7 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
+                            <button type="submit" id="btnSubmitMeasurement" class="w-full sm:w-auto px-7 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-sm font-semibold shadow-md transition flex items-center justify-center space-x-2">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span id="btnSave">Зберегти результати</span>
                             </button>
@@ -212,7 +213,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-inner">
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-3.5 mb-6 bg-slate-50/80 p-4 rounded-xl border border-slate-200/80 shadow-inner">
                     <div>
                         <label class="block text-xs font-bold text-slate-600 mb-1 uppercase" id="lblFilterMethod">Фільтр за методикою</label>
                         <select id="filterMethodology" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
@@ -228,6 +229,13 @@
                         <select id="filterSort" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="DESC">Спочатку нові</option>
                             <option value="ASC">Спочатку старі</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 uppercase" id="lblFilterFlagged">Перевірка</label>
+                        <select id="filterFlagged" onchange="renderHistoryTable()" class="w-full border border-slate-300 rounded-xl p-2.5 text-xs bg-white font-medium shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="ALL">Всі записи</option>
+                            <option value="FLAGGED">Лише підозрілі</option>
                         </select>
                     </div>
                 </div>
@@ -410,7 +418,7 @@
             
             <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50/80 flex justify-end space-x-2.5">
                 <button onclick="closeDictionaryModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-xs font-semibold shadow-sm" id="btnDictCancel">Скасувати</button>
-                <button onclick="saveDictionary()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-md" id="btnDictSave">Зберегти словник</button>
+                <button onclick="saveDictionary()" id="btnDictSave" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold shadow-md">Зберегти словник</button>
             </div>
         </div>
     </div>
@@ -522,6 +530,8 @@
                 msgArchiveConfirm: "Перемістити цю методику в архів? Вона більше не буде доступна для нових замірів.",
                 msgRestoreConfirm: "Відновити цю методику з архіву?",
                 msgDeleteConfirm: "Видалити назавжди? Це неможливо скасувати. (Історичні дані втратять опис полів)",
+                msgDeleteHasRecords: "Увага! Для цієї методики вже є збережені заміри. Краще перемістити її в архів. Все одно видалити назавжди?",
+                msgParamInUse: "На цей параметр посилаються формули або розрахунок %: {refs}. Після видалення вони рахуватимуть неправильно. Все одно видалити?",
                 lblArchived: "[АРХІВ]",
                 lblParamsBadge: "параметрів",
                 modalCreateTitle: "Створити нову методику",
@@ -547,6 +557,12 @@
                 lblNoBase: "-- Без розрахунку % --",
                 placeholderText: "Введіть текст...",
                 msgSaved: "Замір успішно збережено в хмару Supabase!",
+                msgSaveError: "НЕ вдалося зберегти замір. Дані залишились у формі, спробуйте ще раз.\n\nПричина: ",
+                msgDeleteError: "Не вдалося видалити. Запис залишився без змін.\n\nПричина: ",
+                msgMethodSaveError: "Не вдалося зберегти методику.\n\nПричина: ",
+                msgMethodSaved: "Методику успішно збережено!",
+                msgDictSaved: "Словник успішно збережено!",
+                msgDictError: "Не вдалося зберегти словник. Існуючі дані в базі не втрачено.\n\nПричина: ",
                 msgSelectFactory: "Будь ласка, оберіть фабрику зі списку!",
                 msgResetConfirm: "Ви дійсно бажаєте очистити форму? Всі введені дані буде втрачено.",
                 msgRemoveParamConfirm: "Ви дійсно бажаєте видалити цей параметр з методики?",
@@ -625,6 +641,8 @@
                 msgArchiveConfirm: "¿Mover esta metodología al archivo? Ya no estará disponible para nuevas mediciones.",
                 msgRestoreConfirm: "¿Restaurar esta metodología del archivo?",
                 msgDeleteConfirm: "¿Eliminar permanentemente? ¡No se puede deshacer! (Los datos históricos perderán sus descripciones)",
+                msgDeleteHasRecords: "¡Atención! Esta metodología ya tiene mediciones guardadas. Es mejor archivarla. ¿Eliminar permanentemente de todos modos?",
+                msgParamInUse: "Este parámetro es usado por fórmulas o cálculo de %: {refs}. Después de eliminarlo calcularán mal. ¿Eliminar de todos modos?",
                 lblArchived: "[ARCHIVO]",
                 lblParamsBadge: "parámetros",
                 modalCreateTitle: "Crear nueva metodología",
@@ -650,6 +668,12 @@
                 lblNoBase: "-- Sin cálculo de % --",
                 placeholderText: "Ingrese texto...",
                 msgSaved: "¡Medición guardada en la nube con éxito!",
+                msgSaveError: "NO se pudo guardar la medición. Los datos siguen en el formulario, inténtelo de nuevo.\n\nCausa: ",
+                msgDeleteError: "No se pudo eliminar. El registro no ha cambiado.\n\nCausa: ",
+                msgMethodSaveError: "No se pudo guardar la metodología.\n\nCausa: ",
+                msgMethodSaved: "¡Metodología guardada con éxito!",
+                msgDictSaved: "¡Diccionario guardado con éxito!",
+                msgDictError: "No se pudo guardar el diccionario. Los datos existentes en la base no se han perdido.\n\nCausa: ",
                 msgSelectFactory: "¡Por favor, seleccione una planta de la lista!",
                 msgResetConfirm: "¿Realmente desea limpiar el formulario? Se perderán todos los datos ingresados.",
                 msgRemoveParamConfirm: "¿Realmente desea eliminar este parámetro?",
@@ -725,6 +749,14 @@
             measurements: [],
             dictionary: {}
         };
+
+        // Допоміжна функція: текст помилки бази даних
+        function dbErrorText(error) {
+            if (!error) return '';
+            const parts = [error.message || String(error)];
+            if (error.code) parts.push(`(код ${error.code})`);
+            return parts.join(' ');
+        }
 
         // Ініціалізація сторінки
         document.addEventListener('DOMContentLoaded', async () => {
@@ -1177,7 +1209,7 @@
                 groupBlock.className = isRealGroup ? 'bg-slate-50/70 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm mb-4' : 'space-y-4 mb-4';
                 
                 if (isRealGroup) {
-                    groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${groupTitle}</h3>`;
+                    groupBlock.innerHTML = `<h3 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b border-slate-200/80 pb-2.5">${escapeHTML(groupTitle)}</h3>`;
                 }
                 
                 const grid = document.createElement('div');
@@ -1203,7 +1235,7 @@
                         const today = new Date().toISOString().split('T')[0];
                         inputHtml = `<input type="date" name="${p.id}" id="${p.id}" value="${today}" ${reqAttr} class="w-full border rounded-xl p-3 text-sm outline-none ${bgClass} shadow-sm">`;
                     } else if (p.type === 'select') {
-                        const opts = (p.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
+                        const opts = (p.options || []).map(o => `<option value="${escapeHTML(o)}">${escapeHTML(o)}</option>`).join('');
                         inputHtml = `<select name="${p.id}" id="${p.id}" ${reqAttr} class="w-full border rounded-xl p-3 text-sm outline-none bg-white ${bgClass} shadow-sm">
                             <option value="">-- Select --</option>
                             ${opts}
@@ -1234,6 +1266,7 @@
                             <span>${escapeHTML(paramLabel)} ${reqStar} ${isReadOnly ? `<span class="text-[10px] text-blue-600 font-bold lowercase ml-1">(🧮 ${dict.autoText})</span>` : ''}</span>
                         </label>
                         ${inputHtml}
+                        <p id="vmsg_${p.id}" class="hidden text-xs mt-1.5 font-semibold"></p>
                     `;
                     grid.appendChild(fieldWrapper);
                 });
@@ -1249,6 +1282,11 @@
         }
 
         function calculateLiveFields() {
+            calculateLiveFieldsCore();
+            validateFormFields();
+        }
+
+        function calculateLiveFieldsCore() {
             const methodId = document.getElementById('methodologySelect')?.value;
             if (!methodId) return;
 
@@ -1306,6 +1344,287 @@
                 }
             });
         }
+
+        // >>> VALIDATION START
+        const STATS_MIN_SAMPLES = 20;   // мінімум замірів в історії для статистики
+        const STATS_WARN_Z = 3;         // жовте попередження
+        const STATS_RED_Z = 5;          // червоне попередження
+
+        const VT = {
+            uk: {
+                negative: 'від’ємне значення',
+                range: 'значення {v}{u} поза допустимим діапазоном {r}',
+                perUnitTag: ' (на одиницю: {n})',
+                statsRed: 'значення {v}{u} дуже відрізняється від звичайного (зазвичай близько {m})',
+                statsWarn: 'значення {v}{u} відрізняється від звичайного (зазвичай близько {m})',
+                shareOver: 'значення {v} більше за базу {b} (частка понад 100%)',
+                confirmSave: 'Деякі значення виглядають неправдоподібно:\n\n{list}\n\nВсе одно зберегти? (Запис отримає позначку «підозрілі дані»)',
+                summaryRed: '⚠ Є значення, які виглядають неправдоподібно. Перевірте поля, виділені червоним.',
+                summaryWarn: '⚠ Є значення, що відрізняються від звичайних. Перевірте поля, виділені жовтим.',
+                rangeTitle: 'Допустимий діапазон',
+                from: 'від',
+                to: 'до',
+                perUnit: 'Перевіряти на одиницю (поділити на):',
+                noPerUnit: '— без ділення —',
+                flagged: 'підозрілих',
+                filterLabel: 'Перевірка',
+                filterAll: 'Всі записи',
+                filterFlagged: 'Лише підозрілі',
+                excelCol: 'Підозрілі поля\nCampos sospechosos'
+            },
+            es: {
+                negative: 'valor negativo',
+                range: 'el valor {v}{u} está fuera del rango permitido {r}',
+                perUnitTag: ' (por unidad: {n})',
+                statsRed: 'el valor {v}{u} difiere mucho de lo habitual (normalmente cerca de {m})',
+                statsWarn: 'el valor {v}{u} difiere de lo habitual (normalmente cerca de {m})',
+                shareOver: 'el valor {v} es mayor que la base {b} (participación superior al 100%)',
+                confirmSave: 'Algunos valores parecen poco realistas:\n\n{list}\n\n¿Guardar de todos modos? (El registro se marcará como «datos sospechosos»)',
+                summaryRed: '⚠ Hay valores que parecen poco realistas. Revise los campos marcados en rojo.',
+                summaryWarn: '⚠ Hay valores que difieren de lo habitual. Revise los campos marcados en amarillo.',
+                rangeTitle: 'Rango permitido',
+                from: 'desde',
+                to: 'hasta',
+                perUnit: 'Comprobar por unidad (dividir entre):',
+                noPerUnit: '— sin dividir —',
+                flagged: 'sospechosos',
+                filterLabel: 'Verificación',
+                filterAll: 'Todos los registros',
+                filterFlagged: 'Solo sospechosos',
+                excelCol: 'Campos sospechosos\nПідозрілі поля'
+            }
+        };
+
+        function vt(key, vars) {
+            let str = (VT[currentLang] || VT.uk)[key] || '';
+            Object.entries(vars || {}).forEach(([k, v]) => { str = str.split('{' + k + '}').join(v); });
+            return str;
+        }
+
+        let lastValidationIssues = [];
+        let statsCache = { len: -1, map: {} };
+
+        function fmtNum(n) {
+            return String(+Number(n).toFixed(3));
+        }
+
+        // Приймає лише «чисте» число (без виразів на кшталт 4.75+2), інакше null
+        function parseStrictNum(v) {
+            if (v === null || v === undefined) return null;
+            const str = String(v).trim().replace(',', '.');
+            if (!/^-?\d+(\.\d+)?$/.test(str)) return null;
+            return parseFloat(str);
+        }
+
+        function medianOf(sortedArr) {
+            const n = sortedArr.length;
+            if (n === 0) return 0;
+            const mid = Math.floor(n / 2);
+            return n % 2 ? sortedArr[mid] : (sortedArr[mid - 1] + sortedArr[mid]) / 2;
+        }
+
+        // Статистика «що нормально» з історії замірів цієї методики (стійка до викидів: медіана + MAD)
+        function getParamStats(methodId, param, perUnitParam) {
+            if (statsCache.len !== state.measurements.length) {
+                statsCache = { len: state.measurements.length, map: {} };
+            }
+            const key = methodId + '|' + param.id + '|' + (perUnitParam ? perUnitParam.id : '');
+            if (key in statsCache.map) return statsCache.map[key];
+
+            const arr = [];
+            state.measurements.forEach(r => {
+                if (r.methodologyId !== methodId) return;
+                const map = r.paramIdToValueMap || {};
+                let v = parseStrictNum(map[param.id]);
+                if (v === null) return;
+                if (perUnitParam) {
+                    const d = parseStrictNum(map[perUnitParam.id]);
+                    if (d === null || d <= 0) return;
+                    v = v / d;
+                }
+                arr.push(v);
+            });
+
+            let result = null;
+            if (arr.length >= STATS_MIN_SAMPLES) {
+                arr.sort((a, b) => a - b);
+                const med = medianOf(arr);
+                const dev = arr.map(x => Math.abs(x - med)).sort((a, b) => a - b);
+                let sigma = 1.4826 * medianOf(dev);
+                const floor = Math.abs(med) * 0.02;   // щоб майже постійні дані не давали хибних тривог
+                if (sigma < floor) sigma = floor;
+                if (sigma > 0) result = { median: med, sigma: sigma, n: arr.length };
+            }
+            statsCache.map[key] = result;
+            return result;
+        }
+
+        // Чиста функція: повертає список проблем [{id, label, level: 'red'|'yellow', text}]
+        function computeParamIssues(allParams, values, methodId, skipIds) {
+            const issues = [];
+            allParams.forEach(p => {
+                if (p.type !== 'decimal' && p.type !== 'formula') return;
+                if (skipIds && skipIds.has(p.id)) return;
+                const val = values[p.id];
+                if (val === null || val === undefined) return;
+
+                const label = getLabelWithUnit(p, currentLang);
+                const push = (level, text) => issues.push({ id: p.id, label: label, level: level, text: text });
+
+                if (val < 0) { push('red', vt('negative')); return; }
+
+                // Зв'язок: частка не може перевищувати базу (напр., вага після патрання > жива вага)
+                if (p.useShare && p.baseParamId) {
+                    const b = values[p.baseParamId];
+                    if (b !== null && b !== undefined && b > 0 && val > b * 1.0001) {
+                        push('red', vt('shareOver', { v: fmtNum(val), b: fmtNum(b) }));
+                    }
+                }
+
+                // Значення на одиницю (напр., вага партії / кількість голів)
+                let checkVal = val;
+                let unitTag = '';
+                const per = p.perUnitParamId ? allParams.find(x => x.id === p.perUnitParamId) : null;
+                if (p.perUnitParamId) {
+                    const d = per ? values[per.id] : null;
+                    if (per && d !== null && d !== undefined && d > 0) {
+                        checkVal = val / d;
+                        unitTag = vt('perUnitTag', { n: getLabelWithUnit(per, currentLang) });
+                    } else {
+                        checkVal = null;   // немає чим ділити — діапазон не перевіряємо
+                    }
+                }
+                if (checkVal === null) return;
+
+                // Ручний діапазон (червоний)
+                const mn = parseStrictNum(p.minValue);
+                const mx = parseStrictNum(p.maxValue);
+                let rangeHit = false;
+                if ((mn !== null && checkVal < mn) || (mx !== null && checkVal > mx)) {
+                    rangeHit = true;
+                    const r = (mn !== null ? fmtNum(mn) : '…') + ' – ' + (mx !== null ? fmtNum(mx) : '…');
+                    push('red', vt('range', { v: fmtNum(checkVal), u: unitTag, r: r }));
+                }
+
+                // Статистика з історії
+                if (!rangeHit) {
+                    const st = getParamStats(methodId, p, per);
+                    if (st) {
+                        const z = Math.abs(checkVal - st.median) / st.sigma;
+                        const vars = { v: fmtNum(checkVal), u: unitTag, m: fmtNum(st.median) };
+                        if (z > STATS_RED_Z) push('red', vt('statsRed', vars));
+                        else if (z > STATS_WARN_Z) push('yellow', vt('statsWarn', vars));
+                    }
+                }
+            });
+            return issues;
+        }
+
+        function setFieldHighlight(el, msgEl, issue) {
+            if (!issue) {
+                el.style.borderColor = '';
+                el.style.backgroundColor = '';
+                el.style.boxShadow = '';
+                if (msgEl) { msgEl.classList.add('hidden'); msgEl.textContent = ''; }
+                return;
+            }
+            const red = issue.level === 'red';
+            el.style.borderColor = red ? '#ef4444' : '#f59e0b';
+            el.style.backgroundColor = red ? '#fef2f2' : '#fffbeb';
+            el.style.boxShadow = red ? '0 0 0 2px rgba(239,68,68,.25)' : '0 0 0 2px rgba(245,158,11,.25)';
+            if (msgEl) {
+                msgEl.textContent = '⚠ ' + issue.text;
+                msgEl.style.color = red ? '#b91c1c' : '#b45309';
+                msgEl.classList.remove('hidden');
+            }
+        }
+
+        // Перевіряє форму й підсвічує поля. Поле, яке користувач зараз вводить, не чіпаємо
+        // (щоб не блимало на проміжних значеннях), крім випадку forceAll (збереження).
+        function validateFormFields(forceAll) {
+            const summary = document.getElementById('validationSummary');
+            lastValidationIssues = [];
+            const methodId = document.getElementById('methodologySelect') ? document.getElementById('methodologySelect').value : '';
+            if (!methodId) { if (summary) summary.classList.add('hidden'); return []; }
+            const m = state.methodologies.find(x => x.id === methodId);
+            if (!m || !m.groups) return [];
+
+            const allParams = m.groups.flatMap(g => g.params || []);
+            const active = document.activeElement;
+            const skip = new Set();
+            const values = {};
+            allParams.forEach(p => {
+                if (p.type !== 'decimal' && p.type !== 'formula') return;
+                const el = document.getElementById(p.id);
+                if (!el) return;
+                if (!forceAll && el === active) skip.add(p.id);
+                values[p.id] = parseStrictNum(el.value);
+            });
+
+            const issues = computeParamIssues(allParams, values, methodId, skip);
+            lastValidationIssues = issues;
+
+            const byId = {};
+            issues.forEach(i => {
+                if (!byId[i.id] || (i.level === 'red' && byId[i.id].level !== 'red')) byId[i.id] = i;
+            });
+
+            allParams.forEach(p => {
+                const el = document.getElementById(p.id);
+                if (!el) return;
+                setFieldHighlight(el, document.getElementById('vmsg_' + p.id), skip.has(p.id) ? null : byId[p.id]);
+            });
+
+            if (summary) {
+                const hasRed = issues.some(i => i.level === 'red');
+                const hasYellow = issues.some(i => i.level === 'yellow');
+                if (hasRed || hasYellow) {
+                    summary.className = 'text-xs font-semibold p-3 rounded-xl border ' +
+                        (hasRed ? 'bg-red-50 text-red-700 border-red-200' : 'bg-amber-50 text-amber-800 border-amber-200');
+                    summary.textContent = hasRed ? vt('summaryRed') : vt('summaryWarn');
+                } else {
+                    summary.className = 'hidden text-xs font-semibold p-3 rounded-xl border';
+                    summary.textContent = '';
+                }
+            }
+            return issues;
+        }
+
+        // Позначка в записі: [{id, level}] — найгірший рівень на параметр
+        function buildFlagsForSave(issues) {
+            const byId = {};
+            issues.forEach(i => {
+                if (!byId[i.id] || (i.level === 'red' && byId[i.id].level !== 'red')) byId[i.id] = { id: i.id, level: i.level };
+            });
+            return Object.values(byId);
+        }
+
+        function getFlagSummary(rec) {
+            const flags = (rec.paramIdToValueMap && Array.isArray(rec.paramIdToValueMap.__flags)) ? rec.paramIdToValueMap.__flags : [];
+            if (flags.length === 0) return { red: 0, yellow: 0, names: [] };
+            const m = state.methodologies.find(x => x.id === rec.methodologyId);
+            const params = m && m.groups ? m.groups.flatMap(g => g.params || []) : [];
+            const names = flags.map(f => {
+                const p = params.find(x => x.id === f.id);
+                return p ? getLabelWithUnit(p, currentLang) : f.id;
+            });
+            return {
+                red: flags.filter(f => f.level === 'red').length,
+                yellow: flags.filter(f => f.level === 'yellow').length,
+                names: names
+            };
+        }
+
+        function applyValidationUI() {
+            const lbl = document.getElementById('lblFilterFlagged');
+            const sel = document.getElementById('filterFlagged');
+            if (lbl) lbl.innerText = vt('filterLabel');
+            if (sel && sel.options.length === 2) {
+                sel.options[0].text = vt('filterAll');
+                sel.options[1].text = vt('filterFlagged');
+            }
+        }
+        // <<< VALIDATION END
 
         function saveDraft() {
             const methodId = document.getElementById('methodologySelect').value;
@@ -1384,6 +1703,7 @@
             }
         }
 
+        // === ЗБЕРЕЖЕННЯ ЗАМІРУ (ЗМІНА №1: спочатку база, потім інтерфейс) ===
         async function saveMeasurement(e) {
             e.preventDefault();
             const dict = I18N[currentLang] || I18N.uk;
@@ -1408,6 +1728,14 @@
 
             calculateLiveFields();
 
+            // Повна перевірка перед збереженням (включно з полем, де стоїть курсор)
+            const saveIssues = validateFormFields(true);
+            const redIssues = saveIssues.filter(i => i.level === 'red');
+            if (redIssues.length > 0) {
+                const list = redIssues.map(i => '• ' + i.label + ': ' + i.text).join('\n');
+                if (!confirm(vt('confirmSave', { list: list }))) return;
+            }
+
             const formData = new FormData(form);
             const values = {};
             const paramIdToValueMap = {};
@@ -1425,24 +1753,28 @@
                 paramIdToValueMap[p.id] = val || '-';
             });
 
+            const saveFlags = buildFlagsForSave(saveIssues);
+            if (saveFlags.length > 0) paramIdToValueMap.__flags = saveFlags;
+
             const now = new Date();
             const dateOnly = now.toISOString().split('T')[0];
             const editingId = document.getElementById('editingRecordId').value;
             const currentTimeIso = now.toISOString();
 
-            if (editingId) {
-                const recordIdx = state.measurements.findIndex(r => r.id === editingId);
-                if (recordIdx !== -1) {
-                    state.measurements[recordIdx].inspector = inspector;
-                    state.measurements[recordIdx].values = values;
-                    state.measurements[recordIdx].paramIdToValueMap = paramIdToValueMap;
-                    state.measurements[recordIdx].timestamp = dateOnly;
-                    state.measurements[recordIdx].updatedAt = currentTimeIso;
-                    
-                    await supabaseClient.from('measurements').upsert({
-                        id: state.measurements[recordIdx].id,
+            // Блокуємо кнопку, щоб уникнути подвійного натискання
+            const submitBtn = document.getElementById('btnSubmitMeasurement');
+            if (submitBtn) submitBtn.disabled = true;
+
+            try {
+                if (editingId) {
+                    const existing = state.measurements.find(r => r.id === editingId);
+                    if (!existing) throw new Error('Record not found');
+
+                    // 1) Спочатку база
+                    const { error } = await supabaseClient.from('measurements').upsert({
+                        id: existing.id,
                         timestamp: dateOnly,
-                        raw_date: state.measurements[recordIdx].rawDate,
+                        raw_date: existing.rawDate,
                         methodology_id: m.id,
                         methodology_title: getI18nText(m.title),
                         inspector: inspector,
@@ -1450,36 +1782,56 @@
                         param_id_to_value_map: paramIdToValueMap,
                         updated_at: currentTimeIso
                     });
-                }
-                document.getElementById('editingRecordId').value = "";
-                document.getElementById('editingBadge').classList.add('hidden');
-            } else {
-                const newRecord = {
-                    id: 'rec_' + Date.now(),
-                    timestamp: dateOnly,
-                    rawDate: currentTimeIso,
-                    updatedAt: currentTimeIso,
-                    methodologyId: m.id,
-                    methodologyTitle: getI18nText(m.title),
-                    inspector: inspector,
-                    values: values,
-                    paramIdToValueMap: paramIdToValueMap
-                };
-                state.measurements.unshift(newRecord);
+                    if (error) throw error;
 
-                await supabaseClient.from('measurements').insert({
-                    id: newRecord.id,
-                    timestamp: newRecord.timestamp,
-                    raw_date: newRecord.rawDate,
-                    methodology_id: newRecord.methodologyId,
-                    methodology_title: newRecord.methodologyTitle,
-                    inspector: newRecord.inspector,
-                    values: newRecord.values,
-                    param_id_to_value_map: newRecord.paramIdToValueMap,
-                    updated_at: currentTimeIso
-                });
+                    // 2) Лише після успіху — локальний стан
+                    existing.inspector = inspector;
+                    existing.values = values;
+                    existing.paramIdToValueMap = paramIdToValueMap;
+                    existing.timestamp = dateOnly;
+                    existing.updatedAt = currentTimeIso;
+
+                    document.getElementById('editingRecordId').value = "";
+                    document.getElementById('editingBadge').classList.add('hidden');
+                } else {
+                    const newRecord = {
+                        id: 'rec_' + Date.now(),
+                        timestamp: dateOnly,
+                        rawDate: currentTimeIso,
+                        updatedAt: currentTimeIso,
+                        methodologyId: m.id,
+                        methodologyTitle: getI18nText(m.title),
+                        inspector: inspector,
+                        values: values,
+                        paramIdToValueMap: paramIdToValueMap
+                    };
+
+                    const { error } = await supabaseClient.from('measurements').insert({
+                        id: newRecord.id,
+                        timestamp: newRecord.timestamp,
+                        raw_date: newRecord.rawDate,
+                        methodology_id: newRecord.methodologyId,
+                        methodology_title: newRecord.methodologyTitle,
+                        inspector: newRecord.inspector,
+                        values: newRecord.values,
+                        param_id_to_value_map: newRecord.paramIdToValueMap,
+                        updated_at: currentTimeIso
+                    });
+                    if (error) throw error;
+
+                    state.measurements.unshift(newRecord);
+                }
+            } catch (err) {
+                console.error('saveMeasurement error:', err);
+                if (submitBtn) submitBtn.disabled = false;
+                // Форму і чернетку НЕ чіпаємо — дані залишаються у формі
+                alert(dict.msgSaveError + dbErrorText(err));
+                return;
             }
 
+            if (submitBtn) submitBtn.disabled = false;
+
+            // Усе нижче — тільки після підтвердженого успіху
             renderHistoryTable();
             resetForm();
             clearDraft();
@@ -1544,6 +1896,11 @@
 
             let filtered = [...state.measurements];
 
+            const flaggedSel = document.getElementById('filterFlagged');
+            if (flaggedSel && flaggedSel.value === 'FLAGGED') {
+                filtered = filtered.filter(x => { const f = getFlagSummary(x); return (f.red + f.yellow) > 0; });
+            }
+
             if (filterM !== 'ALL') {
                 filtered = filtered.filter(x => 
                     x.methodologyId === filterM || 
@@ -1569,6 +1926,7 @@
         }
 
         function renderHistoryTable() {
+            applyValidationUI();
             const tbody = document.getElementById('historyTableBody');
             const filtered = getFilteredMeasurements();
 
@@ -1593,12 +1951,17 @@
                     </button>
                 `;
 
+                const fs = getFlagSummary(rec);
+                const flagBadgeHtml = (fs.red + fs.yellow) > 0
+                    ? `<div class="mt-1"><span title="${escapeHTML(fs.names.join('; '))}" class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full border ${fs.red > 0 ? 'bg-red-50 text-red-700 border-red-300' : 'bg-amber-50 text-amber-800 border-amber-300'}">⚠ ${fs.red + fs.yellow} ${vt('flagged')}</span></div>`
+                    : '';
+
                 const editTooltip = currentLang === 'es' ? 'Editar' : 'Редагувати';
                 const xlsxTooltip = currentLang === 'es' ? 'Exportar XLSX' : 'XLSX';
 
                 return `
                     <tr class="hover:bg-slate-50/80 transition">
-                        <td class="p-3.5 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}</td>
+                        <td class="p-3.5 text-xs font-mono text-slate-500 whitespace-nowrap">${rec.timestamp}${flagBadgeHtml}</td>
                         <td class="p-3.5 font-bold text-slate-800">${escapeHTML(rec.methodologyTitle)}</td>
                         <td class="p-3.5 text-xs font-bold text-blue-700">${escapeHTML(rec.inspector)}</td>
                         <td class="p-3.5">${valuesBadges}</td>
@@ -1616,13 +1979,23 @@
             }).join('');
         }
 
+        // === ВИДАЛЕННЯ ЗАМІРУ (ЗМІНА №4: спочатку база, потім інтерфейс) ===
         async function deleteMeasurement(id) {
+            const dict = I18N[currentLang] || I18N.uk;
             const confirmDel = currentLang === 'es' ? "¿Realmente desea eliminar esta medición?" : "Ви дійсно бажаєте видалити цей замір?";
-            if (confirm(confirmDel)) {
-                state.measurements = state.measurements.filter(x => x.id !== id);
-                renderHistoryTable();
-                await supabaseClient.from('measurements').delete().eq('id', id);
+            if (!confirm(confirmDel)) return;
+
+            try {
+                const { error } = await supabaseClient.from('measurements').delete().eq('id', id);
+                if (error) throw error;
+            } catch (err) {
+                console.error('deleteMeasurement error:', err);
+                alert(dict.msgDeleteError + dbErrorText(err));
+                return;
             }
+
+            state.measurements = state.measurements.filter(x => x.id !== id);
+            renderHistoryTable();
         }
 
         function openExportModal() {
@@ -1713,13 +2086,13 @@
                 } else if (m && m.params) {
                     allParams = m.params;
                 } else if (methodologyRecords.length > 0 && methodologyRecords[0].paramIdToValueMap) {
-                    allParams = Object.keys(methodologyRecords[0].paramIdToValueMap).map(id => ({ id: id, label: id, type: 'decimal' }));
+                    allParams = Object.keys(methodologyRecords[0].paramIdToValueMap).filter(id => id !== '__flags').map(id => ({ id: id, label: id, type: 'decimal' }));
                 }
 
                 const headers = [
                     currentLang === 'es' ? "Fecha\nFecha" : "Дата\nFecha",
                     currentLang === 'es' ? "Metodología\nMetodología" : "Методика\nМетодика",
-                    currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nФабрика"
+                    currentLang === 'es' ? "Planta\nPlanta" : "Фабрика\nFabrica"
                 ];
 
                 const integerParamIds = new Set();
@@ -1763,6 +2136,10 @@
                         };
                     }
                 });
+
+                fullHeaders.push(vt('excelCol'));
+                isIntegerCol.push(false);
+                isCalcCol.push(false);
 
                 const dataRows = [fullHeaders];
 
@@ -1809,7 +2186,7 @@
 
                         if (parsedNum !== null && !String(p.id).includes("Примітки") && !String(p.id).includes("Notas") && !String(p.id).includes("Дата")) {
                             // Зберігаємо як відформатований текст, який не спотворюється при Ctrl+C -> Ctrl+V
-                            row.push(isInt ? Math.round(parsedNum).toString() : parsedNum.toFixed(3).replace('.', '.'));
+                            row.push(isInt ? Math.round(parsedNum).toString() : parsedNum.toFixed(3));
                         } else {
                             row.push(rawVal || '-');
                         }
@@ -1826,16 +2203,8 @@
                                 baseVal = parseFloat(String(bRaw).replace(',', '.')) || 0;
                             }
 
-                            if (baseVal === 0 && rec.values) {
-                                for (const v of Object.values(rec.values)) {
-                                    const parsedB = parseFloat(String(v).replace(',', '.'));
-                                    if (parsedB > 0) {
-                                        baseVal = parsedB;
-                                        break;
-                                    }
-                                }
-                            }
-
+                            // ЗМІНА №3: запасний пошук "першого додатного числа" ПРИБРАНО.
+                            // Якщо база відсутня або нульова — відсоток не рахуємо.
                             if (valForShare > 0 && baseVal > 0) {
                                 const calculatedShare = ((valForShare / baseVal) * 100).toFixed(2) + '%';
                                 row.push(calculatedShare);
@@ -1845,6 +2214,7 @@
                         }
                     });
 
+                    row.push(getFlagSummary(rec).names.join('; ') || '-');
                     dataRows.push(row);
                 });
 
@@ -1991,71 +2361,81 @@
         }
 
         let tempGroups = [];
+        let tempDictArray = [];
         let editingOptionGIdx = null;
         let editingOptionPIdx = null;
         let nativeEditingParamGIdx = null;
         let nativeEditingParamPIdx = null;
 
-        async function archiveMethodology(id) {
+        // Спільна функція запису методики в базу (повертає error або null)
+        async function persistMethodology(m) {
+            const { error } = await supabaseClient.from('methodologies').upsert({
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                status: m.status,
+                doc_url: m.docUrl,
+                is_archived: m.isArchived,
+                groups: m.groups,
+                updated_at: m.updatedAt
+            });
+            return error || null;
+        }
+
+        async function setArchiveState(id, archived, confirmText) {
             const dict = I18N[currentLang] || I18N.uk;
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
-            if (confirm(dict.msgArchiveConfirm)) {
-                const m = state.methodologies.find(x => x.id === id);
-                if (m) {
-                    m.isArchived = true;
-                    m.updatedAt = new Date().toISOString();
-                    
-                    await supabaseClient.from('methodologies').upsert({
-                        id: m.id,
-                        title: m.title,
-                        description: m.description,
-                        status: m.status,
-                        doc_url: m.docUrl,
-                        is_archived: m.isArchived,
-                        groups: m.groups,
-                        updated_at: m.updatedAt
-                    });
-                }
-                populateMethodologyDropdown();
-                renderMethodologyCards();
+            if (!confirm(confirmText)) return;
+
+            const m = state.methodologies.find(x => x.id === id);
+            if (!m) return;
+
+            const updated = { ...m, isArchived: archived, updatedAt: new Date().toISOString() };
+            const error = await persistMethodology(updated);
+            if (error) {
+                console.error('archive error:', error);
+                alert(dict.msgMethodSaveError + dbErrorText(error));
+                return;
             }
+
+            m.isArchived = updated.isArchived;
+            m.updatedAt = updated.updatedAt;
+            populateMethodologyDropdown();
+            renderMethodologyCards();
+        }
+
+        async function archiveMethodology(id) {
+            const dict = I18N[currentLang] || I18N.uk;
+            await setArchiveState(id, true, dict.msgArchiveConfirm);
         }
 
         async function restoreMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
-            if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
-            if (confirm(dict.msgRestoreConfirm)) {
-                const m = state.methodologies.find(x => x.id === id);
-                if (m) {
-                    m.isArchived = false;
-                    m.updatedAt = new Date().toISOString();
-                    
-                    await supabaseClient.from('methodologies').upsert({
-                        id: m.id,
-                        title: m.title,
-                        description: m.description,
-                        status: m.status,
-                        doc_url: m.docUrl,
-                        is_archived: m.isArchived,
-                        groups: m.groups,
-                        updated_at: m.updatedAt
-                    });
-                }
-                populateMethodologyDropdown();
-                renderMethodologyCards();
-            }
+            await setArchiveState(id, false, dict.msgRestoreConfirm);
         }
 
+        // === ВИДАЛЕННЯ МЕТОДИКИ (ЗМІНА №4: спочатку база, потім інтерфейс) ===
         async function deleteMethodology(id) {
             const dict = I18N[currentLang] || I18N.uk;
             if (!isAdmin) return alert(currentLang === 'es' ? "¡Acceso restringido!" : "Доступ обмежено!");
-            if (confirm(dict.msgDeleteConfirm)) {
-                state.methodologies = state.methodologies.filter(x => x.id !== id);
-                populateMethodologyDropdown();
-                renderMethodologyCards();
-                
-                await supabaseClient.from('methodologies').delete().eq('id', id);
+            if (!confirm(dict.msgDeleteConfirm)) return;
+
+            // Додатковий захист: якщо є пов'язані заміри — ще одне підтвердження
+            const hasRecords = state.measurements.some(r => r.methodologyId === id);
+            if (hasRecords && !confirm(dict.msgDeleteHasRecords)) return;
+
+            try {
+                const { error } = await supabaseClient.from('methodologies').delete().eq('id', id);
+                if (error) throw error;
+            } catch (err) {
+                console.error('deleteMethodology error:', err);
+                alert(dict.msgDeleteError + dbErrorText(err));
+                return;
             }
+
+            state.methodologies = state.methodologies.filter(x => x.id !== id);
+            populateMethodologyDropdown();
+            renderMethodologyCards();
         }
 
         function openMethodologyModal(methodId = null) {
@@ -2232,7 +2612,7 @@
 
         function updateParamCode(gIdx, pIdx, newCode) {
             const cleanNewCode = newCode.trim().toLowerCase();
-            if (!cleanNewCode) return;
+            if (!cleanNewCode) { renderParamRows(); return; }
 
             const oldCode = tempGroups[gIdx].params[pIdx].code;
             if (oldCode === cleanNewCode) return;
@@ -2240,7 +2620,7 @@
             let exists = false;
             tempGroups.forEach(g => {
                 (g.params || []).forEach(p => {
-                    if (p.code.toLowerCase() === cleanNewCode) exists = true;
+                    if ((p.code || '').toLowerCase() === cleanNewCode) exists = true;
                 });
             });
 
@@ -2264,16 +2644,38 @@
             renderParamRows();
         }
 
+        // === ЗМІНА №2: коди змінних тепер НЕЗМІННІ ===
+        // Код присвоюється один раз (наступний вільний номер) і більше не перераховується.
+        // Видалення параметра залишає «діру» в нумерації (v1, v2, v4) — це безпечно.
+        function ensureParamCodes() {
+            let maxN = 0;
+            tempGroups.forEach(g => {
+                (g.params || []).forEach(p => {
+                    const match = /^v(\d+)$/i.exec(p.code || '');
+                    if (match) maxN = Math.max(maxN, parseInt(match[1], 10));
+                });
+            });
+
+            const seen = new Set();
+            tempGroups.forEach(g => {
+                (g.params || []).forEach(p => {
+                    const c = (p.code || '').trim().toLowerCase();
+                    if (!c || seen.has(c)) {
+                        // порожній або дубльований код -> новий унікальний
+                        p.code = 'v' + (++maxN);
+                    } else {
+                        p.code = c;
+                    }
+                    seen.add(p.code.toLowerCase());
+                });
+            });
+        }
+
         function renderParamRows() {
             const container = document.getElementById('paramRowsContainer');
             const dict = I18N[currentLang] || I18N.uk;
 
-            let codeCounter = 1;
-            tempGroups.forEach(g => {
-                (g.params || []).forEach(p => {
-                    p.code = 'v' + (codeCounter++);
-                });
-            });
+            ensureParamCodes();
 
             if (tempGroups.length === 0) {
                 container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs border border-dashed border-slate-200 rounded-2xl">Поки немає розділів або параметрів. Натисніть кнопочки вище, щоб додати їх.</div>`;
@@ -2388,7 +2790,7 @@
                         ${p.type === 'formula' ? `
                         <div class="pl-8 sm:pl-12 mt-1">
                             <label class="text-[10px] text-slate-500 font-bold block mb-1">Формула (Наприклад: v1 + v2 - v3):</label>
-                            <input type="text" value="${p.formulaStr || ''}" onchange="updateParamFormula(${gIdx}, ${pIdx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-indigo-300 bg-indigo-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
+                            <input type="text" value="${escapeHTML(p.formulaStr || '')}" onchange="updateParamFormula(${gIdx}, ${pIdx}, this.value)" placeholder="v1 + v2" class="w-full sm:w-1/2 border border-indigo-300 bg-indigo-50/80 rounded-xl p-2 text-xs font-mono shadow-inner outline-none">
                         </div>
                         ` : ''}
 
@@ -2416,6 +2818,23 @@
                             ` : ''}
                             ` : ''}
                         </div>
+                        ${(p.type === 'decimal' || p.type === 'formula') ? `
+                        <div class="flex flex-wrap items-center gap-3 pl-8 sm:pl-12 mt-1 text-xs text-slate-600 bg-rose-50/60 border border-rose-100 rounded-xl p-2.5">
+                            <span class="text-[10px] font-bold text-rose-700 uppercase">🛡 ${vt('rangeTitle')}:</span>
+                            <label class="flex items-center gap-1.5">${vt('from')}
+                                <input type="number" step="any" value="${escapeHTML(p.minValue === undefined || p.minValue === null ? '' : p.minValue)}" onchange="updateParamRange(${gIdx}, ${pIdx}, 'minValue', this.value)" class="w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                            </label>
+                            <label class="flex items-center gap-1.5">${vt('to')}
+                                <input type="number" step="any" value="${escapeHTML(p.maxValue === undefined || p.maxValue === null ? '' : p.maxValue)}" onchange="updateParamRange(${gIdx}, ${pIdx}, 'maxValue', this.value)" class="w-24 border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none">
+                            </label>
+                            <label class="flex items-center gap-1.5">${vt('perUnit')}
+                                <select onchange="updateParamPerUnit(${gIdx}, ${pIdx}, this.value)" class="border border-slate-300 rounded-lg p-1.5 text-[11px] bg-white shadow-sm outline-none max-w-[220px]">
+                                    <option value="">${vt('noPerUnit')}</option>
+                                    ${allDecimalParams.filter(dp => dp.id !== p.id).map(dp => `<option value="${dp.id}" ${p.perUnitParamId === dp.id ? 'selected' : ''}>[${dp.code}] ${escapeHTML(getLabelWithUnit(dp, 'uk'))}</option>`).join('')}
+                                </select>
+                            </label>
+                        </div>
+                        ` : ''}
                     </div>
                     `;
                 }).join('') : emptyNotice;
@@ -2503,6 +2922,7 @@
             const clonedParam = JSON.parse(JSON.stringify(sourceParam));
             clonedParam.id = 'p_' + Date.now() + Math.floor(Math.random()*1000);
             clonedParam.isBaseWeight = false;
+            clonedParam.code = ''; // новий унікальний код буде присвоєно в ensureParamCodes()
 
             tempGroups[gIdx].params.push(clonedParam);
             renderParamRows();
@@ -2675,7 +3095,25 @@
             nativeEditingParamPIdx = null;
         }
 
+        // Повертає список параметрів, що посилаються на заданий (формулою або базою для %)
+        function findParamReferences(param) {
+            const refs = [];
+            const codeRegex = new RegExp(`\\b${param.code}\\b`, 'i');
+            tempGroups.forEach(g => {
+                (g.params || []).forEach(p => {
+                    if (p.id === param.id) return;
+                    const usedInFormula = p.type === 'formula' && p.formulaStr && codeRegex.test(p.formulaStr);
+                    const usedAsBase = (p.useShare && p.baseParamId === param.id) || p.perUnitParamId === param.id;
+                    if (usedInFormula || usedAsBase) {
+                        refs.push(`${getLabelWithUnit(p, 'uk') || p.code} [${p.code}]`);
+                    }
+                });
+            });
+            return refs;
+        }
+
         function executeRemoveParam(scope) {
+            const dict = I18N[currentLang] || I18N.uk;
             const gIdx = nativeEditingParamGIdx;
             const pIdx = nativeEditingParamPIdx;
             if (gIdx === null || pIdx === null) return;
@@ -2691,6 +3129,15 @@
                     otherGroup.params.push(paramToRemove);
                 }
             } else {
+                // ЗМІНА №2 (захист): попередження, якщо на параметр посилаються формули/відсотки
+                const refs = findParamReferences(paramToRemove);
+                if (refs.length > 0) {
+                    const msg = dict.msgParamInUse.replace('{refs}', refs.join(', '));
+                    if (!confirm(msg)) {
+                        closeDeleteParamModal();
+                        return;
+                    }
+                }
                 tempGroups[gIdx].params.splice(pIdx, 1);
             }
 
@@ -2729,8 +3176,17 @@
             tempGroups[gIdx].params[pIdx].baseParamId = val;
         }
 
+        function updateParamRange(gIdx, pIdx, key, val) {
+            tempGroups[gIdx].params[pIdx][key] = (val === '' ? '' : String(val));
+        }
+
+        function updateParamPerUnit(gIdx, pIdx, val) {
+            tempGroups[gIdx].params[pIdx].perUnitParamId = val;
+        }
+
         async function saveMethodology() {
             if (!isAdmin) return;
+            const dict = I18N[currentLang] || I18N.uk;
             const titleUk = document.getElementById('methodTitle_uk').value.trim();
             const titleEs = document.getElementById('methodTitle_es').value.trim() || titleUk;
 
@@ -2747,6 +3203,9 @@
                 return;
             }
 
+            // Гарантуємо, що всі параметри мають унікальні коди перед збереженням
+            ensureParamCodes();
+
             const newTitle = { uk: titleUk, es: titleEs };
             const newDesc = { uk: descUk, es: descEs };
             const currentTimeIso = new Date().toISOString();
@@ -2759,67 +3218,75 @@
                 params: g.params || []
             }));
 
-            if (editId) {
-                const idx = state.methodologies.findIndex(m => m.id === editId);
-                if (idx !== -1) {
+            const saveBtn = document.getElementById('btnSaveModal');
+            if (saveBtn) saveBtn.disabled = true;
+
+            try {
+                if (editId) {
+                    const idx = state.methodologies.findIndex(m => m.id === editId);
+                    if (idx === -1) throw new Error('Methodology not found');
+
                     const wasArchived = state.methodologies[idx].isArchived || false;
-                    state.methodologies[idx] = { 
-                        id: editId, 
-                        title: newTitle, 
-                        description: newDesc, 
+                    const updated = {
+                        id: editId,
+                        title: newTitle,
+                        description: newDesc,
                         docUrl: docUrl,
                         status: status,
                         groups: groups,
                         isArchived: wasArchived,
                         updatedAt: currentTimeIso
                     };
-                    
-                    await supabaseClient.from('methodologies').upsert({
-                        id: editId,
+
+                    const error = await persistMethodology(updated);
+                    if (error) throw error;
+
+                    state.methodologies[idx] = updated;
+                } else {
+                    const newMeth = {
+                        id: 'm_custom_' + Date.now(),
                         title: newTitle,
                         description: newDesc,
+                        docUrl: docUrl,
                         status: status,
-                        doc_url: docUrl,
-                        is_archived: wasArchived,
                         groups: groups,
-                        updated_at: currentTimeIso
+                        isArchived: false,
+                        updatedAt: currentTimeIso
+                    };
+
+                    const { error } = await supabaseClient.from('methodologies').insert({
+                        id: newMeth.id,
+                        title: newMeth.title,
+                        description: newMeth.description,
+                        status: newMeth.status,
+                        doc_url: newMeth.docUrl,
+                        is_archived: newMeth.isArchived,
+                        groups: newMeth.groups,
+                        updated_at: newMeth.updatedAt
                     });
+                    if (error) throw error;
+
+                    state.methodologies.push(newMeth);
                 }
-            } else {
-                const newMeth = {
-                    id: 'm_custom_' + Date.now(),
-                    title: newTitle,
-                    description: newDesc,
-                    docUrl: docUrl,
-                    status: status,
-                    groups: groups,
-                    isArchived: false,
-                    updatedAt: currentTimeIso
-                };
-                state.methodologies.push(newMeth);
-                
-                await supabaseClient.from('methodologies').insert({
-                    id: newMeth.id,
-                    title: newMeth.title,
-                    description: newMeth.description,
-                    status: newMeth.status,
-                    doc_url: newMeth.docUrl,
-                    is_archived: newMeth.isArchived,
-                    groups: newMeth.groups,
-                    updated_at: newMeth.updatedAt
-                });
+            } catch (err) {
+                console.error('saveMethodology error:', err);
+                if (saveBtn) saveBtn.disabled = false;
+                // Модальне вікно НЕ закриваємо — адмін не втрачає внесене
+                alert(dict.msgMethodSaveError + dbErrorText(err));
+                return;
             }
 
+            if (saveBtn) saveBtn.disabled = false;
             populateMethodologyDropdown();
             renderMethodologyCards();
             closeMethodologyModal();
-            alert(currentLang === 'es' ? "¡Metodología guardada con éxito!" : "Методику успішно збережено!");
+            alert(dict.msgMethodSaved);
         }
 
         // --- DICTIONARY MODAL ---
         function openDictionaryModal() {
             if (!isAdmin) return;
-            tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: trans.es }));
+            tempDictArray = Object.entries(state.dictionary).map(([uk, trans]) => ({ uk: uk, es: (trans && trans.es) || '' }));
             renderDictionaryRows();
             document.getElementById('dictionaryModal').classList.remove('hidden');
         }
@@ -2863,30 +3330,66 @@
             tempDictArray[idx][lang] = val;
         }
 
+        // === ЗМІНА №5: словник — upsert замість «видалити все + вставити» ===
         async function saveDictionary() {
-            const newDict = {};
-            const arrForDb = [];
-            
+            const dict = I18N[currentLang] || I18N.uk;
+
+            // Збираємо нові дані (Map прибирає дублікати термінів — інакше upsert впаде)
+            const termMap = new Map();
             tempDictArray.forEach(item => {
-                const ukWord = item.uk.trim().toLowerCase();
-                const esWord = item.es.trim();
+                const ukWord = (item.uk || '').trim().toLowerCase();
+                const esWord = (item.es || '').trim();
                 if (ukWord) {
-                    newDict[ukWord] = { es: esWord };
-                    arrForDb.push({ term: ukWord, translation: { es: esWord } });
+                    termMap.set(ukWord, { term: ukWord, translation: { es: esWord } });
                 }
             });
+            const arrForDb = Array.from(termMap.values());
 
-            state.dictionary = newDict;
-            
+            const saveBtn = document.getElementById('btnDictSave');
+            if (saveBtn) saveBtn.disabled = true;
+
             try {
-                await supabaseClient.from('dictionary').delete().neq('term', '0');
-                if(arrForDb.length > 0) {
-                    await supabaseClient.from('dictionary').insert(arrForDb);
+                // 1) Додаємо/оновлюємо всі поточні терміни одним запитом
+                if (arrForDb.length > 0) {
+                    const { error: upErr } = await supabaseClient
+                        .from('dictionary')
+                        .upsert(arrForDb, { onConflict: 'term' });
+                    if (upErr) throw upErr;
                 }
-            } catch(e) {}
 
+                // 2) Видаляємо лише ті терміни, яких більше немає у списку
+                const { data: existing, error: selErr } = await supabaseClient
+                    .from('dictionary')
+                    .select('term');
+                if (selErr) throw selErr;
+
+                const toDelete = (existing || [])
+                    .map(x => x.term)
+                    .filter(t => !termMap.has(t));
+
+                if (toDelete.length > 0) {
+                    const { error: delErr } = await supabaseClient
+                        .from('dictionary')
+                        .delete()
+                        .in('term', toDelete);
+                    if (delErr) throw delErr;
+                }
+
+                // 3) Локальний стан оновлюємо ТІЛЬКИ після успіху
+                const newDict = {};
+                arrForDb.forEach(x => { newDict[x.term] = x.translation; });
+                state.dictionary = newDict;
+            } catch (err) {
+                console.error('saveDictionary error:', err);
+                if (saveBtn) saveBtn.disabled = false;
+                // Вікно не закриваємо, state.dictionary не змінюємо
+                alert(dict.msgDictError + dbErrorText(err));
+                return;
+            }
+
+            if (saveBtn) saveBtn.disabled = false;
             closeDictionaryModal();
-            alert(currentLang === 'es' ? "¡Diccionario guardado con éxito!" : "Словник успішно збережено!");
+            alert(dict.msgDictSaved);
         }
 
     </script>
